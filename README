@@ -1,16 +1,28 @@
 
 Welcome to CCLIBS
 
-For more information consult https://cern.ch/cclibs and https://github.com/qking/cclibs
+For more information, please consult https://cern.ch/cclibs and https://github.com/cclibs/cclibs
 
 Please let us know if you use cclibs in your projects: cclibs-devs@cern.ch
 
 If you would like to be notified about new releases then write to this address and ask to be added to the cclibs-users mailing list.
 
-Libreg is nearly finished though minor changes and bug fixes continue since V5. Most of the change in V6 were in cctest and concerned support for the new GLOBAL CYCLE_SELECTOR parameter. This is step towards the new libcc and the multi-threaded ccrt, which will be based on cctest.
+The Converter Control libraries are open source C libraries, released under the GNU Lesser General Public License.
 
-Libcc/ccrt will be started in early 2015, however, the priority will be to deploy libreg into operation, which will probably take the first three months of 2015.
+The project contains five libraries and three test programs:
+
+* libfg - function generation - finished
+* libreg - current or field regulation - finished
+* libcal - DAC, ADC and DCCT calibration - finished
+* libcc - real-time converter control, uses libfg and libreg - about to be started
+* libtest - ANSI terminal suppoert - finished
+
+* cctest - non-real-time test program for libfg and libreg - in development
+* ccrt - real-time test program from libcc, libfg and libreg - about to be started
+* termtest - simple test program for libterm - finished
+
+Some more features will be added to cctest in preparation for forking it to create the multi-threaded real-time test program that will be called ccrt and which will test the new library libcc. This will be will be written during the first half of 2015.
 
 Quentin
 
-December 2014
+January 2015
