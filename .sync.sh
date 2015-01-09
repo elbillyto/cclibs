@@ -25,6 +25,7 @@ rsync -av \
 --exclude '.setting/' \
 --exclude '.cctest*/' \
 --exclude 'Makefile*' \
+--exclude '.project' \
 --exclude '.cproject' \
 --include '*/' \
 --include '*' \
