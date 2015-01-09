@@ -39,7 +39,7 @@
         analog_options =
         {
             series:         { shadowSize: 0, lines: { lineWidth: 1}, points: { radius: 2}, downsample: { threshold: 2000} },
-            grid:           { color: "#444", borderWidth: 1, backgroundColor: "#FFF" },
+            grid:           { color: "#444", borderWidth: 1, backgroundColor: "#FFF", hoverable: false },
             yaxis:          { labelWidth:220 },
             legend:         { container: analog_legend_div, position: "nw",
             labelFormatter: function (label, series) { return '<a href="javascript:ToggleVisibility(' + series.index + ');">' + label + '</a>'; }},
@@ -61,6 +61,34 @@
         // ----- Display analog and digital plots (if digital signals are included) -----
 
         PlotSignals();
+
+        // ----- Register callback for tooltip to identify a signal -----
+
+        $("<div id='tooltip'></div>").css({
+            position: "absolute",
+            display: "none",
+            border: "1px solid #fdd",
+            padding: "2px",
+            "background-color": "#fee",
+            opacity: 0.80
+        }).appendTo("body");
+
+        $(analog_chart_div).bind("plothover", function (event, pos, item)
+        {
+            if(analog_options.grid.hoverable)
+            {
+                if (item) {
+                    var x = item.datapoint[0].toFixed(2),
+                        y = item.datapoint[1].toFixed(2);
+
+                    $("#tooltip").html(item.series.label)
+                        .css({top: item.pageY+5, left: item.pageX+5})
+                        .fadeIn(0);
+                } else {
+                    $("#tooltip").hide();
+                }
+            }
+        });
 
         // ----- Save x-axis setting for analog plot for when all signals are invisible -----
 
@@ -95,24 +123,27 @@
 
             // ----- Scan signal to calculate derivative and the max abs value of the signal and its derivative -----
 
-            for(i=0 ; i < signal.data.length ; i++)
+            if(!signal.points.show)
             {
-                if((abs_value = Math.abs(signal.data[i][1])) > max_abs_value) max_abs_value = abs_value;
-
-                if(signal.data[i][1] != last_value)
+                for(i=0 ; i < signal.data.length ; i++)
                 {
-                    derivative = (signal.data[i][1] - last_value) / (signal.data[i][0] - last_time);
-                    last_time  = signal.data[i][0];
-                    last_value = signal.data[i][1];
-                    signal.derivative.push( [ last_time, derivative ] );
+                    if((abs_value = Math.abs(signal.data[i][1])) > max_abs_value) max_abs_value = abs_value;
 
-                    if((abs_value = Math.abs(derivative)) > max_abs_deriv_value) max_abs_deriv_value = abs_value;
+                    if(signal.data[i][1] != last_value)
+                    {
+                        derivative = (signal.data[i][1] - last_value) / (signal.data[i][0] - last_time);
+                        last_time  = signal.data[i][0];
+                        last_value = signal.data[i][1];
+                        signal.derivative.push( [ last_time, derivative ] );
+
+                        if((abs_value = Math.abs(derivative)) > max_abs_deriv_value) max_abs_deriv_value = abs_value;
+                    }
                 }
-            }
 
-            if(signal.data[i-1][0] != last_time)
-            {
-                signal.derivative.push( [ signal.data[i-1][0], 0.0 ] );       // Add a last point
+                if(signal.data[i-1][0] != last_time)
+                {
+                    signal.derivative.push( [ signal.data[i-1][0], 0.0 ] );       // Add a last point
+                }
             }
 
             // ----- Calculate exponential scaling factor for the signal -----
@@ -195,13 +226,16 @@
             {
                 if(derivative_flag == 1)
                 {
-                    if(escale_flag == 1)
+                    if(!signal.points.show)
                     {
-                        visible_analog_signals.push({data: signal.deriv_escale, label: sig_name + " '" + signal.exp_deriv, color: signal.color, lines: signal.lines, points: signal.points, index: signal.index});
-                    }
-                    else
-                    {
-                        visible_analog_signals.push({data: signal.derivative, label: sig_name + " '", color: signal.color, lines: signal.lines, points: signal.points, index: signal.index});
+                        if(escale_flag == 1)
+                        {
+                            visible_analog_signals.push({data: signal.deriv_escale, label: sig_name + " '" + signal.exp_deriv, color: signal.color, lines: signal.lines, points: signal.points, index: signal.index});
+                        }
+                        else
+                        {
+                            visible_analog_signals.push({data: signal.derivative, label: sig_name + " '", color: signal.color, lines: signal.lines, points: signal.points, index: signal.index});
+                        }
                     }
                 }
                 else
@@ -225,6 +259,8 @@
         // ----- Plot analog signals -----
 
         analog_plot = $.plot(analog_chart_div, visible_analog_signals, analog_options_zoom);
+
+        $("#tooltip").hide();
 
         // ----- Plot digital signals if they are defined -----
 
@@ -260,6 +296,11 @@
         case 1: // ----- mode 1 : Toggle Derivative flag -----
 
             derivative_flag = 1 - derivative_flag;
+            break;
+
+        case 2: // ----- mode 2 : Toggle ToolTip flag -----
+
+            analog_options.grid.hoverable = !analog_options.grid.hoverable;
             break;
         }
 
@@ -341,6 +382,8 @@
 
             analog_plot = $.plot(analog_chart_div, visible_analog_signals, analog_options_zoom);
 
+            $("#tooltip").hide();
+
             if (visible_digital_signals.length > 0)
             {
                 digital_options_zoom = $.extend(true, {}, digital_options, {
@@ -368,6 +411,8 @@
             {
                 $.plot($("#digital_chart_div"), visible_digital_signals, digital_options_zoom);
             }
+
+            $("#tooltip").hide();
         }
 
         // ----- return false to suppress the right-mouse context menu from appearing -----
@@ -389,6 +434,7 @@
     <a href='javascript:AllNoneVisible(0);'>Hide all</a> |
     <a href='javascript:ToggleMode(0);'>E-Scaling</a> |
     <a href='javascript:ToggleMode(1);'>Derivative</a> |
+    <a href='javascript:ToggleMode(2);'>ToolTip</a> |
     <a href='javascript:ToggleThickLines();'>Thick lines</a> |
     <a href='javascript:FullScale();'>Full Scale</a> |
     <a class='inline' href='#inline_pars'>Parameters</a> |
@@ -445,6 +491,9 @@
                 scaling mode and exponential scaling mode.  In this mode, every signal is scaled by a
                 power of 10 to be within the range &plusmn;10. The scale factors are shown in the legend
                 with "E&plusmn;N" notation.</li><br/>
+            <li><strong>ToolTip</strong><br/><br/>Click on the "ToolTip" link to toggle the appearance
+                of a tooltip when hovering the mouse over the points of a signal. The tooltip gives the signal name,
+                which can be helpful when there are many signals close together.</li><br/>
             <li><strong>Derivative</strong><br/><br/>Click on the "Derivative" link to toggle between normal
                 mode and derivative mode.  In Derivative mode, the first derivatives of all the signals are displayed.</li><br/>
             <li><strong>Thick lines</strong><br/><br/>Click on the "Thick lines" link to toggle between normal
