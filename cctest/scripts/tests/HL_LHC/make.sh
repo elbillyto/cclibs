@@ -28,6 +28,7 @@ sleep 1
 
 $cctest "global csv_format $csv_format" "read squeeze.cct"
 
->&2 echo $0 complete
+awk -f chart.awk I_REF_RST     input/*.csv
+awk -f chart.awk V_REF_LIMITED input/*.csv
 
 # EOF
