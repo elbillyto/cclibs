@@ -1,18 +1,18 @@
-# Remove old versions for flot 
+# Remove old versions for flot
 
-rm -rf flot flot-downsample flot-selection 
+rm -rf flot flot-downsample flot-selection
 
-# Clone from github 
+# Clone from github
 
-git clone git@github.com:flot/flot.git
-git clone git@github.com:sveinn-steinarsson/flot-downsample.git
-git clone git@github.com:cclibs/flot-selection.git
+git clone https://github.com/flot/flot.git
+git clone https://github.com/sveinn-steinarsson/flot-downsample.git
+git clone https://github.com/cclibs/flot-selection.git
 
-# Checkout v0.7 of flot 
+# Checkout v0.7 of flot
 
 cd flot
 
-git checkout v0.7 
+git checkout v0.7
 
 cd ..
 
