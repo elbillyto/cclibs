@@ -412,7 +412,7 @@ void ccRunSimulation(void)
         // Set measurements to simulated values but support bad value with a defined probability
         // The "real" measurements are invalid while the simulated measurements are good
 
-        ccrun.invalid_meas.flag = (random() < ccrun.invalid_meas.random_threshold);
+        ccrun.invalid_meas.flag = (rand() < ccrun.invalid_meas.random_threshold);
 
         use_sim_meas = (ccrun.invalid_meas.flag == 0);
 
