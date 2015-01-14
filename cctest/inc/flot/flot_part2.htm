@@ -123,27 +123,24 @@
 
             // ----- Scan signal to calculate derivative and the max abs value of the signal and its derivative -----
 
-            if(!signal.points.show)
+            for(i=0 ; i < signal.data.length ; i++)
             {
-                for(i=0 ; i < signal.data.length ; i++)
+                if((abs_value = Math.abs(signal.data[i][1])) > max_abs_value) max_abs_value = abs_value;
+
+                if(!signal.points.show && signal.data[i][1] != last_value)
                 {
-                    if((abs_value = Math.abs(signal.data[i][1])) > max_abs_value) max_abs_value = abs_value;
+                    derivative = (signal.data[i][1] - last_value) / (signal.data[i][0] - last_time);
+                    last_time  = signal.data[i][0];
+                    last_value = signal.data[i][1];
+                    signal.derivative.push( [ last_time, derivative ] );
 
-                    if(signal.data[i][1] != last_value)
-                    {
-                        derivative = (signal.data[i][1] - last_value) / (signal.data[i][0] - last_time);
-                        last_time  = signal.data[i][0];
-                        last_value = signal.data[i][1];
-                        signal.derivative.push( [ last_time, derivative ] );
-
-                        if((abs_value = Math.abs(derivative)) > max_abs_deriv_value) max_abs_deriv_value = abs_value;
-                    }
+                    if((abs_value = Math.abs(derivative)) > max_abs_deriv_value) max_abs_deriv_value = abs_value;
                 }
+            }
 
-                if(signal.data[i-1][0] != last_time)
-                {
-                    signal.derivative.push( [ signal.data[i-1][0], 0.0 ] );       // Add a last point
-                }
+            if(!signal.points.show && signal.data[i-1][0] != last_time)
+            {
+                signal.derivative.push( [ signal.data[i-1][0], 0.0 ] );       // Add a last point
             }
 
             // ----- Calculate exponential scaling factor for the signal -----
