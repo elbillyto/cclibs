@@ -32,7 +32,7 @@
 // Constants
 
 #define M_TWO_PI                   (2.0*3.14159265358979323)
-#define FLOAT_THRESHOLD            1E-8                         //!< Lower bound for s[0]. To allow for floating point rounding errors.
+#define FLOAT_THRESHOLD            1E-7                         //!< Lower bound for s[0]. To allow for floating point rounding errors.
 #define REG_AVE_V_REF_LEN          4                            //!< Number of iterations over which to average V_REF
 #define REG_TRACK_DELAY_FLTR_TC    100                          //!< Track delay measurement filter time constant (periods)
 #define REG_MM_STEPS               20                           //!< Number of steps to cover modulus margin scan
@@ -103,7 +103,7 @@ static enum reg_jurys_result regJurysTest(struct reg_rst_pars *pars)
 
     // Jury's test -2 : s(1) > 0 for stability - allow for floating point rounding errors
 
-    if((sum_even_s + sum_odd_s / sum_abs_s) < -FLOAT_THRESHOLD)
+    if(((sum_even_s + sum_odd_s) / sum_abs_s) < -FLOAT_THRESHOLD)
     {
         return(REG_JR_SUM_S_IS_NEGATIVE);
     }
