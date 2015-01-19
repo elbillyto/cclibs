@@ -1,4 +1,4 @@
-# CCTEST - GPS tests script
+# CCTEST - HIE-ISOLDE tests script
 
 GLOBAL RUN_DELAY            0.05
 GLOBAL STOP_DELAY           0.05
@@ -6,10 +6,11 @@ GLOBAL ITER_PERIOD_US       100
 GLOBAL FG_LIMITS            ENABLED
 GLOBAL SIM_LOAD             ENABLED
 GLOBAL GROUP                tests
-GLOBAL PROJECT              GPS
+GLOBAL PROJECT              HIEISO
 
 # Voltage source parameters
 
+PC BANDWIDTH                2000
 PC ACT_DELAY_ITERS          1
 PC TAU_ZERO                 0.0
 PC Z                        0.9
@@ -27,7 +28,7 @@ MEAS V_SIM_NOISE_PP         0.0
 MEAS TONE_HALF_PERIOD_ITERS 100
 MEAS I_SIM_TONE_AMP         0.0
 
-# Current regulation        Bruker      Cobalt
+# Current regulation        COMET
 
 BREG PERIOD_ITERS           10          10
 BREG AUXPOLE1_HZ            80          80  
@@ -36,24 +37,24 @@ BREG AUXPOLES2_Z            0.5         0.5
 
 # Limits
 
-LIMITS B_POS                4500.0      4500.0            
-LIMITS B_MIN                200         200     
-LIMITS B_NEG                0.0         0.0    
+LIMITS B_POS               12000.0      4500.0            
+LIMITS B_MIN                0.0         200     
+LIMITS B_NEG              -12000.0      0.0    
 LIMITS B_RATE               500000.0    500000.0
 LIMITS B_ACCELERATION       5.0E6       5.0E6  
 LIMITS B_ERR_WARNING        50.0        50.0    
 LIMITS B_ERR_FAULT          0.0         0.0    
 
-LIMITS I_POS                200.0       200.0             
-LIMITS I_MIN                10.0        10.0    
-LIMITS I_NEG                0.0         0.0    
+LIMITS I_POS                500.0       200.0             
+LIMITS I_MIN                0.0         10.0    
+LIMITS I_NEG               -500.0       0.0    
 LIMITS I_RATE               50000.0     50000.0
 LIMITS I_ACCELERATION       5.0E6       5.0E6  
 LIMITS I_ERR_WARNING        5.0         5.0    
 LIMITS I_ERR_FAULT          0.0         0.0    
 
-LIMITS V_POS               42.0         50.0
-LIMITS V_NEG                0.0         0.0 
+LIMITS V_POS              120.0         50.0
+LIMITS V_NEG             -120.0         0.0 
 LIMITS V_RATE               0.0
 LIMITS V_ACCELERATION       0.0
 LIMITS V_ERR_WARNING        0.0
@@ -61,18 +62,18 @@ LIMITS V_ERR_FAULT          0.0
 
 # CCTEST load : GPS
 
-LOAD OHMS_SER               0.213       0.213          
+LOAD OHMS_SER               0.100       0.213          
 LOAD OHMS_PAR               1.0E8       1.0E8  
 LOAD OHMS_MAG               0.0         0.0    
-LOAD HENRYS                 0.015       0.015
-LOAD GAUSS_PER_AMP          22.5        22.5
+LOAD HENRYS                 0.113       0.015
+LOAD GAUSS_PER_AMP          26.0        22.5
 LOAD SIM_TC_ERROR           0.0
 
 # Reference
 
 PULSE TIME()                0.0
 PULSE DURATION()            0.2
-PULSE REF(1)                470        3630      1000      2000
+PULSE REF(1)                1000       11000
 
 REF REG_MODE()              FIELD
 REF FUNCTION()              PULSE
@@ -82,45 +83,18 @@ DEFAULT B_ACCELERATION      1.000000E+04
 DEFAULT B_DECELERATION      1.000000E+04
 DEFAULT B_LINEAR_RATE       0.000000E+00
 
-DEFAULT I_ACCELERATION      1.000000E+02
-DEFAULT I_DECELERATION      1.000000E+02
-DEFAULT I_LINEAR_RATE       0.000000E+00
-
-GLOBAL CYCLE_SELECTOR       1 2 3
+GLOBAL CYCLE_SELECTOR       1 2
 
 # -- Without Noise --
 
-# Simulations with Bruker
-
-PC BANDWIDTH                1000
-GLOBAL FILE                 gps-bruker-nn
-LOAD SELECT                 0
-RUN
-
-# Simulations with COBALT
-
-PC BANDWIDTH                2000
-PC QUANTIZATION             1.0E-03
-GLOBAL FILE                 gps-cobalt-nn
-LOAD SELECT                 1
+GLOBAL FILE                 hie-iso-nn
 RUN
 
 # -- With Noise --
 
-# Simulations with Bruker
+MEAS B_SIM_NOISE_PP         3.0
 
-MEAS B_SIM_NOISE_PP         0.4
-
-PC BANDWIDTH                1000
-GLOBAL FILE                 gps-bruker
-LOAD SELECT                 0
-RUN
-
-# Simulations with COBALT
-
-PC BANDWIDTH                2000
-GLOBAL FILE                 gps-cobalt
-LOAD SELECT                 1
+GLOBAL FILE                 hie-iso
 RUN
 
 # EOF

@@ -32,10 +32,10 @@
 #ifndef LIBFG_H
 #define LIBFG_H
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdint.h>
+#include <stdbool.h>
 
 // Constants
 
@@ -49,7 +49,7 @@ enum fg_gen_status
 {
     FG_GEN_AFTER_FUNC,
     FG_GEN_DURING_FUNC,
-    FG_GEN_BEFORE_FUNC,
+    FG_GEN_BEFORE_FUNC
 };
 
 /*!
@@ -63,7 +63,7 @@ enum fg_error
     FG_INVALID_TIME,
     FG_OUT_OF_LIMITS,
     FG_OUT_OF_RATE_LIMITS,
-    FG_OUT_OF_ACCELERATION_LIMITS,
+    FG_OUT_OF_ACCELERATION_LIMITS
 };
 
 /*!
@@ -95,19 +95,18 @@ struct fg_limits
 struct fg_meta
 {
     enum fg_error       fg_error;               //!< Function error number
-    enum fg_func_pol    polarity;               //!< Function polarity
-    bool                limits_inverted;        //!< Function was checked against inverted limits
-
-    struct
+    struct fg_meta_error
     {
         uint32_t        index;                  //!< Error index from Init function
         float           data[FG_ERR_DATA_LEN];  //!< Error debug data
     } error;                                    //!< Used to indicate why the reference function was rejected
 
+    enum fg_func_pol    polarity;               //!< Function polarity
+    bool                limits_inverted;        //!< Function was checked against inverted limits
     double              delay;                  //!< Delay before the function starts (double needed to if Unix Time is used)
     float               duration;               //!< Function duration (not including delay)
 
-    struct
+    struct fg_meta_range
     {
         float           start;                  //!< Reference value at start of function
         float           end;                    //!< Reference value at the end of the function

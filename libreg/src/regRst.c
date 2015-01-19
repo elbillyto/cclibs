@@ -32,7 +32,7 @@
 // Constants
 
 #define M_TWO_PI                   (2.0*3.14159265358979323)
-#define FLOAT_THRESHOLD            2E-6                         //!< Lower bound for s[0]. To allow for floating point rounding errors.
+#define FLOAT_THRESHOLD            1E-8                         //!< Lower bound for s[0]. To allow for floating point rounding errors.
 #define REG_AVE_V_REF_LEN          4                            //!< Number of iterations over which to average V_REF
 #define REG_TRACK_DELAY_FLTR_TC    100                          //!< Track delay measurement filter time constant (periods)
 #define REG_MM_STEPS               20                           //!< Number of steps to cover modulus margin scan
@@ -68,6 +68,7 @@ static enum reg_jurys_result regJurysTest(struct reg_rst_pars *pars)
     double      b[REG_NUM_RST_COEFFS];
     double      sum_even_s;                     // Sum of even S coefficients: s[0]+s[2]+s[4]+...
     double      sum_odd_s;                      // Sum of odd S coefficients:  s[1]+s[3]+s[5]+...
+    double      sum_abs_s;                      // Sum of absolute value of S coefficient
 
     // Jury's test -1: s[0] > 0 for stability
 
@@ -84,9 +85,11 @@ static enum reg_jurys_result regJurysTest(struct reg_rst_pars *pars)
 
     // Transfer s[] to b[] and sum even and odd coefficients of s[] separately
 
-    for(i = 0, sum_odd_s = 0.0, sum_even_s = 0.0 ; i <= n ; i++)
+    for(i = 0, sum_abs_s = sum_odd_s = sum_even_s = 0.0 ; i <= n ; i++)
     {
         b[i] = pars->rst.s[i];
+
+        sum_abs_s += fabs(b[i]);
 
         if((i & 1) == 0)
         {
@@ -100,7 +103,7 @@ static enum reg_jurys_result regJurysTest(struct reg_rst_pars *pars)
 
     // Jury's test -2 : s(1) > 0 for stability - allow for floating point rounding errors
 
-    if((sum_even_s + sum_odd_s) < -FLOAT_THRESHOLD)
+    if((sum_even_s + sum_odd_s / sum_abs_s) < -FLOAT_THRESHOLD)
     {
         return(REG_JR_SUM_S_IS_NEGATIVE);
     }
@@ -269,13 +272,13 @@ static float regAbsComplexRatio(float *num, float *den, float k)
  * The calculation of the RST coefficients requires double precision floating point, even though the
  * coefficients themselves are stored as single precision.
  */
-static int32_t regRstInitPII(struct reg_rst_pars  *pars,
-                             struct reg_load_pars *load,
-                             float                 auxpole1_hz,
-                             float                 auxpoles2_hz,
-                             float                 auxpoles2_z,
-                             float                 auxpole4_hz,
-                             float                 auxpole5_hz)
+static enum reg_jurys_result regRstInitPII(struct reg_rst_pars  *pars,
+                                           struct reg_load_pars *load,
+                                           float                 auxpole1_hz,
+                                           float                 auxpoles2_hz,
+                                           float                 auxpoles2_z,
+                                           float                 auxpole4_hz,
+                                           float                 auxpole5_hz)
 {
     uint32_t    idx;
     int32_t     s_idx = 0;
