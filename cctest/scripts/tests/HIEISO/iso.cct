@@ -30,9 +30,6 @@ MEAS I_SIM_TONE_AMP         0.0
 
 # Current regulation        COMET
 
-BREG PERIOD_ITERS           10          10
-BREG AUXPOLE1_HZ            80          80  
-BREG AUXPOLES2_HZ           80          80
 BREG AUXPOLES2_Z            0.5         0.5
 
 # Limits
@@ -85,7 +82,15 @@ DEFAULT B_LINEAR_RATE       0.000000E+00
 
 GLOBAL CYCLE_SELECTOR       1 2
 
+# 1kHz regulation 
+
+BREG PERIOD_ITERS           10          10
+BREG AUXPOLE1_HZ            80          80  
+BREG AUXPOLES2_HZ           80          80
+
 # -- Without Noise --
+
+MEAS B_SIM_NOISE_PP         0.0
 
 GLOBAL FILE                 hie-iso-nn
 RUN
@@ -95,6 +100,27 @@ RUN
 MEAS B_SIM_NOISE_PP         3.0
 
 GLOBAL FILE                 hie-iso
+RUN
+
+# 100 Hz regulation
+
+BREG PERIOD_ITERS           100         10
+BREG AUXPOLE1_HZ            10          80  
+BREG AUXPOLES2_HZ           10          80
+MEAS B_FIR_LENGTHS          100,10
+
+# -- Without Noise --
+
+MEAS B_SIM_NOISE_PP         0.0
+
+GLOBAL FILE                 hie-iso-100Hz-nn
+RUN
+
+# -- With Noise --
+
+MEAS B_SIM_NOISE_PP         3.0
+
+GLOBAL FILE                 hie-iso-100Hz
 RUN
 
 # EOF
