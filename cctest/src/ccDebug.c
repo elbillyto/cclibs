@@ -263,7 +263,7 @@ void ccDebugPrint(FILE *f)
 
         // Report measurement variables
 
-        fprintf(f,"%s "   " %ld"            "\n",   ccDebugLabel("%s invalid.random_threshold", "MEAS"), ccrun.invalid_meas.random_threshold);
+        fprintf(f,"%s "   " %d"            "\n",    ccDebugLabel("%s invalid.random_threshold", "MEAS"), ccrun.invalid_meas.random_threshold);
 
         if(ccrun.invalid_meas.random_threshold > 0)
         {
