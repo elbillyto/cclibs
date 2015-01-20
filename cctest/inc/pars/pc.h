@@ -53,6 +53,7 @@ struct ccpars_pc
     enum reg_actuation          actuation;          // Power converter actuation (VOLTAGE REF or CURRENT REF)
     float                       act_delay_iters;    // Power converter control delay in iterations
     float                       quantization;       // Actuation quantization (V or A)
+    float                       ripple;             // Peak-peak ripple
     float                       bandwidth;          // Power converter (voltage source or current source) second order bandwidth
     float                       z;                  // Second order damping factor
     float                       tau_zero;           // Second order time constant of zero (0 if not required)
@@ -65,6 +66,7 @@ CCPARS_PC_EXT struct ccpars_pc ccpars_pc
         REG_VOLTAGE_REF,         // PC ACTUATION
         1.0,                     // PC ACT_DELAY_ITERS
         0.0,                     // PC QUANTIZATION
+        0.0,                     // PC RIPPLE
         200.0,                   // PC BANDWIDTH
         0.9,                     // PC Z
         0.0,                     // PC TAU_ZERO
@@ -82,6 +84,7 @@ CCPARS_PC_EXT struct ccpars pc_pars[]
     { "ACTUATION",       PAR_ENUM,  1,                     enum_reg_actuation, { .u = &ccpars_pc.actuation       }, 1,                     0, 0                 },
     { "ACT_DELAY_ITERS", PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.act_delay_iters }, 1,                     0, 0                 },
     { "QUANTIZATION",    PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.quantization    }, 1,                     0, 0                 },
+    { "RIPPLE",          PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.ripple          }, 1,                     0, 0                 },
     { "BANDWIDTH",       PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.bandwidth       }, 1,                     0, 0                 },
     { "Z",               PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.z               }, 1,                     0, 0                 },
     { "TAU_ZERO",        PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.tau_zero        }, 1,                     0, 0                 },

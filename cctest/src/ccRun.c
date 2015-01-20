@@ -404,6 +404,7 @@ void ccRunSimulation(void)
     {
         uint32_t        reg_iteration_counter;      // Regulation iteration counter from libreg (0=start of reg period)
         bool            use_sim_meas;
+        int             rand_value = rand();        // Random int between 0 and RAND_MAX
 
         // Calculate reference time taking into account the ref advance for the active regulation mode
 
@@ -412,7 +413,7 @@ void ccRunSimulation(void)
         // Set measurements to simulated values but support bad value with a defined probability
         // The "real" measurements are invalid while the simulated measurements are good
 
-        ccrun.invalid_meas.flag = (rand() < ccrun.invalid_meas.random_threshold);
+        ccrun.invalid_meas.flag = (rand_value < ccrun.invalid_meas.random_threshold);
 
         use_sim_meas = (ccrun.invalid_meas.flag == 0);
 
@@ -487,9 +488,9 @@ void ccRunSimulation(void)
             perturb_volts = ccpars_load.perturb_volts;
         }
 
-        // Simulate voltage source and load response (with voltage perturbation added)
+        // Simulate voltage source and load response (with voltage perturbation and ripple added)
 
-        regConvSimulateRT(&conv, NULL, perturb_volts);
+        regConvSimulateRT(&conv, NULL, perturb_volts + ccpars_pc.ripple * (float)(rand_value - RAND_MAX/2) * (1.0 / RAND_MAX));
 
         // Check if simulated converter should be trip
 
