@@ -9,16 +9,17 @@ If you would like to be notified about new releases then write to this address a
 
 The Converter Control libraries are open source C libraries, released under the GNU Lesser General Public License.
 
-The project contains five libraries and three test programs:
+The project contains six libraries and three test programs:
 
+* libref - reference manager, uses libfg and libreg - about to be started
 * libfg - function generation - finished
 * libreg - current or field regulation - finished
+* libvreg - voltage regulation - being planned for second half of 2015
 * libcal - DAC, ADC and DCCT calibration - finished
-* libcc - real-time converter control, uses libfg and libreg - about to be started
 * libtest - ANSI terminal suppoert - finished
 
 * cctest - non-real-time test program for libfg and libreg - in development
-* ccrt - real-time test program from libcc, libfg and libreg - about to be started
+* ccrt - real-time test program from libref, libfg and libreg - about to be started
 * termtest - simple test program for libterm - finished
 
 Some more features will be added to cctest in preparation for forking it to create the multi-threaded real-time test program that will be called ccrt and which will test the new library libcc. This will be will be written during the first half of 2015.

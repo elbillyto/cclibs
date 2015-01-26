@@ -17,7 +17,9 @@ PC Z                        0.9
 
 # Measurement parameters
 
+MEAS B_REG_SELECT           UNFILTERED
 MEAS I_REG_SELECT           UNFILTERED
+MEAS B_DELAY_ITERS          30
 MEAS I_DELAY_ITERS          0.13
 MEAS V_DELAY_ITERS          0.13
 MEAS I_FIR_LENGTHS          1,0
@@ -32,8 +34,20 @@ IREG PERIOD_ITERS           1           1           1           1
 IREG AUXPOLE1_HZ            80          80          80          80
 IREG AUXPOLES2_HZ           80          80          80          80
 IREG AUXPOLES2_Z            0.5         0.5         0.5         0.5
+BREG PERIOD_ITERS           25
+BREG AUXPOLE1_HZ            3
+BREG AUXPOLES2_HZ           3
+BREG AUXPOLES2_Z            0.5
 
 # Limits
+
+LIMITS B_POS                12000
+LIMITS B_MIN                500.0
+LIMITS B_NEG                0.0
+LIMITS B_RATE               5000.0
+LIMITS B_ACCELERATION       5.0E3
+LIMITS B_ERR_WARNING        5.0
+LIMITS B_ERR_FAULT          0.0
 
 LIMITS I_POS                480.0       480.0       480.0       480.0            
 LIMITS I_MIN                0.0         0.0         0.0         0.0
@@ -56,7 +70,7 @@ LOAD OHMS_SER               0.125       0.095       0.125       0.095
 LOAD OHMS_PAR               1.0E8       1.0E8       1.0E8       1.0E8
 LOAD OHMS_MAG               0.0         0.0         0.0         0.0
 LOAD HENRYS                 0.015       0.011       0.015       0.011
-
+LOAD GAUSS_PER_AMP          23.0
 LOAD SIM_TC_ERROR           0.05
 
 # Reference
@@ -77,8 +91,10 @@ GLOBAL CYCLE_SELECTOR       1 2 3 4
 
 # Simulations with Bruker
 
+PC RIPPLE                   2.0E-3
+
 GLOBAL FILE                 hrs90-bruker
-LOAD SELECT                 1
+LOAD SELECT                 0
 RUN
 
 GLOBAL FILE                 hrs60-bruker
@@ -88,6 +104,7 @@ RUN
 # Simulations with APOLLO
 
 PULSE REF(1)                200         -480          480         220
+PC RIPPLE                   1.0E-2
 
 GLOBAL FILE                 hrs90-comet
 LOAD SELECT                 2
@@ -95,6 +112,17 @@ RUN
 
 GLOBAL FILE                 hrs60-comet
 LOAD SELECT                 3
+RUN
+
+# Simulations with Bruker and PT2026
+
+PC RIPPLE                   2.0E-3
+PULSE REF(1)                10000   9900    10100   10000
+DEFAULT B_ACCELERATION      1.000000E+02
+DEFAULT B_DECELERATION      1.000000E+01
+REF REG_MODE()              FIELD
+GLOBAL FILE                 hrs90-bruker-pt2026
+LOAD SELECT                 0
 RUN
 
 # EOF
