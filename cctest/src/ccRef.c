@@ -49,7 +49,7 @@ enum fg_gen_status ccRefDirectGen(struct fg_table *pars, const double *time, flo
 
     if(func_time < 0.0)
     {
-        return(FG_GEN_BEFORE_FUNC);
+        return(FG_GEN_PRE_FUNC);
     }
 
     // If DIRECT function is already running
@@ -63,7 +63,7 @@ enum fg_gen_status ccRefDirectGen(struct fg_table *pars, const double *time, flo
     {
         // Prepare to force initialisation of first RAMP function
 
-        fg_gen_status = FG_GEN_AFTER_FUNC;
+        fg_gen_status = FG_GEN_POST_FUNC;
         prev_rate     = 0.0;
         prev_ref      = *ref;
         final_ref     = 1.0E30;

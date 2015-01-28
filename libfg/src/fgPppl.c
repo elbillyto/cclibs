@@ -331,7 +331,7 @@ enum fg_gen_status fgPpplGen(struct fg_pppl *pars, const double *time, float *re
         pars->seg_idx = 0;
         *ref = pars->initial_ref;
 
-        return(FG_GEN_BEFORE_FUNC);
+        return(FG_GEN_PRE_FUNC);
     }
 
     // Scan through the PPPL segments to find segment containing the current time
@@ -345,7 +345,7 @@ enum fg_gen_status fgPpplGen(struct fg_pppl *pars, const double *time, float *re
             pars->seg_idx = pars->num_segs - 1;
             *ref          = pars->a0[pars->seg_idx];
 
-            return(FG_GEN_AFTER_FUNC);
+            return(FG_GEN_POST_FUNC);
         }
     }
 

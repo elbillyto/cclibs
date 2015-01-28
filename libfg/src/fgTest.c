@@ -189,7 +189,7 @@ enum fg_gen_status fgTestGen(struct fg_test *pars, const double *time, float *re
     {
         *ref = pars->initial_ref;
 
-        return(FG_GEN_BEFORE_FUNC);
+        return(FG_GEN_PRE_FUNC);
     }
 
     // Operate N cycles following delay
@@ -245,7 +245,7 @@ enum fg_gen_status fgTestGen(struct fg_test *pars, const double *time, float *re
 
             default: // Invalid function type requested
 
-                return(FG_GEN_AFTER_FUNC);
+                return(FG_GEN_POST_FUNC);
         }
 
         // For SINE and COSINE: Apply cosine window if enabled
@@ -267,7 +267,7 @@ enum fg_gen_status fgTestGen(struct fg_test *pars, const double *time, float *re
 
     *ref = pars->final_ref;
 
-    return(FG_GEN_AFTER_FUNC);
+    return(FG_GEN_POST_FUNC);
 }
 
 // EOF

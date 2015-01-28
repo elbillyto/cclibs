@@ -208,7 +208,7 @@ enum fg_gen_status fgRampGen(struct fg_ramp *pars, const double *time, float *re
     {
         r = pars->initial_ref;
 
-        status = FG_GEN_BEFORE_FUNC;
+        status = FG_GEN_PRE_FUNC;
     }
     else
     {
@@ -311,7 +311,7 @@ enum fg_gen_status fgRampGen(struct fg_ramp *pars, const double *time, float *re
 
             // End of function
  
-            status = FG_GEN_AFTER_FUNC;
+            status = FG_GEN_POST_FUNC;
         }
 
         // Keep ramp reference for next iteration (before rate limiter)

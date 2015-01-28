@@ -172,7 +172,7 @@ enum fg_gen_status fgTableGen(struct fg_table *pars, const double *time, float *
     {
          *ref = pars->ref[0];
 
-         return(FG_GEN_BEFORE_FUNC);
+         return(FG_GEN_PRE_FUNC);
     }
 
     // Scan through table to find segment containing the current time
@@ -184,7 +184,7 @@ enum fg_gen_status fgTableGen(struct fg_table *pars, const double *time, float *
             pars->seg_idx = pars->num_points - 1;                   // Force segment index to last seg
             *ref          = pars->ref[pars->num_points - 1];        // Enter coast
 
-            return(FG_GEN_AFTER_FUNC);
+            return(FG_GEN_POST_FUNC);
         }
     }
 

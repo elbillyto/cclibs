@@ -355,7 +355,7 @@ enum fg_gen_status fgPlepGen(struct fg_plep *pars, const double *time, float *re
     {
         r = pars->ref[0];
 
-        status = FG_GEN_BEFORE_FUNC;
+        status = FG_GEN_PRE_FUNC;
     }
 
     // Parabolic acceleration
@@ -417,7 +417,7 @@ enum fg_gen_status fgPlepGen(struct fg_plep *pars, const double *time, float *re
 
     else
     {
-        status = FG_GEN_AFTER_FUNC;
+        status = FG_GEN_POST_FUNC;
 
         // seg_time is relative to end of function
 

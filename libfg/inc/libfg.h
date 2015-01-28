@@ -47,9 +47,9 @@
  */
 enum fg_gen_status
 {
-    FG_GEN_AFTER_FUNC,
+    FG_GEN_POST_FUNC,
     FG_GEN_DURING_FUNC,
-    FG_GEN_BEFORE_FUNC
+    FG_GEN_PRE_FUNC
 };
 
 /*!

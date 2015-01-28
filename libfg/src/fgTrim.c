@@ -220,7 +220,7 @@ enum fg_gen_status fgTrimGen(struct fg_trim *pars, const double *time, float *re
     {
         *ref = pars->initial_ref;
 
-        return(FG_GEN_BEFORE_FUNC);
+        return(FG_GEN_PRE_FUNC);
     }
 
     // Trim
@@ -237,7 +237,7 @@ enum fg_gen_status fgTrimGen(struct fg_trim *pars, const double *time, float *re
 
     *ref = pars->final_ref;
 
-    return(FG_GEN_AFTER_FUNC);
+    return(FG_GEN_POST_FUNC);
 }
 
 // EOF

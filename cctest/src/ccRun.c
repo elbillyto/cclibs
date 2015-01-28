@@ -462,7 +462,7 @@ void ccRunSimulation(void)
 
                 // else if function has finished
 
-                else if(fg_gen_status == FG_GEN_AFTER_FUNC)
+                else if(fg_gen_status == FG_GEN_POST_FUNC)
                 {
                     // Starting a new function can change conv.reg_mode, but not our local copy of reg_mode
 
@@ -580,7 +580,7 @@ void ccRunFuncGen(void)
 
         // If reference function has finished
 
-        if(ref_time > ccrun.cycle_duration && fg_gen_status == FG_GEN_AFTER_FUNC)
+        if(ref_time > ccrun.cycle_duration && fg_gen_status == FG_GEN_POST_FUNC)
         {
             // If not yet into the stop delay period, advance to next function
 
