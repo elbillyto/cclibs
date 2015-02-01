@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     ccDebug.c                                                                   Copyright CERN 2014
+  File:     ccDebug.c                                                                   Copyright CERN 2015
 
   License:  This file is part of cctest.
 

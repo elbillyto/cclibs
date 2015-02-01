@@ -31,15 +31,16 @@
 
 
 enum fg_error fgTestInit(struct fg_limits *limits, 
-                         bool   is_pol_switch_auto,
-                         bool   is_pol_switch_neg,
+                         bool   pol_switch_auto,
+                         bool   pol_switch_neg,
                          double delay, 
                          enum   fg_test_type type,
                          float  initial_ref,
                          float  amplitude_pp,
                          float  num_cycles,
                          float  period,
-                         bool   is_window_active,
+                         bool   window_enabled,
+                         bool   exp_decay_enabled,
                          struct fg_test *pars, 
                          struct fg_meta *meta)
 {
@@ -63,6 +64,17 @@ enum fg_error fgTestInit(struct fg_limits *limits,
         goto error;
     }
 
+    // Check if period is negative
+
+    if(period <= 0.0)
+    {
+        meta->error.index   = 1;
+        meta->error.data[0] = period;
+
+        fg_error = FG_BAD_PARAMETER;
+        goto error;
+    }
+
     // Prepare parameter structure
 
     p.delay            = delay;
@@ -72,9 +84,10 @@ enum fg_error fgTestInit(struct fg_limits *limits,
     p.frequency        = 1.0 / period;
     p.amplitude        = amplitude_pp;
     p.type             = type;
-    p.is_window_active = is_window_active;
+    p.window_enabled = false;
     p.initial_ref      = initial_ref;
     p.final_ref        = initial_ref;
+    p.exp_decay        = 0.0;
 
     // Check if total duration is too long
 
@@ -88,27 +101,6 @@ enum fg_error fgTestInit(struct fg_limits *limits,
         goto error;
     }
 
-    // Prepare range scaling if window is active and the number of cycles is 1
-
-    if(p.is_window_active && p.num_cycles == 1)
-    {
-        if(type == FG_TEST_SINE)            // Windowed SINE
-        {
-            window[0] =  0.649519053;            // +3.sqrt(3)/8
-            window[1] = -0.649519053;            // -3.sqrt(3)/8
-        }
-        else                                // Windowed COSINE
-        {
-            window[0] =  1.0 / 8.0;              // +1/8
-            window[1] = -1.0;                    // -1
-        }
-    }
-    else    // Window not active the whole time
-    {
-        window[0] =  1.0;
-        window[1] = -1.0;
-    }
-
     // Calculate amplitude related parameters
 
     fg_error = FG_OK;
@@ -118,7 +110,7 @@ enum fg_error fgTestInit(struct fg_limits *limits,
         case FG_TEST_STEPS:
 
             p.final_ref += p.amplitude;
-            p.amplitude   /= (float)p.num_cycles;
+            p.amplitude /= (float)p.num_cycles;
 
             fgSetMinMax(meta, p.final_ref);
             break;
@@ -136,6 +128,40 @@ enum fg_error fgTestInit(struct fg_limits *limits,
         case FG_TEST_COSINE:
 
             p.amplitude *= 0.5;
+            window[0]    =  1.0;
+            window[1]    = -1.0;
+
+            // Handle the window
+
+            if(window_enabled)
+            {
+                p.window_enabled = true;
+
+                // Prepare exponential decay factor if enabled
+
+                if(exp_decay_enabled)
+                {
+                    p.exp_decay = -5.0 / p.duration;
+                }
+
+                // Adjust range scaling if number of cycles is 1
+                // This does not take into account the exponential decay because
+                // it is too complex to solve analytically for any number of cycles.
+
+                if(p.num_cycles == 1)
+                {
+                    if(type == FG_TEST_SINE)            // Windowed SINE
+                    {
+                        window[0] =  0.649519053;            // +3.sqrt(3)/8
+                        window[1] = -0.649519053;            // -3.sqrt(3)/8
+                    }
+                    else                                // Windowed COSINE
+                    {
+                        window[0] =  1.0 / 8.0;              // +1/8
+                        window[1] = -1.0;                    // -1
+                    }
+                }
+            }
 
             fgSetMinMax(meta, initial_ref + p.amplitude * window[0]);
             fgSetMinMax(meta, initial_ref + p.amplitude * window[1]);
@@ -143,6 +169,7 @@ enum fg_error fgTestInit(struct fg_limits *limits,
 
         default: // Invalid function type requested
 
+            meta->error.index   = 2;
             meta->error.data[0] = (float)type;
 
             fg_error = FG_BAD_PARAMETER;
@@ -154,7 +181,7 @@ enum fg_error fgTestInit(struct fg_limits *limits,
     meta->duration  = p.duration;
     meta->range.end = p.final_ref;;
 
-    fgSetFuncPolarity(meta, is_pol_switch_auto, is_pol_switch_neg);
+    fgSetFuncPolarity(meta, pol_switch_auto, pol_switch_neg);
 
     // Copy valid set of parameters to user's pars structure
 
@@ -174,14 +201,15 @@ enum fg_error fgTestInit(struct fg_limits *limits,
 
 enum fg_gen_status fgTestGen(struct fg_test *pars, const double *time, float *ref)
 {
-    double      radians;
-    float       cos_rads = 0.0;
+    float       radians;
+    float       cos_rads  = 0.0;
+    float       exp_decay = 1.0;
     float       delta_ref;
-    double      func_time;                     // Time within function
+    float       func_time;                     // Time within function
 
     // Both *time and delay must be 64-bit doubles if time is UNIX time
 
-    func_time = *time - pars->delay;
+    func_time = (float)(*time - pars->delay);
 
     // Pre-acceleration coast
 
@@ -233,13 +261,13 @@ enum fg_gen_status fgTestGen(struct fg_test *pars, const double *time, float *re
             case FG_TEST_SINE:
 
                 radians   = (2.0 * 3.1415926535897932) * pars->frequency * func_time;
-                delta_ref = pars->amplitude * sin(radians);
+                delta_ref = pars->amplitude * sinf(radians);
                 break;
 
             case FG_TEST_COSINE:
 
                 radians   = (2.0 * 3.1415926535897932) * pars->frequency * func_time;
-                cos_rads  = cos(radians);
+                cos_rads  = cosf(radians);
                 delta_ref = pars->amplitude * cos_rads;
                 break;
 
@@ -248,17 +276,26 @@ enum fg_gen_status fgTestGen(struct fg_test *pars, const double *time, float *re
                 return(FG_GEN_POST_FUNC);
         }
 
-        // For SINE and COSINE: Apply cosine window if enabled
+        // For SINE and COSINE: Apply cosine window and exp decay if enabled
 
-        if(pars->is_window_active &&
-          (func_time < pars->half_period || pars->duration - func_time < pars->half_period))
+        if(pars->window_enabled)
         {
-            // Calc Cosine window
+            if(pars->exp_decay != 0.0)
+            {
+                // Calc exponential decay of amplitude
 
-           delta_ref *= 0.5 * (1 - (pars->type == FG_TEST_SINE ? cos(radians) : cos_rads));
+                exp_decay = expf(func_time * pars->exp_decay);
+            }
+
+            if(func_time < pars->half_period || pars->duration - func_time < pars->half_period)
+            {
+                // Calc Cosine window
+
+               delta_ref *= 0.5 * (1 - (pars->type == FG_TEST_SINE ? cosf(radians) : cos_rads));
+            }
         }
 
-        *ref = pars->initial_ref + delta_ref;
+        *ref = pars->initial_ref + delta_ref * exp_decay;
 
         return(FG_GEN_DURING_FUNC);
     }

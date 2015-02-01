@@ -1,0 +1,208 @@
+# CCTEST - TEST Function test script
+
+GLOBAL ITER_PERIOD_US   1000
+GLOBAL GROUP            sandbox
+GLOBAL PROJECT          TEST
+GLOBAL RUN_DELAY        1
+GLOBAL STOP_DELAY       1
+
+TEST INITIAL_REF        3.0
+TEST AMPLITUDE_PP       2.0
+TEST NUM_CYCLES         3
+TEST PERIOD             2.0
+TEST WINDOW             DISABLED
+TEST EXP_DECAY          DISABLED
+
+# COSINE
+
+REF FUNCTION            COSINE
+
+# COSINE - NO WINDOW
+
+TEST NUM_CYCLES         1
+GLOBAL FILE             cosine-1-2s
+RUN
+
+TEST NUM_CYCLES         3
+GLOBAL FILE             cosine-3-2s
+RUN
+
+TEST NUM_CYCLES         9
+TEST PERIOD             0.5
+GLOBAL FILE             cosine-9-0.5s
+RUN
+
+# COSINE - WINDOW
+
+TEST WINDOW             ENABLED
+
+TEST NUM_CYCLES         1
+TEST PERIOD             2.0
+GLOBAL FILE             cosine-1-2s-window
+RUN
+
+TEST NUM_CYCLES         3
+GLOBAL FILE             cosine-3-2s-window
+RUN
+
+TEST NUM_CYCLES         9
+TEST PERIOD             0.5
+GLOBAL FILE             cosine-9-0.5s-window
+RUN
+
+# COSINE - WINDOW - EXP DECAY
+
+TEST EXP_DECAY          ENABLED
+
+TEST NUM_CYCLES         1
+TEST PERIOD             2.0
+GLOBAL FILE             cosine-1-2s-window-exp-decay
+RUN
+
+TEST NUM_CYCLES         3
+GLOBAL FILE             cosine-3-2s-window-exp-decay
+RUN
+
+TEST NUM_CYCLES         9
+TEST PERIOD             0.5
+GLOBAL FILE             cosine-9-0.5s-window-exp-decay
+RUN
+
+# COSINE
+
+REF FUNCTION            COSINE
+TEST WINDOW             DISABLED
+TEST EXP_DECAY          DISABLED
+
+# COSINE - NO WINDOW
+
+TEST NUM_CYCLES         1
+TEST PERIOD             2.0
+GLOBAL FILE             cosine-1-2s
+RUN
+
+TEST NUM_CYCLES         3
+GLOBAL FILE             cosine-3-2s
+RUN
+
+TEST NUM_CYCLES         9
+TEST PERIOD             0.5
+GLOBAL FILE             cosine-9-0.5s
+RUN
+
+# COSINE - WINDOW
+
+TEST WINDOW             ENABLED
+
+TEST NUM_CYCLES         1
+TEST PERIOD             2.0
+GLOBAL FILE             cosine-1-2s-window
+RUN
+
+TEST NUM_CYCLES         3
+GLOBAL FILE             cosine-3-2s-window
+RUN
+
+TEST NUM_CYCLES         9
+TEST PERIOD             0.5
+GLOBAL FILE             cosine-9-0.5s-window
+RUN
+
+# COSINE - WINDOW - EXP DECAY
+
+TEST EXP_DECAY          ENABLED
+
+TEST NUM_CYCLES         1
+TEST PERIOD             2.0
+GLOBAL FILE             cosine-1-2s-window-exp-decay
+RUN
+
+TEST NUM_CYCLES         3
+GLOBAL FILE             cosine-3-2s-window-exp-decay
+RUN
+
+TEST NUM_CYCLES         9
+TEST PERIOD             0.5
+GLOBAL FILE             cosine-9-0.5s-window-exp-decay
+RUN
+
+# STEPS
+
+REF FUNCTION            STEPS
+
+# STEPS - POSITIVE
+
+TEST NUM_CYCLES         1
+TEST PERIOD             2.0
+GLOBAL FILE             steps-1-2s
+RUN
+
+TEST NUM_CYCLES         3
+GLOBAL FILE             steps-3-2s
+RUN
+
+TEST NUM_CYCLES         9
+TEST PERIOD             0.5
+GLOBAL FILE             steps-9-0.5s
+RUN
+
+# STEPS - NEGITIVE
+
+TEST AMPLITUDE_PP       -2.0
+
+TEST NUM_CYCLES         1
+TEST PERIOD             2.0
+GLOBAL FILE             steps-1-2s-negative
+RUN
+
+TEST NUM_CYCLES         3
+GLOBAL FILE             steps-3-2s-negative
+RUN
+
+TEST NUM_CYCLES         9
+TEST PERIOD             0.5
+GLOBAL FILE             steps-9-0.5s-negative
+RUN
+
+# STEPS
+
+REF FUNCTION            STEPS
+
+# STEPS - POSITIVE
+
+TEST AMPLITUDE_PP       2.0
+
+TEST NUM_CYCLES         1
+TEST PERIOD             2.0
+GLOBAL FILE             steps-1-2s
+RUN
+
+TEST NUM_CYCLES         3
+GLOBAL FILE             steps-3-2s
+RUN
+
+TEST NUM_CYCLES         9
+TEST PERIOD             0.5
+GLOBAL FILE             steps-9-0.5s
+RUN
+
+# STEPS - NEGITIVE
+
+TEST AMPLITUDE_PP       -2.0
+
+TEST NUM_CYCLES         1
+TEST PERIOD             2.0
+GLOBAL FILE             steps-1-2s-negative
+RUN
+
+TEST NUM_CYCLES         3
+GLOBAL FILE             steps-3-2s-negative
+RUN
+
+TEST NUM_CYCLES         9
+TEST PERIOD             0.5
+GLOBAL FILE             steps-9-0.5s-negative
+RUN
+
+
+# EOF

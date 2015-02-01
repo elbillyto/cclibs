@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     cctest/inc/ccSigs.h                                                         Copyright CERN 2014
+  File:     cctest/inc/ccSigs.h                                                         Copyright CERN 2015
 
   License:  This file is part of cctest.
 
@@ -56,6 +56,7 @@ enum ccsig_idx
     ANA_B_REF_RST,              // Field reference stored in RST history (limited and after back-calculation)
     ANA_B_REF_OPENLOOP,         // Field reference stored in open loop history (after back-calculation)
     ANA_B_REF_DELAYED,          // Field reference delayed
+    ANA_B_MEAS_REG,             // Field measurement used for regulation
 
     ANA_B_MAGNET,               // Field in the magnet
     ANA_B_MEAS,                 // Unfiltered field measurement
@@ -67,6 +68,7 @@ enum ccsig_idx
     ANA_I_REF_RST,              // Current reference stored in RST history (limited and after back-calculation)
     ANA_I_REF_OPENLOOP,         // Current reference stored in open loop history (after back-calculation)
     ANA_I_REF_DELAYED,          // Current reference delayed
+    ANA_I_MEAS_REG,             // Field measurement used for regulation
 
     ANA_I_MAGNET,               // Current in the magnet
     ANA_I_CIRCUIT,              // Current in the circuit
@@ -75,8 +77,6 @@ enum ccsig_idx
     ANA_I_MEAS,                 // Unfiltered measured current
     ANA_I_MEAS_FLTR,            // Filtered measured current
     ANA_I_MEAS_EXTR,            // Extrapolated measured current
-
-    ANA_REG_MEAS,               // Field or current measurement used for regulation
 
     ANA_V_REF,                  // Voltage reference
     ANA_V_REF_SAT,              // Voltage reference after magnet saturation compensation applied
@@ -153,6 +153,7 @@ CCSIGS_EXT struct signals signals[]     // IMPORTANT: This must be in the same o
     { "B_REF_RST",              ANALOG,         "TRAIL_STEP" },
     { "B_REF_OPENLOOP",         ANALOG,         "TRAIL_STEP" },
     { "B_REF_DELAYED",          ANALOG,         "TRAIL_STEP" },
+    { "B_MEAS_REG",             ANALOG,         "TRAIL_STEP" },
 
     { "B_MAGNET",               ANALOG,         "TRAIL_STEP" },
     { "B_MEAS",                 ANALOG,         ""           },
@@ -164,6 +165,7 @@ CCSIGS_EXT struct signals signals[]     // IMPORTANT: This must be in the same o
     { "I_REF_RST",              ANALOG,         "TRAIL_STEP" },
     { "I_REF_OPENLOOP",         ANALOG,         "TRAIL_STEP" },
     { "I_REF_DELAYED",          ANALOG,         "TRAIL_STEP" },
+    { "I_MEAS_REG",             ANALOG,         "TRAIL_STEP" },
 
     { "I_MAGNET",               ANALOG,         "TRAIL_STEP" },
     { "I_CIRCUIT",              ANALOG,         "TRAIL_STEP" },
@@ -172,8 +174,6 @@ CCSIGS_EXT struct signals signals[]     // IMPORTANT: This must be in the same o
     { "I_MEAS",                 ANALOG,         ""           },
     { "I_MEAS_FLTR",            ANALOG,         ""           },
     { "I_MEAS_EXTR",            ANALOG,         ""           },
-
-    { "REG_MEAS",               ANALOG,         "TRAIL_STEP" },
 
     { "V_REF",                  ANALOG,         "TRAIL_STEP" },
     { "V_REF_SAT",              ANALOG,         "TRAIL_STEP" },

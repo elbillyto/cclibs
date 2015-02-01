@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     ccRun.c                                                                     Copyright CERN 2014
+  File:     ccRun.c                                                                     Copyright CERN 2015
 
   License:  This file is part of cctest.
 
@@ -32,6 +32,7 @@
 
 #include "ccCmds.h"
 #include "ccTest.h"
+#include "ccParse.h"
 #include "ccRef.h"
 #include "ccSigs.h"
 #include "ccRun.h"
@@ -342,7 +343,7 @@ static uint32_t ccRunAbort(double iter_time)
 
     if(((meta.duration - iter_time) / conv.iter_period) > 50000)
     {
-        ccTestPrintError("aborting requires more than 50000 iterations : duration = %.1f\n",meta.duration);
+        ccParsPrintError("aborting requires more than 50000 iterations : duration = %.1f\n",meta.duration);
         return(EXIT_FAILURE);
     }
 

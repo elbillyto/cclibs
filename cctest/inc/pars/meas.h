@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     cctest/inc/pars/meas.h                                                      Copyright CERN 2014
+  File:     cctest/inc/pars/meas.h                                                      Copyright CERN 2015
 
   License:  This file is part of cctest.
 

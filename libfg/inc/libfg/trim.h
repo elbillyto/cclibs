@@ -89,8 +89,8 @@ extern "C" {
  * Initialise TRIM function.
  *
  * @param[in]  limits              Pointer to fgc_limits structure (or NULL if no limits checking required).
- * @param[in]  is_pol_switch_auto  True if polarity switch can be changed automatically.
- * @param[in]  is_pol_switch_neg   True if polarity switch is currently in the negative position.
+ * @param[in]  pol_switch_auto     Set true if polarity switch can be changed automatically.
+ * @param[in]  pol_switch_neg      Set true if polarity switch is currently in the negative position.
  * @param[in]  delay               Delay before the start of the function.
  * @param[in]  initial_ref         Initial reference value.
  * @param[in]  final_ref           Final reference value.
@@ -106,8 +106,8 @@ extern "C" {
  * @retval FG_OUT_OF_ACCELERATION_LIMITS if acceleration exceeds limits
  */
 enum fg_error fgTrimInit(struct fg_limits *limits, 
-                         bool   is_pol_switch_auto,
-                         bool   is_pol_switch_neg,
+                         bool   pol_switch_auto,
+                         bool   pol_switch_neg,
                          double delay, 
                          enum   fg_trim_type type,
                          float  initial_ref,
@@ -125,9 +125,9 @@ enum fg_error fgTrimInit(struct fg_limits *limits,
  * @param[in]  time            Pointer to time within the function.
  * @param[out] ref             Pointer to reference value.
  *
- * @retval FG_GEN_BEFORE_FUNC   if time is before the start of the function.
- * @retval FG_GEN_DURING_FUNC   if time is during the function.
- * @retval FG_GEN_AFTER_FUNC    if time is after the end of the function.
+ * @retval FG_GEN_PRE_FUNC     if time is before the start of the function.
+ * @retval FG_GEN_DURING_FUNC  if time is during the function.
+ * @retval FG_GEN_POST_FUNC    if time is after the end of the function.
  */
 enum fg_gen_status fgTrimGen (struct fg_trim *pars, const double *time, float *ref);
 

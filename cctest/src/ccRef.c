@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     ccRef.c                                                                     Copyright CERN 2014
+  File:     ccRef.c                                                                     Copyright CERN 2015
 
   License:  This file is part of cctest.
 
@@ -226,6 +226,7 @@ enum fg_error ccRefInitSTEPS(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         ccpars_test[cyc_sel].num_cycles,
                         ccpars_test[cyc_sel].period,
                         false,                                  // is_window_active not used for STEPS
+                        false,                                  // is_exp_decay_active not used for STEPS
                         &fg_test[cyc_sel],
                         fg_meta));
 }
@@ -243,6 +244,7 @@ enum fg_error ccRefInitSQUARE(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         ccpars_test[cyc_sel].num_cycles,
                         ccpars_test[cyc_sel].period,
                         false,                                  // is_window_active not used for SQUARE
+                        false,                                  // is_exp_decay_active not used for SQUARE
                         &fg_test[cyc_sel],
                         fg_meta));
 }
@@ -260,6 +262,7 @@ enum fg_error ccRefInitSINE(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         ccpars_test[cyc_sel].num_cycles,
                         ccpars_test[cyc_sel].period,
                         ccpars_test[cyc_sel].use_window,
+                        ccpars_test[cyc_sel].use_exp_decay,
                         &fg_test[cyc_sel],
                         fg_meta));
 }
@@ -277,6 +280,7 @@ enum fg_error ccRefInitCOSINE(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         ccpars_test[cyc_sel].num_cycles,
                         ccpars_test[cyc_sel].period,
                         ccpars_test[cyc_sel].use_window,
+                        ccpars_test[cyc_sel].use_exp_decay,
                         &fg_test[cyc_sel],
                         fg_meta));
 }

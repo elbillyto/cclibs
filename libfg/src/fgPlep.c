@@ -1,5 +1,5 @@
 /*!
- * @file  fgPlep.c
+x * @file  fgPlep.c
  * @brief Generate Parabola-Linear-Exponential-Parabola (PLEP) function
  *
  * <h2>Copyright</h2>
@@ -31,8 +31,8 @@
 
 
 enum fg_error fgPlepInit(struct fg_limits *limits, 
-                         bool   is_pol_switch_auto,
-                         bool   is_pol_switch_neg,
+                         bool   pol_switch_auto,
+                         bool   pol_switch_neg,
                          double delay, 
                          float  initial_ref,
                          float  final_ref,
@@ -266,7 +266,7 @@ enum fg_error fgPlepInit(struct fg_limits *limits,
     meta->duration  = p.time[5];
     meta->range.end = final_ref;
 
-    fgSetFuncPolarity(meta, is_pol_switch_auto, is_pol_switch_neg);
+    fgSetFuncPolarity(meta, pol_switch_auto, pol_switch_neg);
 
     // Check limits if supplied
 

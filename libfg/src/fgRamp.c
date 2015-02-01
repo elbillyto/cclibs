@@ -31,8 +31,8 @@
 
 
 enum fg_error fgRampInit(struct fg_limits *limits, 
-                         bool   is_pol_switch_auto,
-                         bool   is_pol_switch_neg,
+                         bool   pol_switch_auto,
+                         bool   pol_switch_neg,
                          double delay, 
                          float  initial_ref,
                          float  final_ref,
@@ -60,7 +60,7 @@ enum fg_error fgRampInit(struct fg_limits *limits,
 
     // Calculate ramp parameters always with zero initial ramp rate
 
-    fgRampCalc(is_pol_switch_auto, is_pol_switch_neg, 
+    fgRampCalc(pol_switch_auto, pol_switch_neg, 
                delay, 0.0, initial_ref, final_ref, acceleration, linear_rate, deceleration, &p, meta);
                          
 
@@ -101,8 +101,8 @@ enum fg_error fgRampInit(struct fg_limits *limits,
 
 
 
-void fgRampCalc(bool   is_pol_switch_auto,
-                bool   is_pol_switch_neg,
+void fgRampCalc(bool   pol_switch_auto,
+                bool   pol_switch_neg,
                 double delay, 
                 float  initial_rate,
                 float  initial_ref,
@@ -188,7 +188,7 @@ void fgRampCalc(bool   is_pol_switch_auto,
 
     meta->range.end = final_ref;
 
-    fgSetFuncPolarity(meta, is_pol_switch_auto, is_pol_switch_neg);
+    fgSetFuncPolarity(meta, pol_switch_auto, pol_switch_neg);
 }
 
 

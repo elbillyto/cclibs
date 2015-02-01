@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     libterm.h                                                                   Copyright CERN 2014
+  File:     libterm.h                                                                   Copyright CERN 2015
 
   License:  This file is part of libterm.
 

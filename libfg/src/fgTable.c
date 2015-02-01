@@ -31,8 +31,8 @@
 
 
 enum fg_error fgTableInit(struct   fg_limits *limits, 
-                          bool     is_pol_switch_auto,
-                          bool     is_pol_switch_neg,
+                          bool     pol_switch_auto,
+                          bool     pol_switch_neg,
                           double   delay, 
                           float    min_time_step,
                           float   *ref,
@@ -98,7 +98,7 @@ enum fg_error fgTableInit(struct   fg_limits *limits,
     meta->duration  = time[i - 1];
     meta->range.end = ref [i - 1];
 
-    fgSetFuncPolarity(meta, is_pol_switch_auto, is_pol_switch_neg);
+    fgSetFuncPolarity(meta, pol_switch_auto, pol_switch_neg);
 
     // Check reference function limits if provided
 
@@ -160,11 +160,11 @@ enum fg_error fgTableInit(struct   fg_limits *limits,
 
 enum fg_gen_status fgTableGen(struct fg_table *pars, const double *time, float *ref)
 {
-    double   func_time;                     // Time within function
+    float   func_time;                     // Time within function
 
     // Both *time and delay must be 64-bit doubles if time is UNIX time
 
-    func_time = *time - pars->delay;
+    func_time = (float)(*time - pars->delay);
 
     // Pre-acceleration coast
 

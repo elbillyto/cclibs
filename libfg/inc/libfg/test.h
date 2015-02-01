@@ -1,5 +1,5 @@
 /*!
- * @file    test.h
+ * @file    libfg/test.h
  * @brief   Generate test functions (STEPS, SQUARE, SINE or COSINE)
  *
  * Four types of test function are supported in the test function family:
@@ -68,7 +68,7 @@ struct fg_test
 {
     double              delay;              //!< Time before start of function.
     enum fg_test_type   type;               //!< Type of test function.
-    bool                is_window_active;   //!< Window control: true to use window for sine & cosine.
+    bool                window_enabled;     //!< Window control: true to use window for sine & cosine.
     uint32_t            num_cycles;         //!< Number of cycles or steps.
     float               duration;           //!< period * number of cycles.
     float               frequency;          //!< 1 / period.
@@ -76,6 +76,7 @@ struct fg_test
     float               initial_ref;        //!< Initial reference.
     float               final_ref;          //!< Final reference after last cycle.
     float               amplitude;          //!< Reference amplitude.
+    float               exp_decay;          //!< Exp decay factor (0 if disabled)
 };
 
 #ifdef __cplusplus
@@ -88,15 +89,16 @@ extern "C" {
  * Initialise TEST function.
  *
  * @param[in]  limits              Pointer to fgc_limits structure (or NULL if no limits checking required).
- * @param[in]  is_pol_switch_auto  True if polarity switch can be changed automatically.
- * @param[in]  is_pol_switch_neg   True if polarity switch is currently in the negative position.
+ * @param[in]  pol_switch_auto  True if polarity switch can be changed automatically.
+ * @param[in]  pol_switch_neg   True if polarity switch is currently in the negative position.
  * @param[in]  delay               Delay before the start of the function.
  * @param[in]  type                Type of test function.
  * @param[in]  initial_ref         Initial reference value.
  * @param[in]  amplitude_pp        Peak-to-peak amplitude.
  * @param[in]  num_cycles          Number of cycles/steps. This is rounded to the nearest integer.
  * @param[in]  period              Period.
- * @param[in]  is_window_active    Window control: true to use window for sine & cosine.
+ * @param[in]  window_enabled      Set true to use window function (for sine & cosine only).
+ * @param[in]  exp_decay_enabled   Set true to use exponential decay when window is enabled.
  * @param[out] pars                Pointer to test function parameters.
  * @param[out] meta                Pointer to diagnostic information. Set to NULL if not required.
  *
@@ -108,15 +110,16 @@ extern "C" {
  * @retval FG_OUT_OF_ACCELERATION_LIMITS if acceleration exceeds limits
  */
 enum fg_error fgTestInit(struct fg_limits *limits, 
-                         bool   is_pol_switch_auto,
-                         bool   is_pol_switch_neg,
+                         bool   pol_switch_auto,
+                         bool   pol_switch_neg,
                          double delay, 
                          enum   fg_test_type type,
                          float  initial_ref,
                          float  amplitude_pp,
                          float  num_cycles,
                          float  period,
-                         bool   is_window_active,
+                         bool   window_enabled,
+                         bool   exp_decay_enabled,
                          struct fg_test *pars, 
                          struct fg_meta *meta);
 
@@ -129,9 +132,9 @@ enum fg_error fgTestInit(struct fg_limits *limits,
  * @param[in]  time             Pointer to current time within the function.
  * @param[out] ref              Pointer to new reference value.
  *
- * @retval FG_GEN_BEFORE_FUNC   if time is before the start of the function.
+ * @retval FG_GEN_PRE_FUNC      if time is before the start of the function.
  * @retval FG_GEN_DURING_FUNC   if time is during the function.
- * @retval FG_GEN_AFTER_FUNC    if time is after the end of the function.
+ * @retval FG_GEN_POST_FUNC     if time is after the end of the function.
  */
 enum fg_gen_status fgTestGen(struct fg_test *pars, const double *time, float *ref);
 

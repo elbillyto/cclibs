@@ -31,8 +31,8 @@
 
 
 enum fg_error fgTrimInit(struct fg_limits *limits, 
-                         bool   is_pol_switch_auto,
-                         bool   is_pol_switch_neg,
+                         bool   pol_switch_auto,
+                         bool   pol_switch_neg,
                          double delay, 
                          enum   fg_trim_type type,
                          float  initial_ref,
@@ -175,7 +175,7 @@ enum fg_error fgTrimInit(struct fg_limits *limits,
     meta->duration  = p.duration = duration;
     meta->range.end = p.final_ref;
 
-    fgSetFuncPolarity(meta, is_pol_switch_auto, is_pol_switch_neg);
+    fgSetFuncPolarity(meta, pol_switch_auto, pol_switch_neg);
 
     // Check limits at the beginning, middle and end if supplied
 

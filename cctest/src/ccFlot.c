@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     ccFlot.c                                                                    Copyright CERN 2014
+  File:     ccFlot.c                                                                    Copyright CERN 2015
 
   License:  This file is part of cctest.
 
@@ -23,6 +23,7 @@
 
 #include "ccCmds.h"
 #include "ccTest.h"
+#include "ccParse.h"
 #include "ccRun.h"
 #include "ccSigs.h"
 #include "ccFlot.h"

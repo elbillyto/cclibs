@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     cctest/inc/ccDebug.h                                                         Copyright CERN 2015
+  File:     cctest/inc/ccParse.h                                                        Copyright CERN 2015
 
   License:  This file is part of cctest.
 
@@ -16,17 +16,30 @@
             You should have received a copy of the GNU Lesser General Public License
             along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-  Purpose:  Header file for ccDebug.c
+  Purpose:  Header file for ccParse.c
 
   Authors:  Quentin.King@cern.ch
 \*---------------------------------------------------------------------------------------------------------*/
 
-#ifndef CCDEBUG_H
-#define CCDEBUG_H
+#ifndef CCPARSE_H
+#define CCPARSE_H
+
+#include <stdint.h>
+
+// Constants
+
+#define CC_ARG_DELIMITER            ", \t\n"
+#define CC_ABBREVIATED_ARG_LEN      20
+#define CC_ALL_CYCLES               0xFFFFFFFE
+#define CC_NO_INDEX                 0xFFFFFFFF
 
 // Function declarations
 
-void     ccDebugPrint           (FILE *f);
+uint32_t ccParseLine            (char *line);
+uint32_t ccParseParName         (uint32_t cmd_idx, char **remaining_line, struct ccpars **par_matched);
+char    *ccParseNextArg         (char **remaining_line);
+char    *ccParseAbbreviateArg   (char *arg);
+uint32_t ccParseNoMoreArgs      (char **remaining_line);
 
 #endif
 // EOF

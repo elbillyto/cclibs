@@ -44,7 +44,7 @@ struct fg_meta * fgResetMeta(struct fg_meta *meta, struct fg_meta *local_meta, d
 
     if(meta != NULL)
     {
-        // Explicitly set floats to zero because on early TI DSPs do not use IEEE758 
+        // Explicitly set floats to zero because early TI DSPs do not use IEEE758
         // floating point format. For example, for the TMS320C32, 0.0 is 0x80000000 
         // while 0x00000000 has the value 1.0.
 
@@ -85,8 +85,8 @@ void fgSetMinMax(struct fg_meta *meta, float ref)
 
 
 void fgSetFuncPolarity(struct fg_meta *meta,
-                       bool   is_pol_switch_auto,
-                       bool   is_pol_switch_neg)
+                       bool   pol_switch_auto,
+                       bool   pol_switch_neg)
 {
     if(meta->range.max > 0.0)
     {
@@ -100,8 +100,8 @@ void fgSetFuncPolarity(struct fg_meta *meta,
 
     // Set limits inversion control based on the switch control and state
 
-    meta->limits_inverted =(is_pol_switch_auto == false && is_pol_switch_neg == true) || 
-                           (is_pol_switch_auto == true  && meta->polarity == FG_FUNC_POL_NEGATIVE);
+    meta->limits_inverted = (pol_switch_auto == false && pol_switch_neg == true) ||
+                            (pol_switch_auto == true  && meta->polarity == FG_FUNC_POL_NEGATIVE);
 }
 
 
@@ -127,7 +127,7 @@ enum fg_error fgCheckRef(struct fg_limits *limits,
 
     if(meta->limits_inverted)
     {
-        // Invert limits - only required for unipolar converters so limits->neg will be zero
+        // Invert limits - only ever required for unipolar converters so limits->neg will be zero
 
         max = -(1.0 - FG_CLIP_LIMIT_FACTOR) * limits->min;
         min = -(1.0 + FG_CLIP_LIMIT_FACTOR) * limits->pos;
@@ -153,7 +153,7 @@ enum fg_error fgCheckRef(struct fg_limits *limits,
     // Check rate of change if limit is positive
 
     if(limits->rate >  0.0 &&
-       fabs(rate)   > (limit =((1.0 + FG_CLIP_LIMIT_FACTOR) * limits->rate)))
+       fabs(rate)   > (limit = ((1.0 + FG_CLIP_LIMIT_FACTOR) * limits->rate)))
     {
         meta->error.data[0] = rate;
         meta->error.data[1] = limit;

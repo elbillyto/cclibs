@@ -10,7 +10,7 @@
  *
  * <h2>Copyright</h2>
  *
- * Copyright CERN 2014. This project is released under the GNU Lesser General
+ * Copyright CERN 2015. This project is released under the GNU Lesser General
  * Public License version 3.
  * 
  * <h2>License</h2>
@@ -87,6 +87,11 @@ struct reg_conv_signal
     struct reg_rst_pars         last_test_rst_pars;     //!< Last initialised test RST parameters for debugging
     struct reg_err              err;                    //!< Regulation error
     struct reg_conv_sim_meas    sim;                    //!< Simulated measurement with noise and tone
+    float                       ref;                    //!< Reference
+    float                       ref_limited;            //!< Reference after limits
+    float                       ref_rst;                //!< Reference after RST back-calculation
+    float                       ref_openloop;           //!< Reference after open loop back-calculation
+    float                       ref_delayed;            //!< Reference delayed by ref_delay_periods
 };
 
 /*!
@@ -130,12 +135,6 @@ struct reg_conv
     float                       reg_period;             //!< Regulation period
     float                       ref_advance;            //!< Time to advance reference function
 
-    float                       meas;                   //!< Field or current regulated measurement
-    float                       ref;                    //!< Field or current reference
-    float                       ref_limited;            //!< Field or current reference after limits
-    float                       ref_rst;                //!< Field or current reference after RST back-calculation
-    float                       ref_openloop;           //!< Field or current reference after open loop back-calculation
-    float                       ref_delayed;            //!< Field or current reference delayed by ref_delay_periods
     float                       track_delay_periods;    //!< Measured track_delay in regulation periods
 
     struct

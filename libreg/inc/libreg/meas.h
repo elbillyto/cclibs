@@ -11,7 +11,7 @@
  *
  * <h2>Copyright</h2>
  *
- * Copyright CERN 2014. This project is released under the GNU Lesser General
+ * Copyright CERN 2015. This project is released under the GNU Lesser General
  * Public License version 3.
  * 
  * <h2>License</h2>
@@ -90,6 +90,7 @@ struct reg_meas_filter
     enum reg_meas_select  reg_select;                            //!< Regulation measurement selector
     float                 delay_iters[REG_MEAS_NUM_SIGNALS];     //!< Delay for each signal in iterations. See also #REG_MEAS_NUM_SIGNALS
     float                 signal[REG_MEAS_NUM_SIGNALS];          //!< Array of measurement with different filtering. See also #REG_MEAS_NUM_SIGNALS
+    float                 reg;                                   //!< Measurement used for regulation (selected by reg_select)
 };
 
 /*!

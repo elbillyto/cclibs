@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     cctest/inc/func/test.h                                                      Copyright CERN 2014
+  File:     cctest/inc/func/test.h                                                      Copyright CERN 2015
 
   License:  This file is part of cctest.
 
@@ -52,6 +52,7 @@ struct ccpars_test
     float                       num_cycles;                     // Number of cycles/steps. This is rounded to the nearest integer.
     float                       period;                         // Period
     enum reg_enabled_disabled   use_window;                     // Window control: true to use window for sine & cosine.
+    enum reg_enabled_disabled   use_exp_decay;                  // Exp decay control: if window is active this can enable an exp decay
 };
 
 CCPARS_TEST_EXT struct ccpars_test ccpars_test[CC_NUM_CYC_SELS]
@@ -62,7 +63,8 @@ CCPARS_TEST_EXT struct ccpars_test ccpars_test[CC_NUM_CYC_SELS]
         2.0,                    // TEST AMPLITUDE_PP
         3.0,                    // TEST NUM_CYCLES
         2.0,                    // TEST PERIOD
-        REG_ENABLED      },     // TEST WINDOW
+        REG_ENABLED,            // TEST WINDOW
+        REG_DISABLED     },     // TEST EXP_DECAY
 }
 #endif
 ;
@@ -77,6 +79,7 @@ CCPARS_TEST_EXT struct ccpars test_pars[]
     { "NUM_CYCLES",   PAR_FLOAT,    1,     NULL,                  { .f = &ccpars_test[0].num_cycles   }, 1, sizeof(struct ccpars_test), 0 },
     { "PERIOD",       PAR_FLOAT,    1,     NULL,                  { .f = &ccpars_test[0].period       }, 1, sizeof(struct ccpars_test), 0 },
     { "WINDOW",       PAR_ENUM,     1,     enum_enabled_disabled, { .u = &ccpars_test[0].use_window   }, 1, sizeof(struct ccpars_test), 0 },
+    { "EXP_DECAY",    PAR_ENUM,     1,     enum_enabled_disabled, { .u = &ccpars_test[0].use_exp_decay}, 1, sizeof(struct ccpars_test), 0 },
     { NULL }
 }
 #endif

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     cctest/inc/ccPars.h                                                         Copyright CERN 2014
+  File:     cctest/inc/ccPars.h                                                         Copyright CERN 2015
 
   License:  This file is part of cctest.
 
@@ -126,6 +126,7 @@ uint32_t ccParsGet                  (char *cmd_name, struct ccpars *par, char **
 char    *ccParsEnumString           (struct ccpars_enum *par_enum, uint32_t value);
 void     ccParsPrint                (FILE *f, char *cmd_name, struct ccpars *par, uint32_t cyc_sel, uint32_t array_idx);
 void     ccParsPrintAll             (FILE *f, char *cmd_name, struct ccpars *par, uint32_t cyc_sel, uint32_t array_idx);
+void     ccParsPrintError           (const char * format, ...);
 
 #endif
 // EOF

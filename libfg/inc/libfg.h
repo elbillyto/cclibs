@@ -103,7 +103,7 @@ struct fg_meta
 
     enum fg_func_pol    polarity;               //!< Function polarity
     bool                limits_inverted;        //!< Function was checked against inverted limits
-    double              delay;                  //!< Delay before the function starts (double needed to if Unix Time is used)
+    double              delay;                  //!< Delay before the function starts (double needed if Unix Time is used)
     float               duration;               //!< Function duration (not including delay)
 
     struct fg_meta_range
@@ -124,7 +124,9 @@ extern "C" {
 /*!
  * Reset all the meta data fields.
  *
- * When a function is initialized, a meta data structure is filled with a summary of the function's
+ * This is a private function, used by the libfg initialisation functions.
+ *
+ * When a function is initialised, a meta data structure is filled with a summary of the function's
  * characteristics, including the delay, duration, min/max and start and end values. Normally, the
  * <em>meta</em> parameter is received from the calling application, but it may be NULL. The libfg
  * Init function passes a pointer to a transient meta structure on the stack in <em>local_meta</em>
@@ -145,6 +147,8 @@ struct fg_meta *fgResetMeta(struct fg_meta *meta, struct fg_meta *local_meta, do
 /*!
  * Set the meta min and max fields
  *
+ * This is a private function, used by the libfg initialisation functions.
+ *
  * @param[in,out] meta      Pointer to fg_meta structure.
  * @param[in]     ref       Value for reference to check against meta min and max.
  */
@@ -153,22 +157,26 @@ void fgSetMinMax(struct fg_meta *meta, float ref);
 
 
 /*!
- * Set the meta min and max fields
+ * Set the function's meta polarity and limits_inverted fields
+ *
+ * This is a private function, used by libfg initialisation functions.
  *
  * @param[in,out] meta            Pointer to fg_meta structure.
- * @param[in]  is_pol_switch_auto True if polarity switch can be changed automatically.
- * @param[in]  is_pol_switch_neg  True if polarity switch is currently in the negative position.
+ * @param[in]  pol_switch_auto True if polarity switch can be changed automatically.
+ * @param[in]  pol_switch_neg  True if polarity switch is currently in the negative position.
  */
 void fgSetFuncPolarity(struct fg_meta *meta,
-                       bool   is_pol_switch_auto,
-                       bool   is_pol_switch_neg);
+                       bool   pol_switch_auto,
+                       bool   pol_switch_neg);
 
 
 
 /*!
  * Check function reference value, rate and acceleration against the supplied limits.
  *
- * When a function is initialized, this is called to check the function value,
+ * This is a private function, used by libfg initialisation functions.
+ *
+ * When a function is initialised, this is called to check the function value,
  * rate and acceleration (in that order) against the supplied limits. The function
  * returns the status of the first limit that is exceeded and the return value
  * indicates the type of error (REF, RATE, ACCELERATION). The meta::error.data array

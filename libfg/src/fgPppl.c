@@ -29,8 +29,8 @@
 #include "libfg/pppl.h"
 
 enum fg_error fgPpplInit(struct   fg_limits *limits, 
-                         bool     is_pol_switch_auto,
-                         bool     is_pol_switch_neg,
+                         bool     pol_switch_auto,
+                         bool     pol_switch_neg,
                          double   delay, 
                          float    initial_ref,
                          float    acceleration1[FG_MAX_PPPLS],
@@ -281,7 +281,7 @@ enum fg_error fgPpplInit(struct   fg_limits *limits,
     meta->duration  = segs_t [num_segs-1];
     meta->range.end = segs_a0[num_segs-1];
 
-    fgSetFuncPolarity(meta, is_pol_switch_auto, is_pol_switch_neg);
+    fgSetFuncPolarity(meta, pol_switch_auto, pol_switch_neg);
 
     // Check the segments against the limits if provided
 

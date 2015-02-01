@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     ccInit.c                                                                    Copyright CERN 2014
+  File:     ccInit.c                                                                    Copyright CERN 2015
 
   License:  This file is part of cctest.
 
@@ -32,6 +32,7 @@
 
 #include "ccCmds.h"
 #include "ccTest.h"
+#include "ccParse.h"
 #include "ccRef.h"
 #include "ccSigs.h"
 #include "ccRun.h"
@@ -121,7 +122,7 @@ uint32_t ccInitFunctions(void)
 
         if(ccpars_global.sim_load == REG_ENABLED)
         {
-            ccTestPrintError("GLOBAL SIM_LOAD must be DISABLED when REVERSE_TIME is ENABLED");
+            ccParsPrintError("GLOBAL SIM_LOAD must be DISABLED when REVERSE_TIME is ENABLED");
             return(EXIT_FAILURE);
         }
 
@@ -129,7 +130,7 @@ uint32_t ccInitFunctions(void)
 
         if(ccrun.num_cycles > 1)
         {
-            ccTestPrintError("only one function can be specified when REVERSE_TIME is ENABLED");
+            ccParsPrintError("only one function can be specified when REVERSE_TIME is ENABLED");
             return(EXIT_FAILURE);
         }
     }
@@ -177,7 +178,7 @@ uint32_t ccInitFunctions(void)
 
             if(ccpars_ref[cyc_sel].function == FG_NONE)
             {
-                ccTestPrintError("REF FUNCTION(%u) must not be NONE", cyc_sel);
+                ccParsPrintError("REF FUNCTION(%u) must not be NONE", cyc_sel);
                 return(EXIT_FAILURE);
             }
 
@@ -187,7 +188,7 @@ uint32_t ccInitFunctions(void)
             {
                 if(ccpars_ref[cyc_sel].reg_mode != REG_CURRENT)
                 {
-                    ccTestPrintError("REF REG_MODE(%u) must CURRENT when GLOBAL ACTUATION is CURRENT", cyc_sel);
+                    ccParsPrintError("REF REG_MODE(%u) must CURRENT when GLOBAL ACTUATION is CURRENT", cyc_sel);
                     return(EXIT_FAILURE);
                 }
             }
@@ -233,10 +234,11 @@ uint32_t ccInitFunctions(void)
 
             if(func->init_func(&ccrun.fg_meta[cyc_sel], cyc_sel) != FG_OK)
             {
-                ccTestPrintError("failed to initialise %s(%u) : %s : error_idx=%u : error_data=%g,%g,%g,%g", 
+                ccParsPrintError("failed to initialise %s(%u) : %s : error_idx=%u : error_data=%g,%g,%g,%g", 
                         ccParsEnumString(enum_function_type, ccpars_ref[cyc_sel].function),
                         cyc_sel,
                         ccParsEnumString(enum_fg_error, ccrun.fg_meta[cyc_sel].fg_error),
+                        ccrun.fg_meta[cyc_sel].error.index,
                         ccrun.fg_meta[cyc_sel].error.data[0],ccrun.fg_meta[cyc_sel].error.data[1],
                         ccrun.fg_meta[cyc_sel].error.data[2],ccrun.fg_meta[cyc_sel].error.data[3]);
                 exit_status = EXIT_FAILURE;
@@ -253,7 +255,7 @@ uint32_t ccInitFunctions(void)
 
     if(exit_status == EXIT_FAILURE)
     {
-        ccTestPrintError("unable to arm one or more functions");
+        ccParsPrintError("unable to arm one or more functions");
         return(EXIT_FAILURE);
     }
 
@@ -261,7 +263,7 @@ uint32_t ccInitFunctions(void)
 
     if((ccrun.is_breg_enabled == true || ccrun.is_ireg_enabled == true) && ccpars_global.sim_load != REG_ENABLED)
     {
-        ccTestPrintError("GLOBAL SIM_LOAD must be ENABLED if REG_MODE is FIELD or CURRENT");
+        ccParsPrintError("GLOBAL SIM_LOAD must be ENABLED if REG_MODE is FIELD or CURRENT");
         return(EXIT_FAILURE);
     }
 
@@ -271,7 +273,7 @@ uint32_t ccInitFunctions(void)
     {
         if(ccpars_ref[ccpars_global.cycle_selector[idx]].function == FG_NONE)
         {
-            ccTestPrintError("cycle %u of %u (selector %u) is not armed", idx, ccrun.num_cycles, ccpars_global.cycle_selector[idx]);
+            ccParsPrintError("cycle %u of %u (selector %u) is not armed", idx, ccrun.num_cycles, ccpars_global.cycle_selector[idx]);
             return(EXIT_FAILURE);
         }
     }
@@ -444,7 +446,7 @@ uint32_t ccInitSimLoad(void)
 
     if(fabs(conv.sim_pc_pars.gain - 1.0) > 0.05)
     {
-        ccTestPrintError("voltage source model gain (%.3f) has an error of more than 5%%", conv.sim_pc_pars.gain);
+        ccParsPrintError("voltage source model gain (%.3f) has an error of more than 5%%", conv.sim_pc_pars.gain);
 
         exit_status = EXIT_FAILURE;
     }
@@ -455,7 +457,7 @@ uint32_t ccInitSimLoad(void)
     {
         if(conv.iter_period > (3.0 * conv.load_pars.tc))
         {
-            ccTestPrintError("REG_MODE FIELD is not permitted for a resistive circuit "
+            ccParsPrintError("REG_MODE FIELD is not permitted for a resistive circuit "
                              "(circuit time constant is less than 1/3 x iteration period)");
 
             exit_status = EXIT_FAILURE;
@@ -463,7 +465,7 @@ uint32_t ccInitSimLoad(void)
 
         if(conv.b.last_op_rst_pars.status == REG_FAULT)
         {
-            ccTestPrintError("failed to initialise operational FIELD RST regulator: %s",
+            ccParsPrintError("failed to initialise operational FIELD RST regulator: %s",
                             ccParsEnumString(enum_reg_jurys_result, conv.b.last_op_rst_pars.jurys_result));
 
             exit_status = EXIT_FAILURE;
@@ -471,7 +473,7 @@ uint32_t ccInitSimLoad(void)
 
         if(ccpars_global.test_cyc_sel > 0 && conv.b.last_test_rst_pars.status == REG_FAULT)
         {
-            ccTestPrintError("failed to initialise test FIELD RST regulator: %s",
+            ccParsPrintError("failed to initialise test FIELD RST regulator: %s",
                             ccParsEnumString(enum_reg_jurys_result, conv.b.last_test_rst_pars.jurys_result));
 
             exit_status = EXIT_FAILURE;
@@ -479,7 +481,7 @@ uint32_t ccInitSimLoad(void)
 
         if(conv.b.last_op_rst_pars.status == REG_WARNING)
         {
-            ccTestPrintError("FIELD RST regulator warning: Modulus Margin (%.2f) is less than %.1f - try reducing AUXPOLE frequencies",
+            ccParsPrintError("FIELD RST regulator warning: Modulus Margin (%.2f) is less than %.1f - try reducing AUXPOLE frequencies",
                              conv.b.last_op_rst_pars.modulus_margin, REG_MM_WARNING_THRESHOLD);
         }
     }
@@ -490,7 +492,7 @@ uint32_t ccInitSimLoad(void)
     {
         if(conv.i.last_op_rst_pars.status == REG_FAULT)
         {
-            ccTestPrintError("failed to initialise operational CURRENT RST regulator: %s",
+            ccParsPrintError("failed to initialise operational CURRENT RST regulator: %s",
                             ccParsEnumString(enum_reg_jurys_result, conv.i.last_op_rst_pars.jurys_result));
 
             exit_status = EXIT_FAILURE;
@@ -498,7 +500,7 @@ uint32_t ccInitSimLoad(void)
 
         if(ccpars_global.test_cyc_sel > 0 && conv.i.last_test_rst_pars.status == REG_FAULT)
         {
-            ccTestPrintError("failed to initialise test CURRENT RST regulator: %s",
+            ccParsPrintError("failed to initialise test CURRENT RST regulator: %s",
                             ccParsEnumString(enum_reg_jurys_result, conv.i.last_test_rst_pars.jurys_result));
 
             exit_status = EXIT_FAILURE;
@@ -506,7 +508,7 @@ uint32_t ccInitSimLoad(void)
 
         if(conv.i.last_op_rst_pars.status == REG_WARNING)
         {
-            ccTestPrintError("CURRENT RST regulator warning: Modulus Margin (%.2f) is less than %.1f - try reducing AUXPOLE frequencies",
+            ccParsPrintError("CURRENT RST regulator warning: Modulus Margin (%.2f) is less than %.1f - try reducing AUXPOLE frequencies",
                              conv.i.last_op_rst_pars.modulus_margin, REG_MM_WARNING_THRESHOLD);
         }
     }

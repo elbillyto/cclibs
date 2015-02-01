@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     ccPars.c                                                                    Copyright CERN 2014
+  File:     ccPars.c                                                                    Copyright CERN 2015
 
   License:  This file is part of cctest.
 
@@ -34,6 +34,8 @@
 
 #include "ccCmds.h"
 #include "ccTest.h"
+#include "ccParse.h"
+#include "ccFile.h"
 #include "ccRef.h"
 #include "ccRun.h"
 
@@ -69,15 +71,15 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
 
     // Prepare array index
 
-    array_idx = (cctest.array_idx == CC_NO_INDEX) ? 0 : cctest.array_idx;
+    array_idx = (ccfile.array_idx == CC_NO_INDEX) ? 0 : ccfile.array_idx;
 
     // Prepare cycle selector range
 
-    if(cctest.cyc_sel == CC_NO_INDEX || par->cyc_sel_step == 0)
+    if(ccfile.cyc_sel == CC_NO_INDEX || par->cyc_sel_step == 0)
     {
         max_pars = par->max_num_elements - array_idx;
     }
-    else if(cctest.cyc_sel == CC_ALL_CYCLES)
+    else if(ccfile.cyc_sel == CC_ALL_CYCLES)
     {
         cyc_sel_from  = 0;
         cyc_sel_to    = CC_MAX_CYC_SEL;
@@ -85,7 +87,7 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
     }
     else // cyc_sel provided
     {
-        cyc_sel_from = cyc_sel_to = cctest.cyc_sel;
+        cyc_sel_from = cyc_sel_to = ccfile.cyc_sel;
 
         if(par->max_num_elements == 1)
         {
@@ -104,11 +106,11 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
 
     // Try to parse the arguments to set the parameter values
 
-    while((arg = ccTestGetArgument(remaining_line)) != NULL)
+    while((arg = ccParseNextArg(remaining_line)) != NULL)
     {
         if(num_pars >= max_pars)
         {
-            ccTestPrintError("too many values for %s %s (%u max)", cmd_name, par->name, max_pars);
+            ccParsPrintError("too many values for %s %s (%u max)", cmd_name, par->name, max_pars);
             return(EXIT_FAILURE);
         }
 
@@ -122,7 +124,7 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
 
             if(*remaining_arg != '\0' || errno != 0 || int_value < 0)
             {
-                ccTestPrintError("invalid integer for %s %s[%u]: '%s'",
+                ccParsPrintError("invalid integer for %s %s[%u]: '%s'",
                         cmd_name, par->name, array_idx, arg);
                 return(EXIT_FAILURE);
             }
@@ -142,7 +144,7 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
 
             if(*remaining_arg != '\0' || errno != 0 || double_value >= FLT_MAX || double_value <= -FLT_MAX)
             {
-                ccTestPrintError("invalid float for %s %s[%u]: '%s'",
+                ccParsPrintError("invalid float for %s %s[%u]: '%s'",
                         cmd_name, par->name, array_idx, arg);
                 return(EXIT_FAILURE);
             }
@@ -160,8 +162,8 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
 
             if(arg_len > 32)
             {
-                ccTestPrintError("invalid string length (%u) for %s %s[%u]: '%s' (32 max)",
-                            arg_len, cmd_name, par->name, array_idx, ccTestAbbreviatedArg(arg));
+                ccParsPrintError("invalid string length (%u) for %s %s[%u]: '%s' (32 max)",
+                            arg_len, cmd_name, par->name, array_idx, ccParseAbbreviateArg(arg));
                 return(EXIT_FAILURE);
             }
 
@@ -201,7 +203,7 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
                     }
                     else // else second match so report error
                     {
-                        ccTestPrintError("ambiguous enum for %s %s[%u]: '%s'",
+                        ccParsPrintError("ambiguous enum for %s %s[%u]: '%s'",
                                          cmd_name, par->name, array_idx, arg);
                         return(EXIT_FAILURE);
                     }
@@ -210,8 +212,8 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
 
             if(par_enum_matched == NULL)
             {
-                ccTestPrintError("unknown enum for %s %s[%u]: '%s'",
-                                 cmd_name, par->name, array_idx, ccTestAbbreviatedArg(arg));
+                ccParsPrintError("unknown enum for %s %s[%u]: '%s'",
+                                 cmd_name, par->name, array_idx, ccParseAbbreviateArg(arg));
                 return(EXIT_FAILURE);
             }
 
@@ -257,7 +259,7 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
             // If array has shrunk then zero the trailing values and update num_elements
 
             if(array_idx < num_elements &&
-              (cctest.array_idx == CC_NO_INDEX || array_idx > (cctest.array_idx + 1)))
+              (ccfile.array_idx == CC_NO_INDEX || array_idx > (ccfile.array_idx + 1)))
             {
                 value_p.c = par->value_p.c + cyc_sel * par->cyc_sel_step;
 
@@ -442,6 +444,47 @@ void ccParsPrintAll(FILE *f, char *cmd_name, struct ccpars *par, uint32_t cyc_se
             ccParsPrint(f, cmd_name, par++, cyc_sel, array_idx);
         }
     }
+}
+/*---------------------------------------------------------------------------------------------------------*/
+void ccParsPrintError(const char * format, ...)
+/*---------------------------------------------------------------------------------------------------------*\
+  This function print an error message to stdout. It adds an appropriate prefix according to the source of
+  the input line being processed.
+\*---------------------------------------------------------------------------------------------------------*/
+{
+    va_list     argv;
+
+    // If processing command line arguments
+
+    if(ccfile.input_idx == 0)
+    {
+        printf("Error at argument %u - ",ccfile.input[0].line_number);
+    }
+    else
+    {
+        // If reading from stdin
+
+        if(ccfile.input[ccfile.input_idx].line_number == 0)
+        {
+            printf("Error - ");
+        }
+        else // else reading from file
+        {
+            printf("Error at %s:%u - ",
+                    ccfile.input[ccfile.input_idx].path,
+                    ccfile.input[ccfile.input_idx].line_number);
+        }
+    }
+
+    // Print error message
+
+    va_start(argv, format);
+    vprintf(format, argv);
+    va_end(argv);
+
+    // Write newline
+
+    putchar('\n');
 }
 
 // EOF
