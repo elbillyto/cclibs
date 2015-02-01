@@ -13,59 +13,59 @@ TEST PERIOD             2.0
 TEST WINDOW             DISABLED
 TEST EXP_DECAY          DISABLED
 
-# COSINE
+# SINE
 
-REF FUNCTION            COSINE
+REF FUNCTION            SINE
 
-# COSINE - NO WINDOW
+# SINE - NO WINDOW
 
 TEST NUM_CYCLES         1
-GLOBAL FILE             cosine-1-2s
+GLOBAL FILE             sine-1-2s
 RUN
 
 TEST NUM_CYCLES         3
-GLOBAL FILE             cosine-3-2s
+GLOBAL FILE             sine-3-2s
 RUN
 
 TEST NUM_CYCLES         9
 TEST PERIOD             0.5
-GLOBAL FILE             cosine-9-0.5s
+GLOBAL FILE             sine-9-0.5s
 RUN
 
-# COSINE - WINDOW
+# SINE - WINDOW
 
 TEST WINDOW             ENABLED
 
 TEST NUM_CYCLES         1
 TEST PERIOD             2.0
-GLOBAL FILE             cosine-1-2s-window
+GLOBAL FILE             sine-1-2s-window
 RUN
 
 TEST NUM_CYCLES         3
-GLOBAL FILE             cosine-3-2s-window
+GLOBAL FILE             sine-3-2s-window
 RUN
 
 TEST NUM_CYCLES         9
 TEST PERIOD             0.5
-GLOBAL FILE             cosine-9-0.5s-window
+GLOBAL FILE             sine-9-0.5s-window
 RUN
 
-# COSINE - WINDOW - EXP DECAY
+# SINE - WINDOW - EXP DECAY
 
 TEST EXP_DECAY          ENABLED
 
 TEST NUM_CYCLES         1
 TEST PERIOD             2.0
-GLOBAL FILE             cosine-1-2s-window-exp-decay
+GLOBAL FILE             sine-1-2s-window-exp-decay
 RUN
 
 TEST NUM_CYCLES         3
-GLOBAL FILE             cosine-3-2s-window-exp-decay
+GLOBAL FILE             sine-3-2s-window-exp-decay
 RUN
 
 TEST NUM_CYCLES         9
 TEST PERIOD             0.5
-GLOBAL FILE             cosine-9-0.5s-window-exp-decay
+GLOBAL FILE             sine-9-0.5s-window-exp-decay
 RUN
 
 # COSINE
@@ -126,42 +126,42 @@ TEST PERIOD             0.5
 GLOBAL FILE             cosine-9-0.5s-window-exp-decay
 RUN
 
-# STEPS
+# SQUARE
 
-REF FUNCTION            STEPS
+REF FUNCTION            SQUARE
 
-# STEPS - POSITIVE
+# SQUARE - POSITIVE
 
 TEST NUM_CYCLES         1
 TEST PERIOD             2.0
-GLOBAL FILE             steps-1-2s
+GLOBAL FILE             square-1-2s
 RUN
 
 TEST NUM_CYCLES         3
-GLOBAL FILE             steps-3-2s
+GLOBAL FILE             square-3-2s
 RUN
 
 TEST NUM_CYCLES         9
 TEST PERIOD             0.5
-GLOBAL FILE             steps-9-0.5s
+GLOBAL FILE             square-9-0.5s
 RUN
 
-# STEPS - NEGITIVE
+# SQUARE - NEGITIVE
 
 TEST AMPLITUDE_PP       -2.0
 
 TEST NUM_CYCLES         1
 TEST PERIOD             2.0
-GLOBAL FILE             steps-1-2s-negative
+GLOBAL FILE             square-1-2s-negative
 RUN
 
 TEST NUM_CYCLES         3
-GLOBAL FILE             steps-3-2s-negative
+GLOBAL FILE             square-3-2s-negative
 RUN
 
 TEST NUM_CYCLES         9
 TEST PERIOD             0.5
-GLOBAL FILE             steps-9-0.5s-negative
+GLOBAL FILE             square-9-0.5s-negative
 RUN
 
 # STEPS
