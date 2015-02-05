@@ -1,3 +1,4 @@
+#! /bin/bash
 # Remove old versions for flot
 
 rm -rf flot flot-downsample flot-selection
