@@ -74,7 +74,7 @@ struct ccrun_vars
     struct ccrun_invalid_meas
     {
         int                         random_threshold;                   // Threshold for random() for an invalid measurement
-        uint32_t                    flag;                               // Invalid measurement flag for logging
+        bool                        flag;                               // Invalid measurement flag for logging
     } invalid_meas;
 
     struct ccrun_prefunc

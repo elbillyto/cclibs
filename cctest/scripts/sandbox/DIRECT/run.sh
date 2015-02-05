@@ -6,7 +6,7 @@ source ../../run_header.sh
 
 # Direct tests
 
-$cctest "global csv_format $csv_format" "read direct.cct"
+$cctest "global csv_output $csv_output" "global debug_output $debug_output" "read direct.cct"
 
 >&2 echo $0 complete
 

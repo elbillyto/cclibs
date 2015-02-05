@@ -2,11 +2,16 @@
 # Script used in all run.sh scripts
 #
 if [ $# -eq 0 ]; then
-  csv_format=NONE
+  csv_output=DISABLED
+  debug_output=DISABLED
 elif [ $# -eq 1 ]; then
-  csv_format=$1
+  csv_output=$1
+  debug_output=DISABLED
+elif [ $# -eq 2 ]; then
+  csv_output=$1
+  debug_output=$2
 else
-  echo usage: run.sh [CSV_FORMAT]
+  echo usage: run.sh [CSV_OUTPUT [DEBUG_OUTPUT]] 
   exit -1
 fi
 

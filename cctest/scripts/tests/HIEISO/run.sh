@@ -6,7 +6,7 @@ source ../../run_header.sh
 
 # GPS tests
 
-$cctest "global csv_format $csv_format" "read iso.cct"
+$cctest "global csv_output $csv_output" "global debug_output $debug_output" "read iso.cct"
 
 >&2 echo $0 complete
 

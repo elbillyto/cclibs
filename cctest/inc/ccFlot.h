@@ -38,10 +38,6 @@
 
 #define FLOT_PATH               "../.."
 
-// Globals
-
-CCFLOT_EXT uint32_t flot_index;      // Index into flot buffers
-
 // Function declarations
 
 void     ccFlot              (FILE *f, char *filename);

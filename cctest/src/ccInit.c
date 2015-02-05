@@ -34,7 +34,7 @@
 #include "ccTest.h"
 #include "ccParse.h"
 #include "ccRef.h"
-#include "ccSigs.h"
+#include "ccLog.h"
 #include "ccRun.h"
 
 /*---------------------------------------------------------------------------------------------------------*/

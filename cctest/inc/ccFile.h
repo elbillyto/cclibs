@@ -24,6 +24,8 @@
 #ifndef CCFILE_H
 #define CCFILE_H
 
+#include "ccLog.h"
+
 // GLOBALS should be defined in the source file where global variables should be defined
 
 #ifdef GLOBALS
@@ -54,6 +56,9 @@ struct ccfile
     struct ccinput          input        [CC_INPUT_FILE_NEST_LIMIT];
     char                    base_path    [CC_PATH_LEN];
     char                    cwd_file_path[CC_PATH_LEN];
+    char                    csv_filename [CC_PATH_LEN];
+    char                    html_filename[CC_PATH_LEN];
+    char                    ccd_filename [CC_PATH_LEN];
     FILE                   *csv_file;
 };
 
@@ -61,10 +66,13 @@ CCFILE_EXT struct ccfile ccfile;
 
 // Function declarations
 
-uint32_t ccTestReadAllFiles     (void);
-uint32_t ccTestMakePath         (char *path);
-void     ccTestRecoverPath      (void);
-void     ccTestGetBasePath      (char *argv0);
+uint32_t ccFileReadAll          (void);
+uint32_t ccFileMakePath         (char *path);
+void     ccFileRecoverPath      (void);
+void     ccFileGetBasePath      (char *argv0);
+FILE   * ccFileOpenResultsFile  (char *file_type, char *filename, char *file_path);
+void     ccFileWriteCsvNames    (struct cclog *log);
+void     ccFileWriteCsvValues   (double iter_time);
 
 #endif
 // EOF

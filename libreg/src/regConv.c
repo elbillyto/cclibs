@@ -930,7 +930,6 @@ static void regConvModeSetNoneOrVoltageRT(struct reg_conv *conv, enum reg_mode r
 
     // Clear field and current regulation variables
 
-    conv->track_delay_periods = 0.0;
     conv->flags.ref_clip      = 0;
     conv->flags.ref_rate      = 0;
 
@@ -1007,6 +1006,7 @@ static void regConvResetRegSignalRT(struct reg_conv_signal *reg_signal)
     reg_signal->ref_rst                  = 0.0;
     reg_signal->ref_openloop             = 0.0;
     reg_signal->ref_delayed              = 0.0;
+    reg_signal->track_delay_periods      = 0.0;
 }
 
 
@@ -1340,7 +1340,7 @@ static void regConvSignalRegulateRT(struct reg_conv *conv, enum reg_mode reg_mod
                     conv->flags.ref_clip = reg_signal->lim_ref.flags.clip;
                     conv->flags.ref_rate = reg_signal->lim_ref.flags.rate;
 
-                    conv->track_delay_periods = regRstTrackDelayRT(&conv->reg_signal->rst_vars);
+                    reg_signal->track_delay_periods = regRstTrackDelayRT(&conv->reg_signal->rst_vars);
 
                     // Back calculate new current reference to keep RST histories balanced
 

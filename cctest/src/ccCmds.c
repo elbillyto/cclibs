@@ -35,7 +35,7 @@
 #include "ccTest.h"
 #include "ccParse.h"
 #include "ccFile.h"
-#include "ccSigs.h"
+#include "ccLog.h"
 #include "ccFlot.h"
 #include "ccInit.h"
 #include "ccRun.h"
@@ -232,7 +232,7 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char **remaining_line)
 
         // Try to recover and display saved working directory
 
-        ccTestRecoverPath();
+        ccFileRecoverPath();
         ccCmdsPwd(0, remaining_line);
         printf(CC_PROMPT);
     }
@@ -242,7 +242,7 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char **remaining_line)
 
         if(strcmp(arg, "*") == 0)
         {
-            return(ccTestReadAllFiles());
+            return(ccFileReadAll());
         }
 
         // Try to open named file
@@ -416,39 +416,33 @@ uint32_t ccCmdsRun(uint32_t cmd_idx, char **remaining_line)
         return(EXIT_FAILURE);
     }
 
-    // Open CSV output file
+    // Enable signals that are to be logged
+
+    ccLogInit();
+
+    // Set filename
 
     filename = strcmp(ccpars_global.file, "*") != 0 ? ccpars_global.file : ccfile.input[ccfile.input_idx].path;
 
-    if(ccpars_global.csv_format != CC_NONE)
+    // Open CSV output file if required
+
+    if(ccpars_global.csv_output == REG_ENABLED)
     {
-        char     csv_path[CC_PATH_LEN];
-        char     csv_filename[CC_PATH_LEN];
-
-        snprintf(csv_path, CC_PATH_LEN, "%s/results/csv/%s/%s",
-                 ccfile.base_path,
-                 ccpars_global.group,
-                 ccpars_global.project);
-
-        if(ccTestMakePath(csv_path) == EXIT_FAILURE)
+        if((ccfile.csv_file = ccFileOpenResultsFile("csv", filename, ccfile.csv_filename)) == NULL)
         {
             return(EXIT_FAILURE);
         }
 
-        snprintf(csv_filename, CC_PATH_LEN, "%s/%s.csv", csv_path, filename);
+        // Write CSV header line
 
-        ccfile.csv_file = fopen(csv_filename, "w");
+        fputs("TIME",ccfile.csv_file);
 
-        if(ccfile.csv_file == NULL)
-        {
-             ccParsPrintError("opening file '%s' : %s (%d)", csv_filename, strerror(errno), errno);
-             return(EXIT_FAILURE);
-        }
+        ccFileWriteCsvNames(&breg_log);
+        ccFileWriteCsvNames(&ireg_log);
+        ccFileWriteCsvNames(&meas_log);
+
+        fputc('\n',ccfile.csv_file);
     }
-
-    // Enable signals that are to be logged
-
-    ccSigsInit();
 
     // Run the test
 
@@ -482,95 +476,67 @@ uint32_t ccCmdsRun(uint32_t cmd_idx, char **remaining_line)
 
     // Close CSV output file
 
-    if(ccpars_global.csv_format != CC_NONE)
+    if(ccpars_global.csv_output == REG_ENABLED)
     {
-        fclose(ccfile.csv_file);
+        if(fclose(ccfile.csv_file) != 0)
+        {
+            ccParsPrintError("closing file '%s' : %s (%d)", ccfile.csv_filename, strerror(errno), errno);
+            return(EXIT_FAILURE);
+        }
     }
 
-    // Write FLOT data if required
+    // Write HTML log file if required
 
-    if(ccpars_global.flot_output == REG_ENABLED)
+    if(ccpars_global.html_output == REG_ENABLED)
     {
-        FILE    *flot_file;
-        char     flot_path[CC_PATH_LEN];
-        char     flot_filename[CC_PATH_LEN];
+        FILE    *html_file;
 
-        snprintf(flot_path, CC_PATH_LEN, "%s/results/webplots/%s/%s",
-                 ccfile.base_path,
-                 ccpars_global.group,
-                 ccpars_global.project);
-
-        if(ccTestMakePath(flot_path) == EXIT_FAILURE)
+        if((html_file = ccFileOpenResultsFile("html", filename, ccfile.html_filename)) == NULL)
         {
             return(EXIT_FAILURE);
         }
 
-        snprintf(flot_filename, CC_PATH_LEN, "%s/%s.html", flot_path, filename);
+        ccFlot(html_file, filename);
 
-        flot_file = fopen(flot_filename, "w");
-
-        if(flot_file == NULL)
-        {
-             ccParsPrintError("opening file '%s' : %s (%d)", flot_filename, strerror(errno), errno);
-             return(EXIT_FAILURE);
-        }
-
-        ccFlot(flot_file, filename);
-
-        fclose(flot_file);
+        fclose(html_file);
     }
 
     // Write Debug file if required
 
     if(ccpars_global.debug_output == REG_ENABLED)
     {
-        FILE    *debug_file;
-        char     debug_path[CC_PATH_LEN];
-        char     debug_filename[CC_PATH_LEN];
-        struct cccmds *cmd;
+        FILE            *ccd_file;
+        struct cccmds   *cmd;
 
-        snprintf(debug_path, CC_PATH_LEN, "%s/results/debug/%s/%s",
-                 ccfile.base_path,
-                 ccpars_global.group,
-                 ccpars_global.project);
-
-        if(ccTestMakePath(debug_path) == EXIT_FAILURE)
+        if((ccd_file = ccFileOpenResultsFile("ccd", filename, ccfile.ccd_filename)) == NULL)
         {
             return(EXIT_FAILURE);
         }
 
-        snprintf(debug_filename, CC_PATH_LEN, "%s/%s.ccd", debug_path, filename);
-
-        debug_file = fopen(debug_filename, "w");
-
-        if(debug_file == NULL)
-        {
-             ccParsPrintError("opening file '%s' : %s (%d)", debug_filename, strerror(errno), errno);
-             return(EXIT_FAILURE);
-        }
-
         // Print debug data to debug file
 
-        ccDebugPrint(debug_file);
+        ccDebugPrint(ccd_file);
 
         // Print parameters to debug file
 
         for(cmd = cmds ; cmd->name != NULL ; cmd++)
         {
-            fputc('\n', debug_file);
+            fputc('\n', ccd_file);
 
             if(cmd->is_enabled == true)
             {
-                ccParsPrintAll(debug_file, cmd->name, cmd->pars, CC_ALL_CYCLES, CC_NO_INDEX);
+                ccParsPrintAll(ccd_file, cmd->name, cmd->pars, CC_ALL_CYCLES, CC_NO_INDEX);
             }
         }
 
-        fclose(debug_file);
+        fclose(ccd_file);
     }
 
-    // Report bad values that were sent to ccSigsStore()
+    // Report number of bad values logged - this can happen if the simulation parameters go crazy
 
-    return(ccSigsReportBadValues());
+    return(ccLogReportBadValues(&breg_log) |
+           ccLogReportBadValues(&ireg_log) |
+           ccLogReportBadValues(&meas_log));
 }
 /*---------------------------------------------------------------------------------------------------------*/
 uint32_t ccCmdsPar(uint32_t cmd_idx, char **remaining_line)

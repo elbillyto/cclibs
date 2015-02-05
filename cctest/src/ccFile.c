@@ -49,7 +49,7 @@
 #endif
 
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccTestReadAllFiles(void)
+uint32_t ccFileReadAll(void)
 /*---------------------------------------------------------------------------------------------------------*\
   This function read the current working directory and the try to read each file in it.
 \*---------------------------------------------------------------------------------------------------------*/
@@ -109,7 +109,7 @@ uint32_t ccTestReadAllFiles(void)
     return(EXIT_SUCCESS);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccTestMakePath(char *path)
+uint32_t ccFileMakePath(char *path)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will use mkdir -p to create a path if it doesn't exist
 \*---------------------------------------------------------------------------------------------------------*/
@@ -146,7 +146,7 @@ uint32_t ccTestMakePath(char *path)
     return(EXIT_SUCCESS);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-void ccTestRecoverPath(void)
+void ccFileRecoverPath(void)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will try to recover the initial path where it is written by the CD command.
 \*---------------------------------------------------------------------------------------------------------*/
@@ -175,7 +175,7 @@ void ccTestRecoverPath(void)
     fclose(f);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-void ccTestGetBasePath(char *argv0)
+void ccFileGetBasePath(char *argv0)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will try to get the absolute path to the cctest project directory
 \*---------------------------------------------------------------------------------------------------------*/
@@ -207,5 +207,110 @@ void ccTestGetBasePath(char *argv0)
     }
 #endif
 }
+/*---------------------------------------------------------------------------------------------------------*/
+FILE * ccFileOpenResultsFile(char *file_type, char *filename, char *file_path)
+/*---------------------------------------------------------------------------------------------------------*\
+  This function will try to open a CSV, HTML or CCD (CC Debug) file for output
+\*---------------------------------------------------------------------------------------------------------*/
+{
+    FILE *   fp;
+    char     path[CC_PATH_LEN];
+
+    snprintf(path, CC_PATH_LEN, "%s/results/%s/%s/%s",
+             ccfile.base_path,
+             file_type,
+             ccpars_global.group,
+             ccpars_global.project);
+
+    if(ccFileMakePath(path) == EXIT_FAILURE)
+    {
+        return(NULL);
+    }
+
+    snprintf(file_path, CC_PATH_LEN, "%s/%s.%s", path, filename, file_type);
+
+    fp = fopen(file_path, "w");
+
+    if(fp == NULL)
+    {
+         ccParsPrintError("opening file '%s' : %s (%d)", file_path, strerror(errno), errno);
+         return(NULL);
+    }
+
+    return(fp);
+}
+/*---------------------------------------------------------------------------------------------------------*/
+void ccFileWriteCsvNames(struct cclog *log)
+/*---------------------------------------------------------------------------------------------------------*\
+  This function will write the names for all enabled signals in the log
+\*---------------------------------------------------------------------------------------------------------*/
+{
+    uint32_t sig_idx;
+
+    for(sig_idx = 0 ; sig_idx < log->num_ana_signals ; sig_idx++)
+    {
+        if(log->ana_sigs[sig_idx].is_enabled)
+        {
+            fprintf(ccfile.csv_file,",%s", log->ana_sigs[sig_idx].name);
+        }
+    }
+
+    for(sig_idx = 0 ; sig_idx < log->num_dig_signals ; sig_idx++)
+    {
+        if(log->dig_sigs[sig_idx].is_enabled)
+        {
+            fprintf(ccfile.csv_file,",%s", log->dig_sigs[sig_idx].name);
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------------------------------------*/
+static void ccFileWriteCsvValueForOneLog(struct cclog *log)
+/*---------------------------------------------------------------------------------------------------------*\
+  This function will write the values for all enabled signals in the log
+\*---------------------------------------------------------------------------------------------------------*/
+{
+    uint32_t sig_idx;
+
+    for(sig_idx = 0 ; sig_idx < log->num_ana_signals ; sig_idx++)
+    {
+        if(log->ana_sigs[sig_idx].is_enabled)
+        {
+            fprintf(ccfile.csv_file,",%.7E",log->ana_sigs[sig_idx].value);
+        }
+    }
+
+    for(sig_idx = 0 ; sig_idx < log->num_dig_signals ; sig_idx++)
+    {
+        if(log->dig_sigs[sig_idx].is_enabled)
+        {
+            fprintf(ccfile.csv_file,",%u",(uint32_t)log->dig_sigs[sig_idx].value);
+        }
+    }
+}
+
+
+
+/*---------------------------------------------------------------------------------------------------------*/
+void ccFileWriteCsvValues(double iter_time)
+/*---------------------------------------------------------------------------------------------------------*\
+  This function will write one line of CSV values if CSV_OUTPUT is ENABLED.
+\*---------------------------------------------------------------------------------------------------------*/
+{
+    if(ccpars_global.csv_output == REG_ENABLED)
+    {
+        // Print the iteration time first with microsecond resolution
+
+        fprintf(ccfile.csv_file,"%.6f",iter_time);
+
+        // Print enabled analogue and digital signal values
+
+        ccFileWriteCsvValueForOneLog(&breg_log);
+        ccFileWriteCsvValueForOneLog(&ireg_log);
+        ccFileWriteCsvValueForOneLog(&meas_log);
+
+         fputc('\n',ccfile.csv_file);
+     }
+ }
 
 // EOF

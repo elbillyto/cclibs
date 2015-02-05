@@ -32,9 +32,10 @@
 
 #include "ccCmds.h"
 #include "ccTest.h"
+#include "ccFile.h"
 #include "ccParse.h"
 #include "ccRef.h"
-#include "ccSigs.h"
+#include "ccLog.h"
 #include "ccRun.h"
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -198,8 +199,6 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
 
         ccrun.cycle[ccrun.cycle_idx].ref_advance = conv.ref_advance;
         ccrun.cycle[ccrun.cycle_idx].start_time  = iter_time;
-
-        ccSigsStoreCursor(CSR_FUNC,enum_function_type[ccrun.cycle_idx].string);
 
         // Reset pre-function index for when this new function ends
 
@@ -512,8 +511,6 @@ void ccRunSimulation(void)
 
                 regConvModeSetRT(&conv, REG_NONE);
 
-                ccSigsStoreCursor(CSR_FUNC,"TRIP!");
-
                 puts("Trip");
 
                 // Cancel any subsequent functions
@@ -535,9 +532,27 @@ void ccRunSimulation(void)
             break;
         }
 
-        // Store and print to CSV file the enabled signals
+        // Store field regulation signals in log at regulation rate
 
-        ccSigsStore(iter_time);
+        if(ccrun.is_breg_enabled && conv.b.iteration_counter == 0)
+        {
+            ccLogStoreReg(&breg_log, iter_time);
+        }
+
+        // Store current regulation signals in log at regulation rate
+
+        if(ccrun.is_ireg_enabled && conv.i.iteration_counter == 0)
+        {
+            ccLogStoreReg(&ireg_log, iter_time);
+        }
+
+        // Store measurement rate signals in log every iteration
+
+        ccLogStoreMeas(iter_time);
+
+        // Write all enabled log signals to CSV file (if CSW output is enabled)
+
+        ccFileWriteCsvValues(iter_time);
 
         // Calculate next iteration time
 
@@ -616,7 +631,8 @@ void ccRunFuncGen(void)
 
         // Store and print to CSV file the enabled signals
 
-        ccSigsStore(iter_time);
+        ccLogStoreMeas(iter_time);
+        ccFileWriteCsvValues(iter_time);
 
         // Calculate next iteration time
 
@@ -659,7 +675,8 @@ void ccRunFuncGenReverseTime(void)
 
         // Store and print enabled signals
 
-        ccSigsStore(iter_time);
+        ccLogStoreMeas(iter_time);
+        ccFileWriteCsvValues(iter_time);
     }
 }
 // EOF

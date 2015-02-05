@@ -116,6 +116,27 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
 
         arg_len = strlen(arg);
 
+        // If only argument is '?' then print parameter value and options for enums
+
+        if(num_pars == 0 && arg_len == 1 && *arg == '?' && *remaining_line == NULL)
+        {
+            ccParsPrint(stdout, cmd_name, par, ccfile.cyc_sel, ccfile.array_idx);
+
+            if(par->type == PAR_ENUM)
+            {
+                for(par_enum = par->ccpars_enum, par_enum_matched = NULL ; par_enum->string != NULL ; par_enum++)
+                {
+                    printf("%s ",par_enum->string);
+                }
+
+                putchar('\n');
+            }
+
+            return(EXIT_SUCCESS);
+        }
+
+        // Converter the parameter from ASCII according to the type of parameter
+
         switch(par->type)
         {
         case PAR_UNSIGNED:

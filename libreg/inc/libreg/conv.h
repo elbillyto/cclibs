@@ -92,6 +92,7 @@ struct reg_conv_signal
     float                       ref_rst;                //!< Reference after RST back-calculation
     float                       ref_openloop;           //!< Reference after open loop back-calculation
     float                       ref_delayed;            //!< Reference delayed by ref_delay_periods
+    float                       track_delay_periods;    //!< Measured track_delay in regulation periods
 };
 
 /*!
@@ -134,8 +135,6 @@ struct reg_conv
     struct reg_lim_ref         *lim_ref;                //!< Pointer to the currently active reference limit (b, i or v)
     float                       reg_period;             //!< Regulation period
     float                       ref_advance;            //!< Time to advance reference function
-
-    float                       track_delay_periods;    //!< Measured track_delay in regulation periods
 
     struct
     {

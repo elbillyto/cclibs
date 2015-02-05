@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------------------*\
-  File:     ref.c                                                                        Copyright CERN 2014
+  File:     ref.c                                                                        Copyright CERN 2015
 
   License:  This file is part of libcc.
 

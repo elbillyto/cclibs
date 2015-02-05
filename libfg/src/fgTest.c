@@ -77,17 +77,17 @@ enum fg_error fgTestInit(struct fg_limits *limits,
 
     // Prepare parameter structure
 
-    p.delay            = delay;
-    p.num_cycles       = (uint32_t)(num_cycles + 0.4999);
-    p.duration         = (float)p.num_cycles * period;
-    p.half_period      = 0.5 * period;
-    p.frequency        = 1.0 / period;
-    p.amplitude        = amplitude_pp;
-    p.type             = type;
+    p.delay          = delay;
+    p.num_cycles     = (uint32_t)(num_cycles + 0.4999);
+    p.duration       = (float)p.num_cycles * period;
+    p.half_period    = 0.5 * period;
+    p.frequency      = 1.0 / period;
+    p.amplitude      = amplitude_pp;
+    p.type           = type;
     p.window_enabled = false;
-    p.initial_ref      = initial_ref;
-    p.final_ref        = initial_ref;
-    p.exp_decay        = 0.0;
+    p.initial_ref    = initial_ref;
+    p.final_ref      = initial_ref;
+    p.exp_decay      = 0.0;
 
     // Check if total duration is too long
 

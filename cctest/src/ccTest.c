@@ -36,7 +36,7 @@
 #include "ccInit.h"
 #include "ccRun.h"
 #include "ccRef.h"
-#include "ccSigs.h"
+#include "ccLog.h"
 #include "ccFlot.h"
 
 // Default commands to run on start-up
@@ -61,7 +61,7 @@ int main(int argc, char **argv)
 
     // Get path to cctest project root
 
-    ccTestGetBasePath(argv[0]);
+    ccFileGetBasePath(argv[0]);
 
     // Initialise parameter num_elements arrays
 

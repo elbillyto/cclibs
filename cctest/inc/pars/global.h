@@ -50,28 +50,6 @@ CCPARS_EXT struct ccpars_enum enum_reg_err_rate[]
 #endif
 ;
 
-// Output format enum
-
-enum cc_csv_format
-{
-    CC_NONE,
-    CC_STANDARD,
-    CC_FGCSPY,
-    CC_LVDV,
-};
-
-CCPARS_GLOBAL_EXT struct ccpars_enum enum_csv_format[]
-#ifdef GLOBALS
-= {
-    { CC_NONE,         "NONE"     },
-    { CC_STANDARD,     "STANDARD" },
-    { CC_FGCSPY,       "FGCSPY"   },
-    { CC_LVDV,         "LVDV"     },
-    { 0,               NULL       },
-}
-#endif
-;
-
 // Global parameters structure
 
 struct ccpars_global
@@ -80,7 +58,7 @@ struct ccpars_global
     float                       stop_delay;                 // Time after end of last ref function
     uint32_t                    iter_period_us;             // Global iteration period (us)
     float                       abort_time;                 // Time to abort the ref function (limits are required)
-    uint32_t                    flot_points_max;            // Maximum number of allowed Flot points
+    uint32_t                    log_length;                 // Log length in samples
     enum reg_enabled_disabled   reverse_time;               // Reverse time flag (tests ref function with decreasing time)
     uint32_t                    cycle_selector[MAX_CYCLES]; // Cycle selectors
     uint32_t                    test_cyc_sel;               // Cycle selector on which to use test RST parameters
@@ -90,9 +68,9 @@ struct ccpars_global
     enum reg_enabled_disabled   fg_limits;                  // Enable limits for function generator initialisation
     enum reg_enabled_disabled   sim_load;                   // Enable load simulation
     enum reg_enabled_disabled   stop_on_error;              // Enable stop on error - this will stop reading the file
-    enum cc_csv_format          csv_format;                 // CSV output data format
-    enum reg_enabled_disabled   flot_output;                // FLOT webplot output control (ENABLED or DISABLED)
-    enum reg_enabled_disabled   debug_output;               // Debug output control (ENABLED or DISABLED)
+    enum reg_enabled_disabled   csv_output;                 // CSV  format output control (ENABLED or DISABLED)
+    enum reg_enabled_disabled   html_output;                // HTML format output control (ENABLED or DISABLED)
+    enum reg_enabled_disabled   debug_output;               // Debug (ccd) format output control (ENABLED or DISABLED)
     char *                      group;                      // Test group name (e.g. sandbox or tests)
     char *                      project;                    // Project name (e.g. SPS_MPS)
     char *                      file;                       // Results filename root (exclude .csv or .html)
@@ -105,7 +83,7 @@ CCPARS_GLOBAL_EXT struct ccpars_global ccpars_global
        1.0                    ,   // GLOBAL STOP_DELAY
        1000                   ,   // GLOBAL ITER_PERIOD_US
        0.0                    ,   // GLOBAL ABORT_TIME
-       100000                 ,   // GLOBAL FLOT_POINTS_MAX
+       100000                 ,   // GLOBAL LOG_LENGTH
        REG_DISABLED           ,   // GLOBAL REVERSE_TIME
        { 0 }                  ,   // GLOBAL CYCLE_SELECTOR
        0                      ,   // GLOBAL TEST_CYC_SEL
@@ -115,9 +93,9 @@ CCPARS_GLOBAL_EXT struct ccpars_global ccpars_global
        REG_DISABLED           ,   // GLOBAL FG_LIMITS
        REG_DISABLED           ,   // GLOBAL SIM_LOAD
        REG_ENABLED            ,   // GLOBAL STOP_ON_ERROR
-       CC_NONE                ,   // GLOBAL CSV_FORMAT
-       REG_ENABLED            ,   // GLOBAL FLOT_OUTPUT
-       REG_ENABLED            ,   // GLOBAL DEBUG_OUTPUT
+       REG_DISABLED           ,   // GLOBAL CSV_FORMAT
+       REG_ENABLED            ,   // GLOBAL HTML_OUTPUT
+       REG_DISABLED           ,   // GLOBAL DEBUG_OUTPUT
 }
 #endif
 ;
@@ -130,7 +108,7 @@ enum global_pars_index_enum
     GLOBAL_STOP_DELAY        ,
     GLOBAL_ITER_PERIOD_US    ,
     GLOBAL_ABORT_TIME        ,
-    GLOBAL_FLOT_POINTS_MAX   ,
+    GLOBAL_LOG_LENGTH        ,
     GLOBAL_REVERSE_TIME      ,
     GLOBAL_CYCLE_SELECTOR    ,
     GLOBAL_TEST_CYC_SEL      ,
@@ -140,8 +118,8 @@ enum global_pars_index_enum
     GLOBAL_FG_LIMITS         ,
     GLOBAL_SIM_LOAD          ,
     GLOBAL_STOP_ON_ERROR     ,
-    GLOBAL_CSV_FORMAT        ,
-    GLOBAL_FLOT_OUTPUT       ,
+    GLOBAL_CSV_OUTPUT        ,
+    GLOBAL_HTML_OUTPUT       ,
     GLOBAL_DEBUG_OUTPUT      ,
     GLOBAL_GROUP             ,
     GLOBAL_PROJECT           ,
@@ -155,7 +133,7 @@ CCPARS_GLOBAL_EXT struct ccpars global_pars[]
     { "STOP_DELAY",      PAR_FLOAT,    1,          NULL,                  { .f = &ccpars_global.stop_delay       }, 1, 0, 0                 },
     { "ITER_PERIOD_US",  PAR_UNSIGNED, 1,          NULL,                  { .u = &ccpars_global.iter_period_us   }, 1, 0, 0                 },
     { "ABORT_TIME",      PAR_FLOAT,    1,          NULL,                  { .f = &ccpars_global.abort_time       }, 1, 0, 0                 },
-    { "FLOT_POINTS_MAX", PAR_UNSIGNED, 1,          NULL,                  { .u = &ccpars_global.flot_points_max  }, 1, 0, 0                 },
+    { "LOG_LENGTH",      PAR_UNSIGNED, 1,          NULL,                  { .u = &ccpars_global.log_length       }, 1, 0, 0                 },
     { "REVERSE_TIME",    PAR_ENUM,     1,          enum_enabled_disabled, { .u = &ccpars_global.reverse_time     }, 1, 0, 0                 },
     { "CYCLE_SELECTOR",  PAR_UNSIGNED, MAX_CYCLES, NULL,                  { .u =  ccpars_global.cycle_selector   }, 1, 0, 0                 },
     { "TEST_CYC_SEL",    PAR_UNSIGNED, 1,          NULL,                  { .u = &ccpars_global.test_cyc_sel     }, 1, 0, 0                 },
@@ -165,8 +143,8 @@ CCPARS_GLOBAL_EXT struct ccpars global_pars[]
     { "FG_LIMITS",       PAR_ENUM,     1,          enum_enabled_disabled, { .u = &ccpars_global.fg_limits        }, 1, 0, 0                 },
     { "SIM_LOAD",        PAR_ENUM,     1,          enum_enabled_disabled, { .u = &ccpars_global.sim_load         }, 1, 0, 0                 },
     { "STOP_ON_ERROR",   PAR_ENUM,     1,          enum_enabled_disabled, { .u = &ccpars_global.stop_on_error    }, 1, 0, 0                 },
-    { "CSV_FORMAT",      PAR_ENUM,     1,          enum_csv_format,       { .u = &ccpars_global.csv_format       }, 1, 0, 0                 },
-    { "FLOT_OUTPUT",     PAR_ENUM,     1,          enum_enabled_disabled, { .u = &ccpars_global.flot_output      }, 1, 0, 0                 },
+    { "CSV_OUTPUT",      PAR_ENUM,     1,          enum_enabled_disabled, { .u = &ccpars_global.csv_output       }, 1, 0, 0                 },
+    { "HTML_OUTPUT",     PAR_ENUM,     1,          enum_enabled_disabled, { .u = &ccpars_global.html_output      }, 1, 0, 0                 },
     { "DEBUG_OUTPUT",    PAR_ENUM,     1,          enum_enabled_disabled, { .u = &ccpars_global.debug_output     }, 1, 0, 0                 },
     { "GROUP",           PAR_STRING,   1,          NULL,                  { .s = &ccpars_global.group            }, 1, 0, 0                 },
     { "PROJECT",         PAR_STRING,   1,          NULL,                  { .s = &ccpars_global.project          }, 1, 0, 0                 },
