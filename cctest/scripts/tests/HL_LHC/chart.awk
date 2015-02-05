@@ -152,13 +152,13 @@ function Chart(testname, inputfile, csvfile)
 
     FS = " "
 
-    outputfile = "../../../results/webplots/tests/HL_LHC/" testname "-" signal ".html"
+    outputfile = "../../../results/html/tests/HL_LHC/" testname "-" signal ".html"
 
     print "Generating: " outputfile
 
     for(c = 2 ; c <= max_cols ; c++)
 	{
-        inputfile = "../../../results/webplots/tests/HL_LHC/" testname "-" circuit[c] ".html"
+        inputfile = "../../../results/html/tests/HL_LHC/" testname "-" circuit[c] ".html"
 
         first_f = (c == 2)
 

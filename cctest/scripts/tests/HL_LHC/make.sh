@@ -26,7 +26,7 @@ sleep 1
 echo -n "1..."
 sleep 1
 
-$cctest "global csv_format $csv_format" "read squeeze.cct"
+# $cctest "global csv_output $csv_output" "global debug_output $debug_output" "read squeeze.cct"
 
 awk -f chart.awk I_REF_RST     input/*.csv
 awk -f chart.awk V_REF_LIMITED input/*.csv
