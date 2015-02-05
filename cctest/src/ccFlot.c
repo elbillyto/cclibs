@@ -187,7 +187,7 @@ static uint32_t ccFlotAnalog(FILE *f, struct cclog *log, uint32_t period_iters)
             uint32_t  iteration_idx;
             float     time_offset = ana_sig->time_offset;
             float    *buf = ana_sig->buf;
-            float     last_value;
+            float     last_value = 0.0;
 
             buf_idx = (log->last_sample_index - (log->num_samples - 1) + ccpars_global.log_length) % ccpars_global.log_length;
 
