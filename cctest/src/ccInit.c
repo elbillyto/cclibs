@@ -301,7 +301,8 @@ uint32_t ccInitSimLoad(void)
   parameters are valid and initialises the simulation.
 \*---------------------------------------------------------------------------------------------------------*/
 {
-    uint32_t exit_status = EXIT_SUCCESS;
+    size_t      buf_len;
+    uint32_t    exit_status = EXIT_SUCCESS;
     static struct reg_meas_signal invalid_meas = { 0.0, false };
 
     // Enabled of commands whose parameters should be included in debug output
@@ -328,114 +329,116 @@ uint32_t ccInitSimLoad(void)
 
     // Prepare measurement FIR buffers
 
-    regMeasFilterInitBuffer(&conv.b.meas, calloc((ccpars_meas.b_fir_lengths[0] + ccpars_meas.b_fir_lengths[1] +
-                                                  ccpars_breg.period_iters[ccpars_load.select]),sizeof(int32_t)));
+    buf_len = ccpars_meas.b_fir_lengths[0] + ccpars_meas.b_fir_lengths[1] + ccpars_breg.period_iters[ccpars_load.select];
+
+    regMeasFilterInitBuffer(&conv.b.meas, calloc(buf_len,sizeof(int32_t)), buf_len);
 
     // Initialise current measurement filter
 
-    regMeasFilterInitBuffer(&conv.i.meas, calloc((ccpars_meas.i_fir_lengths[0] + ccpars_meas.i_fir_lengths[1] +
-                                                  ccpars_ireg.period_iters[ccpars_load.select]),sizeof(int32_t)));
+    buf_len = ccpars_meas.i_fir_lengths[0] + ccpars_meas.i_fir_lengths[1] + ccpars_ireg.period_iters[ccpars_load.select];
+
+    regMeasFilterInitBuffer(&conv.i.meas, calloc(buf_len,sizeof(int32_t)), buf_len);
 
     // Initialise libreg parameter pointers to cctest variables
 
-    regConvParInitPointer(&conv,reg_err_rate                  ,&ccpars_global.reg_err_rate);
+    regConvParInitPointer(&conv,   reg_err_rate                  ,&ccpars_global.reg_err_rate);
 
-    regConvParInitPointer(&conv,breg_period_iters             ,&ccpars_breg.period_iters);
-    regConvParInitPointer(&conv,breg_pure_delay_periods       ,&ccpars_breg.pure_delay_periods);
-    regConvParInitPointer(&conv,breg_track_delay_periods      ,&ccpars_breg.track_delay_periods);
-    regConvParInitPointer(&conv,breg_auxpole1_hz              ,&ccpars_breg.auxpole1_hz);
-    regConvParInitPointer(&conv,breg_auxpoles2_hz             ,&ccpars_breg.auxpoles2_hz);
-    regConvParInitPointer(&conv,breg_auxpoles2_z              ,&ccpars_breg.auxpoles2_z);
-    regConvParInitPointer(&conv,breg_auxpole4_hz              ,&ccpars_breg.auxpole4_hz);
-    regConvParInitPointer(&conv,breg_auxpole5_hz              ,&ccpars_breg.auxpole5_hz);
-    regConvParInitPointer(&conv,breg_r                        ,&ccpars_breg.rst.r);
-    regConvParInitPointer(&conv,breg_s                        ,&ccpars_breg.rst.s);
-    regConvParInitPointer(&conv,breg_t                        ,&ccpars_breg.rst.t);
+    regConvParInitPointer(&conv,   breg_period_iters             ,&ccpars_breg.period_iters);
+    regConvParInitPointer(&conv,   breg_pure_delay_periods       ,&ccpars_breg.pure_delay_periods);
+    regConvParInitPointer(&conv,   breg_track_delay_periods      ,&ccpars_breg.track_delay_periods);
+    regConvParInitPointer(&conv,   breg_auxpole1_hz              ,&ccpars_breg.auxpole1_hz);
+    regConvParInitPointer(&conv,   breg_auxpoles2_hz             ,&ccpars_breg.auxpoles2_hz);
+    regConvParInitPointer(&conv,   breg_auxpoles2_z              ,&ccpars_breg.auxpoles2_z);
+    regConvParInitPointer(&conv,   breg_auxpole4_hz              ,&ccpars_breg.auxpole4_hz);
+    regConvParInitPointer(&conv,   breg_auxpole5_hz              ,&ccpars_breg.auxpole5_hz);
+    regConvParInitPointer(&conv,   breg_r                        ,&ccpars_breg.rst.r);
+    regConvParInitPointer(&conv,   breg_s                        ,&ccpars_breg.rst.s);
+    regConvParInitPointer(&conv,   breg_t                        ,&ccpars_breg.rst.t);
 
-    regConvParInitPointer(&conv,ireg_period_iters             ,&ccpars_ireg.period_iters);
-    regConvParInitPointer(&conv,ireg_pure_delay_periods       ,&ccpars_ireg.pure_delay_periods);
-    regConvParInitPointer(&conv,ireg_track_delay_periods      ,&ccpars_ireg.track_delay_periods);
-    regConvParInitPointer(&conv,ireg_auxpole1_hz              ,&ccpars_ireg.auxpole1_hz);
-    regConvParInitPointer(&conv,ireg_auxpoles2_hz             ,&ccpars_ireg.auxpoles2_hz);
-    regConvParInitPointer(&conv,ireg_auxpoles2_z              ,&ccpars_ireg.auxpoles2_z);
-    regConvParInitPointer(&conv,ireg_auxpole4_hz              ,&ccpars_ireg.auxpole4_hz);
-    regConvParInitPointer(&conv,ireg_auxpole5_hz              ,&ccpars_ireg.auxpole5_hz);
-    regConvParInitPointer(&conv,ireg_r                        ,&ccpars_ireg.rst.r);
-    regConvParInitPointer(&conv,ireg_s                        ,&ccpars_ireg.rst.s);
-    regConvParInitPointer(&conv,ireg_t                        ,&ccpars_ireg.rst.t);
+    regConvParInitPointer(&conv,   ireg_period_iters             ,&ccpars_ireg.period_iters);
+    regConvParInitPointer(&conv,   ireg_pure_delay_periods       ,&ccpars_ireg.pure_delay_periods);
+    regConvParInitPointer(&conv,   ireg_track_delay_periods      ,&ccpars_ireg.track_delay_periods);
+    regConvParInitPointer(&conv,   ireg_auxpole1_hz              ,&ccpars_ireg.auxpole1_hz);
+    regConvParInitPointer(&conv,   ireg_auxpoles2_hz             ,&ccpars_ireg.auxpoles2_hz);
+    regConvParInitPointer(&conv,   ireg_auxpoles2_z              ,&ccpars_ireg.auxpoles2_z);
+    regConvParInitPointer(&conv,   ireg_auxpole4_hz              ,&ccpars_ireg.auxpole4_hz);
+    regConvParInitPointer(&conv,   ireg_auxpole5_hz              ,&ccpars_ireg.auxpole5_hz);
+    regConvParInitPointer(&conv,   ireg_r                        ,&ccpars_ireg.rst.r);
+    regConvParInitPointer(&conv,   ireg_s                        ,&ccpars_ireg.rst.s);
+    regConvParInitPointer(&conv,   ireg_t                        ,&ccpars_ireg.rst.t);
 
-    regConvParInitPointer(&conv,limits_b_pos                  ,&ccpars_limits.b_pos);
-    regConvParInitPointer(&conv,limits_b_min                  ,&ccpars_limits.b_min);
-    regConvParInitPointer(&conv,limits_b_neg                  ,&ccpars_limits.b_neg);
-    regConvParInitPointer(&conv,limits_b_rate                 ,&ccpars_limits.b_rate);
-    regConvParInitPointer(&conv,limits_b_acceleration         ,&ccpars_limits.b_acceleration);
-    regConvParInitPointer(&conv,limits_b_closeloop            ,&ccpars_limits.b_closeloop);
-    regConvParInitPointer(&conv,limits_b_low                  ,&ccpars_limits.b_low);
-    regConvParInitPointer(&conv,limits_b_zero                 ,&ccpars_limits.b_zero);
-    regConvParInitPointer(&conv,limits_b_err_warning          ,&ccpars_limits.b_err_warning);
-    regConvParInitPointer(&conv,limits_b_err_fault            ,&ccpars_limits.b_err_fault);
+    regConvParInitPointer(&conv,   limits_b_pos                  ,&ccpars_limits.b_pos);
+    regConvParInitPointer(&conv,   limits_b_min                  ,&ccpars_limits.b_min);
+    regConvParInitPointer(&conv,   limits_b_neg                  ,&ccpars_limits.b_neg);
+    regConvParInitPointer(&conv,   limits_b_rate                 ,&ccpars_limits.b_rate);
+    regConvParInitPointer(&conv,   limits_b_acceleration         ,&ccpars_limits.b_acceleration);
+    regConvParInitPointer(&conv,   limits_b_closeloop            ,&ccpars_limits.b_closeloop);
+    regConvParInitPointer(&conv,   limits_b_low                  ,&ccpars_limits.b_low);
+    regConvParInitPointer(&conv,   limits_b_zero                 ,&ccpars_limits.b_zero);
+    regConvParInitPointer(&conv,   limits_b_err_warning          ,&ccpars_limits.b_err_warning);
+    regConvParInitPointer(&conv,   limits_b_err_fault            ,&ccpars_limits.b_err_fault);
 
-    regConvParInitPointer(&conv,limits_i_pos                  ,&ccpars_limits.i_pos);
-    regConvParInitPointer(&conv,limits_i_min                  ,&ccpars_limits.i_min);
-    regConvParInitPointer(&conv,limits_i_neg                  ,&ccpars_limits.i_neg);
-    regConvParInitPointer(&conv,limits_i_rate                 ,&ccpars_limits.i_rate);
-    regConvParInitPointer(&conv,limits_i_acceleration         ,&ccpars_limits.i_acceleration);
-    regConvParInitPointer(&conv,limits_i_closeloop            ,&ccpars_limits.i_closeloop);
-    regConvParInitPointer(&conv,limits_i_low                  ,&ccpars_limits.i_low);
-    regConvParInitPointer(&conv,limits_i_zero                 ,&ccpars_limits.i_zero);
-    regConvParInitPointer(&conv,limits_i_err_warning          ,&ccpars_limits.i_err_warning);
-    regConvParInitPointer(&conv,limits_i_err_fault            ,&ccpars_limits.i_err_fault);
+    regConvParInitPointer(&conv,   limits_i_pos                  ,&ccpars_limits.i_pos);
+    regConvParInitPointer(&conv,   limits_i_min                  ,&ccpars_limits.i_min);
+    regConvParInitPointer(&conv,   limits_i_neg                  ,&ccpars_limits.i_neg);
+    regConvParInitPointer(&conv,   limits_i_rate                 ,&ccpars_limits.i_rate);
+    regConvParInitPointer(&conv,   limits_i_acceleration         ,&ccpars_limits.i_acceleration);
+    regConvParInitPointer(&conv,   limits_i_closeloop            ,&ccpars_limits.i_closeloop);
+    regConvParInitPointer(&conv,   limits_i_low                  ,&ccpars_limits.i_low);
+    regConvParInitPointer(&conv,   limits_i_zero                 ,&ccpars_limits.i_zero);
+    regConvParInitPointer(&conv,   limits_i_err_warning          ,&ccpars_limits.i_err_warning);
+    regConvParInitPointer(&conv,   limits_i_err_fault            ,&ccpars_limits.i_err_fault);
 
-    regConvParInitPointer(&conv,limits_i_rms_tc               ,&ccpars_limits.i_rms_tc);
-    regConvParInitPointer(&conv,limits_i_rms_warning          ,&ccpars_limits.i_rms_warning);
-    regConvParInitPointer(&conv,limits_i_rms_fault            ,&ccpars_limits.i_rms_fault);
-    regConvParInitPointer(&conv,limits_i_rms_load_tc          ,&ccpars_limits.i_rms_load_tc);
-    regConvParInitPointer(&conv,limits_i_rms_load_warning     ,&ccpars_limits.i_rms_load_warning);
-    regConvParInitPointer(&conv,limits_i_rms_load_fault       ,&ccpars_limits.i_rms_load_fault);
+    regConvParInitPointer(&conv,   limits_i_rms_tc               ,&ccpars_limits.i_rms_tc);
+    regConvParInitPointer(&conv,   limits_i_rms_warning          ,&ccpars_limits.i_rms_warning);
+    regConvParInitPointer(&conv,   limits_i_rms_fault            ,&ccpars_limits.i_rms_fault);
+    regConvParInitPointer(&conv,   limits_i_rms_load_tc          ,&ccpars_limits.i_rms_load_tc);
+    regConvParInitPointer(&conv,   limits_i_rms_load_warning     ,&ccpars_limits.i_rms_load_warning);
+    regConvParInitPointer(&conv,   limits_i_rms_load_fault       ,&ccpars_limits.i_rms_load_fault);
 
-    regConvParInitPointer(&conv,limits_i_quadrants41          ,&ccpars_limits.i_quadrants41);
-    regConvParInitPointer(&conv,limits_v_pos                  ,&ccpars_limits.v_pos);
-    regConvParInitPointer(&conv,limits_v_neg                  ,&ccpars_limits.v_neg);
-    regConvParInitPointer(&conv,limits_v_rate                 ,&ccpars_limits.v_rate);
-    regConvParInitPointer(&conv,limits_v_acceleration         ,&ccpars_limits.v_acceleration);
-    regConvParInitPointer(&conv,limits_v_err_warning          ,&ccpars_limits.v_err_warning);
-    regConvParInitPointer(&conv,limits_v_err_fault            ,&ccpars_limits.v_err_fault);
-    regConvParInitPointer(&conv,limits_v_quadrants41          ,&ccpars_limits.v_quadrants41);
-    regConvParInitPointer(&conv,limits_invert                 ,&ccpars_limits.invert);
+    regConvParInitPointer(&conv,   limits_i_quadrants41          ,&ccpars_limits.i_quadrants41);
+    regConvParInitPointer(&conv,   limits_v_pos                  ,&ccpars_limits.v_pos);
+    regConvParInitPointer(&conv,   limits_v_neg                  ,&ccpars_limits.v_neg);
+    regConvParInitPointer(&conv,   limits_v_rate                 ,&ccpars_limits.v_rate);
+    regConvParInitPointer(&conv,   limits_v_acceleration         ,&ccpars_limits.v_acceleration);
+    regConvParInitPointer(&conv,   limits_v_err_warning          ,&ccpars_limits.v_err_warning);
+    regConvParInitPointer(&conv,   limits_v_err_fault            ,&ccpars_limits.v_err_fault);
+    regConvParInitPointer(&conv,   limits_v_quadrants41          ,&ccpars_limits.v_quadrants41);
+    regConvParInitPointer(&conv,   limits_invert                 ,&ccpars_limits.invert);
 
-    regConvParInitPointer(&conv,load_ohms_ser                 ,&ccpars_load.ohms_ser);
-    regConvParInitPointer(&conv,load_ohms_par                 ,&ccpars_load.ohms_par);
-    regConvParInitPointer(&conv,load_ohms_mag                 ,&ccpars_load.ohms_mag);
-    regConvParInitPointer(&conv,load_henrys                   ,&ccpars_load.henrys);
-    regConvParInitPointer(&conv,load_henrys_sat               ,&ccpars_load.henrys_sat);
-    regConvParInitPointer(&conv,load_i_sat_start              ,&ccpars_load.i_sat_start);
-    regConvParInitPointer(&conv,load_i_sat_end                ,&ccpars_load.i_sat_end);
-    regConvParInitPointer(&conv,load_gauss_per_amp            ,&ccpars_load.gauss_per_amp);
-    regConvParInitPointer(&conv,load_select                   ,&ccpars_load.select);
-    regConvParInitPointer(&conv,load_test_select              ,&ccpars_load.test_select);
-    regConvParInitPointer(&conv,load_sim_tc_error             ,&ccpars_load.sim_tc_error);
+    regConvParInitPointer(&conv,   load_ohms_ser                 ,&ccpars_load.ohms_ser);
+    regConvParInitPointer(&conv,   load_ohms_par                 ,&ccpars_load.ohms_par);
+    regConvParInitPointer(&conv,   load_ohms_mag                 ,&ccpars_load.ohms_mag);
+    regConvParInitPointer(&conv,   load_henrys                   ,&ccpars_load.henrys);
+    regConvParInitPointer(&conv,   load_henrys_sat               ,&ccpars_load.henrys_sat);
+    regConvParInitPointer(&conv,   load_i_sat_start              ,&ccpars_load.i_sat_start);
+    regConvParInitPointer(&conv,   load_i_sat_end                ,&ccpars_load.i_sat_end);
+    regConvParInitPointer(&conv,   load_gauss_per_amp            ,&ccpars_load.gauss_per_amp);
+    regConvParInitPointer(&conv,   load_select                   ,&ccpars_load.select);
+    regConvParInitPointer(&conv,   load_test_select              ,&ccpars_load.test_select);
+    regConvParInitPointer(&conv,   load_sim_tc_error             ,&ccpars_load.sim_tc_error);
 
-    regConvParInitPointer(&conv,meas_b_reg_select             ,&ccpars_meas.b_reg_select);
-    regConvParInitPointer(&conv,meas_i_reg_select             ,&ccpars_meas.i_reg_select);
-    regConvParInitPointer(&conv,meas_b_delay_iters            ,&ccpars_meas.b_delay_iters);
-    regConvParInitPointer(&conv,meas_i_delay_iters            ,&ccpars_meas.i_delay_iters);
-    regConvParInitPointer(&conv,meas_v_delay_iters            ,&ccpars_meas.v_delay_iters);
-    regConvParInitPointer(&conv,meas_b_fir_lengths            ,&ccpars_meas.b_fir_lengths);
-    regConvParInitPointer(&conv,meas_i_fir_lengths            ,&ccpars_meas.i_fir_lengths);
-    regConvParInitPointer(&conv,meas_b_sim_noise_pp           ,&ccpars_meas.b_sim_noise_pp);
-    regConvParInitPointer(&conv,meas_i_sim_noise_pp           ,&ccpars_meas.i_sim_noise_pp);
-    regConvParInitPointer(&conv,meas_v_sim_noise_pp           ,&ccpars_meas.v_sim_noise_pp);
-    regConvParInitPointer(&conv,meas_tone_half_period_iters   ,&ccpars_meas.tone_half_period_iters);
-    regConvParInitPointer(&conv,meas_b_sim_tone_amp           ,&ccpars_meas.b_sim_tone_amp);
-    regConvParInitPointer(&conv,meas_i_sim_tone_amp           ,&ccpars_meas.i_sim_tone_amp);
+    regConvParInitPointer(&conv,   meas_b_reg_select             ,&ccpars_meas.b_reg_select);
+    regConvParInitPointer(&conv,   meas_i_reg_select             ,&ccpars_meas.i_reg_select);
+    regConvParInitPointer(&conv,   meas_b_delay_iters            ,&ccpars_meas.b_delay_iters);
+    regConvParInitPointer(&conv,   meas_i_delay_iters            ,&ccpars_meas.i_delay_iters);
+    regConvParInitPointer(&conv,   meas_v_delay_iters            ,&ccpars_meas.v_delay_iters);
+    regConvParInitPointer(&conv,   meas_b_fir_lengths            ,&ccpars_meas.b_fir_lengths);
+    regConvParInitPointer(&conv,   meas_i_fir_lengths            ,&ccpars_meas.i_fir_lengths);
+    regConvParInitPointer(&conv,   meas_b_sim_noise_pp           ,&ccpars_meas.b_sim_noise_pp);
+    regConvParInitPointer(&conv,   meas_i_sim_noise_pp           ,&ccpars_meas.i_sim_noise_pp);
+    regConvParInitPointer(&conv,   meas_v_sim_noise_pp           ,&ccpars_meas.v_sim_noise_pp);
+    regConvParInitPointer(&conv,   meas_tone_half_period_iters   ,&ccpars_meas.tone_half_period_iters);
+    regConvParInitPointer(&conv,   meas_b_sim_tone_amp           ,&ccpars_meas.b_sim_tone_amp);
+    regConvParInitPointer(&conv,   meas_i_sim_tone_amp           ,&ccpars_meas.i_sim_tone_amp);
 
-    regConvParInitPointer(&conv,pc_actuation                  ,&ccpars_pc.actuation);
-    regConvParInitPointer(&conv,pc_act_delay_iters            ,&ccpars_pc.act_delay_iters);
-    regConvParInitPointer(&conv,pc_bandwidth                  ,&ccpars_pc.bandwidth);
-    regConvParInitPointer(&conv,pc_z                          ,&ccpars_pc.z);
-    regConvParInitPointer(&conv,pc_tau_zero                   ,&ccpars_pc.tau_zero);
-    regConvParInitPointer(&conv,pc_sim_num                    ,&ccpars_pc.sim_pc_pars.num);
-    regConvParInitPointer(&conv,pc_sim_den                    ,&ccpars_pc.sim_pc_pars.den);
+    regConvParInitPointer(&conv,   pc_actuation                  ,&ccpars_pc.actuation);
+    regConvParInitPointer(&conv,   pc_act_delay_iters            ,&ccpars_pc.act_delay_iters);
+    regConvParInitPointer(&conv,   pc_bandwidth                  ,&ccpars_pc.bandwidth);
+    regConvParInitPointer(&conv,   pc_z                          ,&ccpars_pc.z);
+    regConvParInitPointer(&conv,   pc_tau_zero                   ,&ccpars_pc.tau_zero);
+    regConvParInitPointer(&conv,   pc_sim_num                    ,&ccpars_pc.sim_pc_pars.num);
+    regConvParInitPointer(&conv,   pc_sim_den                    ,&ccpars_pc.sim_pc_pars.den);
 
     // Initialise simulation
 

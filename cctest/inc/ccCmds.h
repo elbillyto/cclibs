@@ -73,17 +73,17 @@
 
 // Function declarations
 
-uint32_t ccCmdsHelp  (uint32_t cmd_idx, char **remaining_line);
-uint32_t ccCmdsLs    (uint32_t cmd_idx, char **remaining_line);
-uint32_t ccCmdsCd    (uint32_t cmd_idx, char **remaining_line);
-uint32_t ccCmdsPwd   (uint32_t cmd_idx, char **remaining_line);
-uint32_t ccCmdsRead  (uint32_t cmd_idx, char **remaining_line);
-uint32_t ccCmdsSave  (uint32_t cmd_idx, char **remaining_line);
-uint32_t ccCmdsDebug (uint32_t cmd_idx, char **remaining_line);
-uint32_t ccCmdsRun   (uint32_t cmd_idx, char **remaining_line);
-uint32_t ccCmdsPar   (uint32_t cmd_idx, char **remaining_line);
-uint32_t ccCmdsExit  (uint32_t cmd_idx, char **remaining_line);
-uint32_t ccCmdsQuit  (uint32_t cmd_idx, char **remaining_line);
+uint32_t ccCmdsHelp  (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsLs    (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsCd    (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsPwd   (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsRead  (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsSave  (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsDebug (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsRun   (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsPar   (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsExit  (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsQuit  (uint32_t cmd_idx, char *remaining_line);
 
 // Command indexes - the order of enum cccmds_enum must match the cmds[] array below
 
@@ -127,7 +127,7 @@ enum cccmds_enum
 struct cccmds
 {
     char                *name;
-    uint32_t           (*cmd_func)(uint32_t cmd_idx, char **remaining_line);
+    uint32_t           (*cmd_func)(uint32_t cmd_idx, char *remaining_line);
     struct ccpars       *pars;
     char                *help_message;
     bool                is_enabled;

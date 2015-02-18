@@ -40,7 +40,6 @@
 
 #define PARS_INDENT                 34
 #define PARS_MAX_PRINT_LINE_LEN     (CC_MAX_FILE_LINE_LEN*8)      // Allow for longest print line for table
-#define PARS_MAX_REPORT_LINES       1000
 #define PARS_INT_FORMAT             "% d"
 #define PARS_FLOAT_FORMAT           "% .6E"
 #define PARS_TIME_FORMAT            "% .6f"
@@ -100,14 +99,6 @@ struct ccpars_enum
     char *              string;
 };
 
-struct ccpars_report
-{
-    uint32_t            num_lines;
-    char *              line_buf[PARS_MAX_REPORT_LINES];
-};
-
-CCPARS_EXT struct ccpars_report ccpars_report;
-
 // ENABLED/DISABLED enum
 
 CCPARS_EXT struct ccpars_enum enum_enabled_disabled[]
@@ -122,7 +113,7 @@ CCPARS_EXT struct ccpars_enum enum_enabled_disabled[]
 
 // Function declarations
 
-uint32_t ccParsGet                  (char *cmd_name, struct ccpars *par, char **remaining_line);
+uint32_t ccParsGet                  (char *cmd_name, struct ccpars *par, char *remaining_line);
 char    *ccParsEnumString           (struct ccpars_enum *par_enum, uint32_t value);
 void     ccParsPrint                (FILE *f, char *cmd_name, struct ccpars *par, uint32_t cyc_sel, uint32_t array_idx);
 void     ccParsPrintAll             (FILE *f, char *cmd_name, struct ccpars *par, uint32_t cyc_sel, uint32_t array_idx);

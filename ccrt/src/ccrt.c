@@ -1,233 +1,182 @@
-/*---------------------------------------------------------------------------------------------------------*\
-  File:     termtest.c                                                                  Copyright CERN 2014
+/*!
+ * @file  ccrt/scr/ccRt.c
+ *
+ * @brief ccrt main function
+ *
+ * <h2>Copyright</h2>
+ *
+ * Copyright CERN 2015. This project is released under the GNU Lesser General
+ * Public License version 3.
+ *
+ * <h2>License</h2>
+ *
+ * This file is part of ccrt.
+ *
+ * ccrt is free software: you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation, either version 3 of the License, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License
+ * for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-  License:  This program is free software: you can redistribute it and/or modify
-            it under the terms of the GNU Lesser General Public License as published by
-            the Free Software Foundation, either version 3 of the License, or
-            (at your option) any later version.
-
-            This program is distributed in the hope that it will be useful,
-            but WITHOUT ANY WARRANTY; without even the implied warranty of
-            MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-            GNU Lesser General Public License for more details.
-
-            You should have received a copy of the GNU Lesser General Public License
-            along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
-  Purpose:  Test program for libterm
-
-  Contact:  cclibs-devs@cern.ch
-
-  Authors:  Quentin.King@cern.ch
-
-  Notes:    As well as testing libterm, this program provides an example of how it can be used with an
-            ANSI standard terminal to use part of the terminal window as a shell (with scrolling) and
-            part for static information.  This uses the ability to save the cursor position, then
-            move and write a field, and then restore the cursor position.  The program also shows how
-            to use the terminal control sequences that can set text or background colour, bold and
-            underline.  These use the sequence TERM_CSI + formatting codes + TERM_SGR.
-\*---------------------------------------------------------------------------------------------------------*/
+/*
+ * Create NVS system based on files for converter types
+ * Add prompt line with status information
+ * Add real-time thread
+ * NVS to files
+ */
 
 #include <stdio.h>
-#include <stdlib.h>
-#include <termios.h>
+#include <string.h>
 #include <unistd.h>
-#include <signal.h>
-#include <sys/ioctl.h>
+#include <libgen.h>
+#include <errno.h>
 
-#include "libterm.h"                    // Include libterm header file
+// Declare all variables in ccTest.c
 
-// Constants
+#define GLOBALS
 
-#define PROMPT          '>'             // Prompt can only be a single character
-#define N_RTD_LINES     3               // Number of real-time display lines
-#define RTD_RULER       2               // Ruler line row (from bottom)
-#define RTD_REPORT      1               // Report line for new character (from bottom)
-#define RTD_RESULT      0               // Resulting input line (from bottom)
+// Include cctest program header files
 
-// Global variables
+#include "ccCmds.h"
+#include "ccRt.h"
+#include "ccParse.h"
+#include "ccFile.h"
+#include "ccInit.h"
+#include "ccRun.h"
+#include "ccRef.h"
+#include "ccLog.h"
+#include "ccFlot.h"
 
-struct termios stdin_config;            // Original stdin configuration used by ResetStdinConfig()
-struct winsize window;                  // Window size is window.ws_row x window.ws_col
+// Static variables
 
-/*---------------------------------------------------------------------------------------------------------*/
-static void ResetStdinConfig(void)
-/*---------------------------------------------------------------------------------------------------------*/
+static char cwd_buf[CC_PATH_LEN];
+
+
+
+void AtExit(void)
 {
-    TermInit(0);                                 // Initialise terminal on stdout (clear screen, etc...)
+    // Restore current working directory from when the program started
 
-    tcsetattr(STDIN_FILENO, 0, &stdin_config);   // Restore stdin configuation
+    chdir(cwd_buf);
 }
-/*---------------------------------------------------------------------------------------------------------*/
-static void ResetTerm(void)
-/*---------------------------------------------------------------------------------------------------------*/
-{
-    uint16_t    i;
 
-    if(window.ws_row < (N_RTD_LINES + 1))
-    {
-        puts("Too few rows - exiting");
-        exit(-1);
-    }
 
-    TermInit(window.ws_col);             // Initialise terminal on stdout (clear screen, etc...)
 
-    printf(TERM_SET_SCROLL_LINES, 1, window.ws_row - N_RTD_LINES);  // Set scroll zone
-
-    // Print example formatting and help information in the scolled zone and end with prompt
-
-    printf(TERM_CSI TERM_BOLD       TERM_UNDERLINE  TERM_SGR "LibTerm Test Program\n\n\r" TERM_NORMAL);
-
-    printf(TERM_CSI TERM_FG_BLACK   TERM_BG_WHITE   TERM_SGR "BLACK   TEXT          "   TERM_NORMAL);
-    printf(TERM_CSI                 TERM_BG_BLACK   TERM_SGR "BLACK   BACKGROUND\n\r"   TERM_NORMAL);
-
-    printf(TERM_CSI TERM_FG_RED                     TERM_SGR "RED     TEXT          "   TERM_NORMAL);
-    printf(TERM_CSI TERM_FG_BLACK   TERM_BG_RED     TERM_SGR "RED     BACKGROUND\n\r"   TERM_NORMAL);
-
-    printf(TERM_CSI TERM_FG_GREEN                   TERM_SGR "GREEN   TEXT          "   TERM_NORMAL);
-    printf(TERM_CSI TERM_BG_GREEN   TERM_FG_BLACK   TERM_SGR "GREEN   BACKGROUND\n\r"   TERM_NORMAL);
-
-    printf(TERM_CSI TERM_FG_YELLOW                  TERM_SGR "YELLOW  TEXT          "   TERM_NORMAL);
-    printf(TERM_CSI TERM_BG_YELLOW  TERM_FG_BLACK   TERM_SGR "YELLOW  BACKGROUND\n\r"   TERM_NORMAL);
-
-    printf(TERM_CSI TERM_FG_BLUE                    TERM_SGR "BLUE    TEXT          "   TERM_NORMAL);
-    printf(TERM_CSI TERM_BG_BLUE    TERM_FG_BLACK   TERM_SGR "BLUE    BACKGROUND\n\r"   TERM_NORMAL);
-
-    printf(TERM_CSI TERM_FG_MAGENTA                 TERM_SGR "MAGENTA TEXT          "   TERM_NORMAL);
-    printf(TERM_CSI TERM_FG_BLACK   TERM_BG_MAGENTA TERM_SGR "MAGENTA BACKGROUND\n\r"   TERM_NORMAL);
-
-    printf(TERM_CSI TERM_FG_CYAN                    TERM_SGR "CYAN    TEXT          "   TERM_NORMAL);
-    printf(TERM_CSI TERM_BG_CYAN    TERM_FG_BLACK   TERM_SGR "CYAN    BACKGROUND\n\r"   TERM_NORMAL);
-
-    printf(TERM_CSI TERM_FG_WHITE                   TERM_SGR "WHITE   TEXT          "   TERM_NORMAL);
-    printf(TERM_CSI TERM_BG_WHITE   TERM_FG_BLACK   TERM_SGR "WHITE   BACKGROUND\n\n\r" TERM_NORMAL);
-
-    printf("CTRL-A : Start of line             Left arrow:  Move cursor left\n\r");
-    printf("CTRL-E : Start of line             Right arrow: Move current right\n\r");
-    printf("CTRL-R : Repeat last line          Up arrow:    Previous line from history\n\r");
-    printf("CTRL-U : Clear line                Down arrow:  Next line from history\n\r");
-    printf("CTRL-D : Delete right              ESC ESC:     Reset terminal\n\r");
-    printf("CTRL-C : Quit termtest             Enter:       Process line\n\n\r");
-
-    fputc(PROMPT,stdout);
-
-    // Prepare information zone in non-scolled lines at the bottom of the terminal
-
-    printf(TERM_SAVE_POS TERM_CSI "%hu;1" TERM_GOTO, (uint16_t)(window.ws_row - RTD_RULER));
-
-    for(i = 0 ; i < window.ws_col ; i++)
-    {
-        putchar('-');
-    }
-
-    printf(TERM_CSI "%hu;1" TERM_GOTO "Keyboard character:                     Line length:" TERM_RESTORE_POS,
-           (uint16_t)(window.ws_row - RTD_REPORT));
-
-    fflush(stdout);
-}
-/*---------------------------------------------------------------------------------------------------------*/
-static void SigWinch(int sig)
-/*---------------------------------------------------------------------------------------------------------*/
-{
-    // Read new window size
-
-    ioctl(STDOUT_FILENO, TIOCGWINSZ, &window);
-
-    // Reset the terminal window
-
-    ResetTerm();
-}
-/*---------------------------------------------------------------------------------------------------------*/
-void ProcessLine(char *line, uint16_t line_len)
-/*---------------------------------------------------------------------------------------------------------*/
-{
-    // Report line length in info zone
-
-    printf(TERM_SAVE_POS TERM_CSI "%hu;54" TERM_GOTO TERM_CSI TERM_BOLD TERM_SGR "%3hu",
-           (uint16_t)(window.ws_row - RTD_REPORT), line_len);
-
-    // Report line buffer in info zone
-
-    printf(TERM_CSI "%hu;1" TERM_GOTO TERM_CLR_LINE "%s" TERM_RESTORE_POS, 
-           (uint16_t)(window.ws_row - RTD_RESULT), line);
-
-}
-/*---------------------------------------------------------------------------------------------------------*/
 int main(int argc, char **argv)
-/*---------------------------------------------------------------------------------------------------------*/
 {
-    int            keyboard_ch;
-    uint16_t       term_level;
-    struct termios stdin_config_raw;
+    char     line[CC_PATH_LEN];
+    char    *script_file = "";
+    char    *default_converter = "default";
 
-    // Catch SIGWINCH
+    // Usage: ccrt [converter_name [script]]
 
-    signal(SIGWINCH, SigWinch);
-
-    // Configure stdin to receive keyboard characters one at a time and without echo
-
-    tcgetattr(STDIN_FILENO, &stdin_config);
-
-    if(atexit(ResetStdinConfig))         // Link ResetStdinConfig() to be called on exit()
+    if(argc > 3)
     {
-        fprintf(stderr,"atexit failed\n");
-        exit(1);
+        printf("usage: %s [converter_name [command]]\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+    else if(argc == 1)
+    {
+        ccfile.converter = default_converter;
+    }
+    else
+    {
+        ccfile.converter = argv[1];
+
+        if(argc == 3)
+        {
+            script_file = argv[2];
+        }
     }
 
-    stdin_config_raw = stdin_config;      // Keep copy of original configuration for ResetStdinConfig()
+    snprintf(line, CC_PATH_LEN, "read %s", script_file);
 
-    cfmakeraw(&stdin_config_raw);
-    tcsetattr(STDIN_FILENO, 0, &stdin_config_raw);
+    // Save current working so that it can be restored at exit
 
-    // Initialise libterm for stdout and reset the terminal display
-
-    TermLibInit(stdout, ProcessLine, PROMPT);
-
-    SigWinch(0);
-
-    // Loop forever to process keyboard characters
-
-    for(;;)
+    if(getcwd(cwd_buf, sizeof(cwd_buf)) != NULL)
     {
-        // Wait for the next keyboard character
-
-        fflush(stdout);
-
-        keyboard_ch = getchar();
-
-        // Report character value in the info zone on the terminal
-
-        printf(TERM_SAVE_POS TERM_CSI "%hu;21" TERM_GOTO TERM_CSI TERM_BOLD TERM_SGR "%3u" TERM_RESTORE_POS,
-                (uint16_t)(window.ws_row - RTD_REPORT), keyboard_ch);
-
-        // Catch CTRL-C to exit
-
-        if(keyboard_ch == 0x03)
+        if(atexit(AtExit))
         {
-            printf("\nExiting\n");
-            exit(0);
+            puts("Warning - atexit() failed");
         }
-
-        // Give characters to libterm to be processed
-
-        term_level = TermChar(keyboard_ch);
-
-        // Check for ESC pressed twice - this will appear as ESC at terminal level zero
-
-        if(term_level == 0 && keyboard_ch == TERM_ESC)
-        {
-            ResetTerm();
-        }
-
-        // The terminal level is a state machine used in TermChar to process keyboard character
-        // sequences that start with ESC (0x1B) which can correspond to cursor keys and function keys.
-        // term_level goes from 0-4.  When the first ESC is received it becomes 1.  This can be due
-        // to the user pressing the ESC key or pressing a cursor or function key (in which case other
-        // characters will follow).
-        // If the user presses ESC twice, then term_level will go to 1 and then back to zero.  So
-        // this is a convenient way to capture a double ESC as a signal from the user that they want
-        // to refresh the terminal.
     }
+    else
+    {
+        printf("Warning - failed to get current directory : %s (%d)\n", strerror(errno), errno);
+    }
+
+    // Try to set path to ccrt/converters/{converter}
+
+    if(ccFileCwd(dirname(argv[0]))   == EXIT_FAILURE ||
+       ccFileCwd("../../converters") == EXIT_FAILURE)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    if(chdir(ccfile.converter) != EXIT_SUCCESS)
+    {
+        printf("Error - unknown converter: %s\n", ccParseAbbreviateArg(ccfile.converter));
+        exit(EXIT_FAILURE);
+    }
+
+    // Welcome message
+
+    printf("\nWelcome to ccrt v%.2f - Converter type: %s\n", CC_VERSION, ccfile.converter);
+
+    // Check the necessary sub-directories exist, or try to make them if they don't
+
+    if(ccFileMakePath("config")  == EXIT_FAILURE ||
+       ccFileMakePath("ref")     == EXIT_FAILURE ||
+       ccFileMakePath("scripts") == EXIT_FAILURE ||
+       ccFileMakePath("logs")    == EXIT_FAILURE)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    // Initialise ccrt parameters
+
+    ccInitPars();
+
+    // Read in all the config and reference parameters
+
+    if(ccFileReadAll("config") == EXIT_FAILURE ||
+       ccFileReadAll("ref")    == EXIT_FAILURE)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    // Change directory to be scripts
+
+    if(ccFileCwd("scripts") == EXIT_FAILURE)
+    {
+        exit(EXIT_FAILURE);
+    }
+
+    // Initialise simulation
+
+    regConvSimInit(&conv, ccpars_ref[ccpars_global.cycle_selector[0]].reg_mode, 0);
+
+    // Try to arm the reference for all cycle selectors
+
+    ccCmdsArm(0,NULL);
+
+    // Create real-time thread for simulation
+
+
+    gettimeofday(&ccrun.iter_time, NULL);
+
+
+    // Read from stdin or from the named script
+
+    exit(ccParseLine(line));
 }
-// EOF
 
+// EOF

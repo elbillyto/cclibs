@@ -77,7 +77,7 @@ CCPARS_DEFAULT_EXT struct ccpars_default ccpars_default
 
 // Default parameters description structure
 
-CCPARS_GLOBAL_EXT struct ccpars default_pars[]
+CCPARS_DEFAULT_EXT struct ccpars default_pars[]
 #ifdef GLOBALS
 = {// "Signal name"       type,  max_n_els, *enum,        *value,                             num_defaults,cyc_sel_step,flags
     { "V_ACCELERATION",   PAR_FLOAT, 1,      NULL, { .f = &ccpars_default.pars[REG_VOLTAGE].acceleration   }, 1, 0, 0 },

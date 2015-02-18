@@ -87,7 +87,7 @@ uint32_t ccFileReadAll(void)
 
         if(S_ISREG(dir_file_stat.st_mode))
         {
-            if(ccCmdsRead(0, &filename) == EXIT_FAILURE)
+            if(ccCmdsRead(0, filename) == EXIT_FAILURE)
             {
                 // Close director and report failure
 

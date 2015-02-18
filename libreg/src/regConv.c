@@ -34,7 +34,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "libreg.h"
-#include "init_pars.h"
+#include "libreg_init_pars.h"
 
 // Static function declarations
 
@@ -241,7 +241,7 @@ static void regConvRstInit(struct reg_conv        *conv,
 
 
 
-void regConvPars(struct reg_conv *conv, uint32_t pars_mask)
+static void regConvParsWithMask(struct reg_conv *conv, uint32_t pars_mask)
 {
     uint32_t        i;
     uint32_t        flags;
@@ -721,13 +721,22 @@ void regConvPars(struct reg_conv *conv, uint32_t pars_mask)
 
 
 
+void regConvPars(struct reg_conv *conv)
+{
+    // Call regConvParsWithMask with mask set to zero so no initialisation functions are run automatically
+
+    regConvParsWithMask(conv, 0);
+}
+
+
+
 void regConvSimInit(struct reg_conv *conv, enum reg_mode reg_mode, float init_meas)
 {
     struct reg_conv_signal *reg_signal = &conv->i;
 
     // Initialise all libreg parameters
 
-    regConvPars(conv, 0xFFFFFFFF);
+    regConvParsWithMask(conv, 0xFFFFFFFF);
 
     regConvSignalPrepareRT(conv, REG_FIELD,   0, 0);
     regConvSignalPrepareRT(conv, REG_CURRENT, 0, 0);
@@ -771,7 +780,7 @@ void regConvSimInit(struct reg_conv *conv, enum reg_mode reg_mode, float init_me
 
     // Initialize current and field (if enabled) filter histories
 
-    regConvPars(conv, conv->b.regulation == REG_ENABLED ? REG_PAR_B_MEAS_FILTER | REG_PAR_I_MEAS_FILTER  : REG_PAR_I_MEAS_FILTER);
+    regConvParsWithMask(conv, conv->b.regulation == REG_ENABLED ? REG_PAR_B_MEAS_FILTER | REG_PAR_I_MEAS_FILTER  : REG_PAR_I_MEAS_FILTER);
 
     // Initialize power converter model history according to the actuation because for CURRENT_REF,
     // the model is used for the current in the load rather than the voltage from the voltage source

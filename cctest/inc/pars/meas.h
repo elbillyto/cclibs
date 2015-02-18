@@ -36,7 +36,7 @@
 
 // Regulation measurement selector
 
-CCPARS_GLOBAL_EXT struct ccpars_enum enum_reg_meas_select[]
+CCPARS_MEAS_EXT struct ccpars_enum enum_reg_meas_select[]
 #ifdef GLOBALS
 = {
     { REG_MEAS_UNFILTERED,   "UNFILTERED"   },

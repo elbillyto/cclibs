@@ -34,7 +34,5 @@
 #ifndef FLOT_H
 #define FLOT_H
 
-#define MAX_FLOT_POINTS         100000           // Limit points per signal for FLOT output
-
 static char *flot[] =
 {

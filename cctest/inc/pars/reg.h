@@ -36,7 +36,7 @@
 
 // Reg status enum for ccDebug only
 
-CCPARS_GLOBAL_EXT struct ccpars_enum enum_reg_status[]
+CCPARS_REG_EXT struct ccpars_enum enum_reg_status[]
 #ifdef GLOBALS
 = {
     { REG_OK,                                "OK"                       },
@@ -49,7 +49,7 @@ CCPARS_GLOBAL_EXT struct ccpars_enum enum_reg_status[]
 
 // Reg Jury's test result  enum for ccDebug only
 
-CCPARS_GLOBAL_EXT struct ccpars_enum enum_reg_jurys_result[]
+CCPARS_REG_EXT struct ccpars_enum enum_reg_jurys_result[]
 #ifdef GLOBALS
 = {
     { REG_JR_OK,                             "OK"                       },

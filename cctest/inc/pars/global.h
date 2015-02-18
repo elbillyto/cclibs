@@ -40,7 +40,7 @@
 
 // Regulation error rate control enum comes from libreg
 
-CCPARS_EXT struct ccpars_enum enum_reg_err_rate[]
+CCPARS_GLOBAL_EXT struct ccpars_enum enum_reg_err_rate[]
 #ifdef GLOBALS
 = {
     { REG_ERR_RATE_REGULATION,   "REGULATION"     },

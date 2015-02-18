@@ -41,9 +41,10 @@ static float regMeasFirFilterRT(struct reg_meas_filter *filter);
 
 // Background functions - do not call these from the real-time thread or interrupt
 
-void regMeasFilterInitBuffer(struct reg_meas_filter *filter, int32_t *buf)
+void regMeasFilterInitBuffer(struct reg_meas_filter *filter, int32_t *buf, uint32_t buf_len)
 {
     filter->fir_buf[0] = buf;
+    filter->buf_len    = buf_len;
 }
 
 
@@ -52,6 +53,7 @@ void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
                        uint32_t extrapolation_len_iters, float pos, float neg, float meas_delay_iters)
 {
     uint32_t    total_fir_len;
+    uint32_t     buf_len;
     float       filter_delay;
     float      *extrapolation_buf;
 
@@ -89,6 +91,29 @@ void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
         filter->fir_length[1] = temp_fir_length;
     }
     
+    // Clip filter lengths if they exceed the buffer space
+
+    buf_len = filter->buf_len;
+
+    if(extrapolation_len_iters > buf_len)
+    {
+        extrapolation_len_iters = buf_len;
+    }
+
+    buf_len -= extrapolation_len_iters;
+
+    if(filter->fir_length[0] > buf_len)
+    {
+        filter->fir_length[0] = buf_len;
+    }
+
+    buf_len -= filter->fir_length[0];
+
+    if(filter->fir_length[1] > buf_len)
+    {
+        filter->fir_length[1] = buf_len;
+    }
+
     // Set the pointers to the second stage FIR buffer and extrapolation buffer
 
     filter->fir_buf[1]              = filter->fir_buf[0] + filter->fir_length[0];

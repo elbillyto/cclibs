@@ -40,7 +40,7 @@
 #include "ccRun.h"
 
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
+uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will try to interpret arguments remaining on the input line as values belonging to
   a command parameter. It supports different interpretations of multiple arguments, e.g.:
@@ -106,7 +106,7 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
 
     // Try to parse the arguments to set the parameter values
 
-    while((arg = ccParseNextArg(remaining_line)) != NULL)
+    while((arg = ccParseNextArg(&remaining_line)) != NULL)
     {
         if(num_pars >= max_pars)
         {
@@ -118,7 +118,7 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char **remaining_line)
 
         // If only argument is '?' then print parameter value and options for enums
 
-        if(num_pars == 0 && arg_len == 1 && *arg == '?' && *remaining_line == NULL)
+        if(num_pars == 0 && arg_len == 1 && *arg == '?' && remaining_line == NULL)
         {
             ccParsPrint(stdout, cmd_name, par, ccfile.cyc_sel, ccfile.array_idx);
 

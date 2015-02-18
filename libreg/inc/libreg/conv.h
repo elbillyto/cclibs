@@ -67,7 +67,7 @@ struct reg_conv_rst_pars
 struct reg_conv_signal
 {
     enum reg_enabled_disabled   regulation;             //!< Option to regulate this signal is enabled or disabled
-    bool                        is_delayed_ref_available; //!< Flag to indicate if the next set of RST parameters are ready to use
+    bool                        is_delayed_ref_available;//!< Flag to indicate if the delayed reference signal is available
     uint32_t                    iteration_counter;      //!< Iteration counter (within each regulation period)
     uint32_t                    reg_period_iters;       //!< Regulation period (in iterations) for Operational and Test parameters
     float                       reg_period;             //!< Regulation period(s) for Operational and Test parameters
@@ -138,8 +138,8 @@ struct reg_conv
 
     struct
     {
-        uint32_t                ref_clip;               //!< Reference is being clipped
-        uint32_t                ref_rate;               //!< Reference rate of change is being clipped
+        bool                    ref_clip;               //!< Reference is being clipped
+        bool                    ref_rate;               //!< Reference rate of change is being clipped
     } flags;                                            //!< Reference (field, current or voltage) limit flags
 
     // Field, current and voltage regulation structures
@@ -198,12 +198,8 @@ void regConvInit(struct reg_conv *conv, uint32_t iter_period_us,
  * This is a background function: do not call from the real-time thread or interrupt.
  *
  * @param[in,out] conv           Pointer to converter regulation structure.
- * @param[in]     pars_mask      Parameter function mask (normally set to zero since the function will check
- *                               for parameters that have changed and will set the mask internally. Each set
- *                               bit will trigger the execution of the initialisation functions. If set
- *                               to 0xFFFFFFFF it will force all initialisation functions to be executed.
  */
-void regConvPars(struct reg_conv *conv, uint32_t pars_mask);
+void regConvPars(struct reg_conv *conv);
 
 
 

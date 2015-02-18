@@ -214,7 +214,26 @@ uint32_t ccParseLine(char *line)
 
     if(cmd_idx >= 0)
     {
-        return(cmds[cmd_idx].cmd_func(cmd_idx, &remaining_string));
+        // If command is not a parameter group
+
+        if(cmds[cmd_idx].cmd_func != ccCmdsPar)
+        {
+            // No cycle selector or array index may be supplied
+
+            if(ccfile.cyc_sel != CC_NO_INDEX)
+            {
+                ccParsPrintError("unexpected command cycle selector");
+                return(EXIT_FAILURE);
+            }
+
+            if(ccfile.array_idx != CC_NO_INDEX)
+            {
+                ccParsPrintError("unexpected command array index");
+                return(EXIT_FAILURE);
+            }
+        }
+
+        return(cmds[cmd_idx].cmd_func(cmd_idx, remaining_string));
     }
     else
     {

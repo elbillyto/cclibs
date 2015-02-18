@@ -36,7 +36,7 @@
 
 // Regulation actuation enum constants come from libreg
 
-CCPARS_GLOBAL_EXT struct ccpars_enum enum_reg_actuation[]
+CCPARS_PC_EXT struct ccpars_enum enum_reg_actuation[]
 #ifdef GLOBALS
 = {
     { REG_VOLTAGE_REF,    "VOLTAGE" },

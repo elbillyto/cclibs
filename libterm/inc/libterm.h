@@ -44,15 +44,20 @@
 #define TERM_SET_SCROLL_LINES           "\33[H\33[%u;%ur"       // Define lines that scroll (as integers)
 
 // Control Sequence introducer (CSI) sequences (see http://en.wikipedia.org/wiki/ANSI_escape_code)
+// For example: printf(TERM_CSI "%u;%u" TERM_GOTO, line, column);
+// For example: printf(TERM_CSI "%u" TERM_GOTO, line, column);
 
 #define TERM_CSI                        "\33["                  // Control sequence introducer
 #define TERM_GOTO                       "H"                     // Goto: line;column
+#define TERM_UP                         "A"                     // Cursor up: lines
+#define TERM_DOWN                       "B"                     // Cursor down: lines
 #define TERM_LEFT                       "D"                     // Cursor left: columns
 #define TERM_RIGHT                      "C"                     // Cursor right: columns
-#define TERM_SGR                        "m"                     // Select Graphic Rendition
 
 // Option that can be used between TERM_CSI and TERM_SGR (use TERM_NORMAL to return to normal)
+// For example: printf(TERM_CSI TERM_FG_MAGENTA TERM_BG_GREEN TERM_SGR "%s" TERM_NORMAL, string);
 
+#define TERM_SGR                        "m"                     // Select Graphic Rendition
 #define TERM_NORMAL                     TERM_CSI TERM_SGR       // Return to normal formatting
 #define TERM_BOLD                       ";1"
 #define TERM_UNDERLINE                  ";4"

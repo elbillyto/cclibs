@@ -30,12 +30,7 @@
 #include "ccRun.h"
 #include "ccLog.h"
 #include "ccFlot.h"
-
-// Static variables for RMS logging signals
-
-static float    i_rms;
-static float    i_rms_load;
-
+#include "libreg_vars_test.h"
 
 
 static void ccLogResetSignals(struct cclog *log)
@@ -77,12 +72,11 @@ static void ccLogResetSignals(struct cclog *log)
 
 
 
-static void ccLogEnableAnaSignal(struct cclog_ana_sigs *ana_sig, float *source)
+static void ccLogEnableAnaSignal(struct cclog_ana_sigs *ana_sig)
 {
     // Enable signal
 
     ana_sig->is_enabled = true;
-    ana_sig->source     = source;
 
     // If HTML output enabled then allocate buffer memory
 
@@ -94,12 +88,11 @@ static void ccLogEnableAnaSignal(struct cclog_ana_sigs *ana_sig, float *source)
 
 
 
-static void ccLogEnableDigSignal(struct cclog_dig_sigs *dig_sig, bool *source)
+static void ccLogEnableDigSignal(struct cclog_dig_sigs *dig_sig)
 {
     // Enable signal
 
     dig_sig->is_enabled = true;
-    dig_sig->source     = source;
 
     // If FLOT output enabled then allocate buffer memory
 
@@ -177,7 +170,7 @@ void ccLogInit(void)
 
     if(ccpars_pc.actuation == REG_VOLTAGE_REF)
     {
-        ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_REF], &conv.v.ref);
+        ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_REF]);
     }
 
     // Enable additional signals with simulating load
@@ -197,68 +190,68 @@ void ccLogInit(void)
         {
             // Voltage source simulation signals
 
-            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_REF_LIMITED], &conv.v.ref_limited);
-            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_CIRCUIT],     &conv.sim_load_vars.circuit_voltage);
-            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_MEAS],        &conv.v.meas);
-            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_ERR],         &conv.v.err.err);
-            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_MAX_ABS_V_ERR], &conv.v.err.max_abs_err);
+            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_REF_LIMITED]);
+            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_CIRCUIT]);
+            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_MEAS]);
+            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_ERR]);
+            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_MAX_ABS_V_ERR]);
 
-            ccLogEnableDigSignal(&dig_meas_sigs[DIG_V_REF_CLIP],     &conv.v.lim_ref.flags.clip);
-            ccLogEnableDigSignal(&dig_meas_sigs[DIG_V_REF_RATE_CLIP],&conv.v.lim_ref.flags.rate);
+            ccLogEnableDigSignal(&dig_meas_sigs[DIG_V_REF_CLIP]);
+            ccLogEnableDigSignal(&dig_meas_sigs[DIG_V_REF_RATE_CLIP]);
 
             if(ccpars_limits.v_err_warning > 0.0)
             {
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_V_REG_ERR_WARN], &conv.v.err.warning.flag);
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_V_REG_ERR_WARN]);
             }
 
             if(ccpars_limits.v_err_fault > 0.0)
             {
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_V_REG_ERR_FLT], &conv.v.err.fault.flag);
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_V_REG_ERR_FLT]);
             }
 
             if(ccrun.is_breg_enabled)
             {
-                ccLogEnableAnaSignal(&ana_breg_sigs[ANA_MEAS_REG],    &conv.b.meas.reg);
-                ccLogEnableAnaSignal(&ana_breg_sigs[ANA_REF],         &conv.b.ref);
-                ccLogEnableAnaSignal(&ana_breg_sigs[ANA_REF_LIMITED], &conv.b.ref_limited);
-                ccLogEnableAnaSignal(&ana_breg_sigs[ANA_REF_RST],     &conv.b.ref_rst);
-                ccLogEnableAnaSignal(&ana_breg_sigs[ANA_TRACK_DELAY], &conv.b.track_delay_periods);
+                ccLogEnableAnaSignal(&ana_breg_sigs[ANA_MEAS_REG]);
+                ccLogEnableAnaSignal(&ana_breg_sigs[ANA_REF]);
+                ccLogEnableAnaSignal(&ana_breg_sigs[ANA_REF_LIMITED]);
+                ccLogEnableAnaSignal(&ana_breg_sigs[ANA_REF_RST]);
+                ccLogEnableAnaSignal(&ana_breg_sigs[ANA_TRACK_DELAY]);
 
                 if(ccpars_limits.b_neg[ccpars_load.select] >= 0.0)
                 {
-                    ccLogEnableAnaSignal(&ana_breg_sigs[ANA_REF_OPENLOOP], &conv.b.ref_delayed);
+                    ccLogEnableAnaSignal(&ana_breg_sigs[ANA_REF_OPENLOOP]);
                 }
 
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_MAGNET],        &conv.sim_load_vars.magnet_field);
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_MEAS],          &conv.b.meas.signal[REG_MEAS_UNFILTERED]);
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_MEAS_FLTR],     &conv.b.meas.signal[REG_MEAS_FILTERED]);
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_MEAS_EXTR],     &conv.b.meas.signal[REG_MEAS_EXTRAPOLATED]);
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_REF_DELAYED],   &conv.b.ref_delayed);
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_ERR],           &conv.b.err.err);
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_MAX_ABS_B_ERR],   &conv.b.err.max_abs_err);
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_MEAS_TRIP],     &conv.b.lim_meas.flags.trip);
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_REF_CLIP],      &conv.b.lim_ref.flags.clip);
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_REF_RATE_CLIP], &conv.b.lim_ref.flags.rate);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_MAGNET]);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_MEAS]);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_MEAS_FLTR]);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_MEAS_EXTR]);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_REF_DELAYED]);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_B_ERR]);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_MAX_ABS_B_ERR]);
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_MEAS_TRIP]);
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_REF_CLIP]);
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_REF_RATE_CLIP]);
 
 
                 if(ccpars_limits.b_low[ccpars_load.select] > 0.0)
                 {
-                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_MEAS_LOW], &conv.b.lim_meas.flags.low);
+                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_MEAS_LOW]);
                 }
 
                 if(ccpars_limits.b_zero[ccpars_load.select] > 0.0)
                 {
-                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_MEAS_ZERO], &conv.b.lim_meas.flags.zero);
+                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_MEAS_ZERO]);
                 }
 
                 if(ccpars_limits.b_err_warning[ccpars_load.select] > 0.0)
                 {
-                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_REG_ERR_WARN], &conv.b.err.warning.flag);
+                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_REG_ERR_WARN]);
                 }
 
                 if(ccpars_limits.b_err_fault[ccpars_load.select] > 0.0)
                 {
-                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_REG_ERR_FLT], &conv.b.err.fault.flag);
+                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_B_REG_ERR_FLT]);
                 }
             }
 
@@ -266,46 +259,46 @@ void ccLogInit(void)
 
             if(ccrun.is_ireg_enabled)
             {
-                ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_MEAS_REG],        &conv.i.meas.reg);
-                ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF],             &conv.i.ref);
-                ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF_LIMITED],     &conv.i.ref_limited);
-                ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF_RST],         &conv.i.ref_rst);
-                ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_TRACK_DELAY],     &conv.i.track_delay_periods);
+                ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_MEAS_REG]);
+                ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF]);
+                ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF_LIMITED]);
+                ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF_RST]);
+                ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_TRACK_DELAY]);
 
                 if(ccpars_limits.i_neg[ccpars_load.select] >= 0.0)
                 {
-                    ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF_OPENLOOP],&conv.i.ref_openloop);
+                    ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF_OPENLOOP]);
                 }
 
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_REF_SAT],       &conv.v.ref_sat);
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_REF_DELAYED],   &conv.i.ref_delayed);
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_ERR],           &conv.i.err.err);
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_MAX_ABS_I_ERR],   &conv.i.err.max_abs_err);
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REF_CLIP],      &conv.i.lim_ref.flags.clip);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_REF_SAT]);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_REF_DELAYED]);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_ERR]);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_MAX_ABS_I_ERR]);
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REF_CLIP]);
 
                 if(ccpars_limits.i_rate[ccpars_load.select] > 0.0)
                 {
-                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REF_RATE_CLIP], &conv.i.lim_ref.flags.rate);
+                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REF_RATE_CLIP]);
                 }
 
                 if(ccpars_limits.i_low[ccpars_load.select] > 0.0)
                 {
-                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_MEAS_LOW], &conv.i.lim_meas.flags.low);
+                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_MEAS_LOW]);
                 }
 
                 if(ccpars_limits.i_zero[ccpars_load.select] > 0.0)
                 {
-                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_MEAS_ZERO], &conv.i.lim_meas.flags.zero);
+                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_MEAS_ZERO]);
                 }
 
                 if(ccpars_limits.i_err_warning[ccpars_load.select] > 0.0)
                 {
-                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REG_ERR_WARN], &conv.i.err.warning.flag);
+                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REG_ERR_WARN]);
                 }
 
                 if(ccpars_limits.i_err_fault[ccpars_load.select] > 0.0)
                 {
-                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REG_ERR_FLT], &conv.i.err.fault.flag);
+                    ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REG_ERR_FLT]);
                 }
             }
 
@@ -313,24 +306,24 @@ void ccLogInit(void)
 
             if(conv.sim_load_pars.is_load_undersampled == false)
             {
-                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_MAGNET], &conv.sim_load_vars.magnet_current);
+                ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_MAGNET]);
             }
         }
         else // Converter actuation is CURRENT reference
         {
-            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_CIRCUIT],    &conv.sim_load_vars.circuit_voltage);
-            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_MEAS],       &conv.v.meas);
+            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_CIRCUIT]);
+            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_V_MEAS]);
 
-            ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_MEAS_REG],     &conv.i.meas.reg);
-            ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF],          &conv.i.ref);
-            ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF_LIMITED],  &conv.i.ref_limited);
-            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_REF_DELAYED],&conv.i.ref_delayed);
+            ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_MEAS_REG]);
+            ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF]);
+            ccLogEnableAnaSignal(&ana_ireg_sigs[ANA_REF_LIMITED]);
+            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_REF_DELAYED]);
 
-            ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REF_CLIP],   &conv.i.lim_ref.flags.clip);
+            ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REF_CLIP]);
 
             if(ccpars_limits.i_rate[ccpars_load.select] > 0.0)
             {
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REF_RATE_CLIP], &conv.i.lim_ref.flags.rate);
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REF_RATE_CLIP]);
             }
 
             ana_ireg_sigs[ANA_MEAS_REG].time_offset = -conv.iter_period * (uint32_t)(conv.i.meas.delay_iters[ccpars_meas.i_reg_select] + 0.499);
@@ -338,36 +331,36 @@ void ccLogInit(void)
 
         // Current simulation signals
 
-        ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_CIRCUIT],   &conv.sim_load_vars.circuit_current);
-        ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_MEAS],      &conv.i.meas.signal[REG_MEAS_UNFILTERED]);
-        ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_MEAS_FLTR], &conv.i.meas.signal[REG_MEAS_FILTERED]);
-        ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_MEAS_EXTR], &conv.i.meas.signal[REG_MEAS_EXTRAPOLATED]);
-        ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_MEAS_TRIP], &conv.i.lim_meas.flags.trip);
+        ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_CIRCUIT]);
+        ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_MEAS]);
+        ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_MEAS_FLTR]);
+        ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_MEAS_EXTR]);
+        ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_MEAS_TRIP]);
 
         if(ccpars_limits.i_low[ccpars_load.select] > 0.0)
         {
-            ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_MEAS_LOW], &conv.i.lim_meas.flags.low);
+            ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_MEAS_LOW]);
         }
 
         if(ccpars_limits.i_zero[ccpars_load.select] > 0.0)
         {
-            ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_MEAS_ZERO], &conv.i.lim_meas.flags.zero);
+            ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_MEAS_ZERO]);
         }
 
         // RMS current signals
 
         if(ccpars_limits.i_rms_tc > 0.0)
         {
-            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_RMS], &i_rms);
+            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_RMS]);
 
             if(ccpars_limits.i_rms_warning > 0.0)
             {
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_RMS_WARN], &conv.lim_i_rms.flags.warning);
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_RMS_WARN]);
             }
 
             if(ccpars_limits.i_rms_fault > 0.0)
             {
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_RMS_FLT], &conv.lim_i_rms.flags.fault);;
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_RMS_FLT]);
             }
         }
 
@@ -375,16 +368,16 @@ void ccLogInit(void)
 
         if(ccpars_limits.i_rms_load_tc[ccpars_load.select] > 0.0)
         {
-            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_RMS_LOAD], &i_rms_load);
+            ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_RMS_LOAD]);
 
             if(ccpars_limits.i_rms_load_warning[ccpars_load.select] > 0.0)
             {
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_RMS_LOAD_WARN], &conv.lim_i_rms_load.flags.warning);
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_RMS_LOAD_WARN]);
             }
 
             if(ccpars_limits.i_rms_load_fault[ccpars_load.select] > 0.0)
             {
-                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_RMS_LOAD_FLT], &conv.lim_i_rms_load.flags.fault);
+                ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_RMS_LOAD_FLT]);
             }
         }
 
@@ -392,7 +385,7 @@ void ccLogInit(void)
 
         if(ccrun.invalid_meas.random_threshold > 0)
         {
-            ccLogEnableDigSignal(&dig_meas_sigs[DIG_INVALID_MEAS], &ccrun.invalid_meas.flag);
+            ccLogEnableDigSignal(&dig_meas_sigs[DIG_INVALID_MEAS]);
         }
     }
 }

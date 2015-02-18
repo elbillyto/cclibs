@@ -42,12 +42,12 @@
 #include "ccDebug.h"
 
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsHelp(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsHelp(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will print a help message listing all the commands
 \*---------------------------------------------------------------------------------------------------------*/
 {
-    if(ccParseNoMoreArgs(remaining_line) == EXIT_FAILURE)
+    if(ccParseNoMoreArgs(&remaining_line) == EXIT_FAILURE)
     {
         return(EXIT_FAILURE);
     }
@@ -60,7 +60,7 @@ uint32_t ccCmdsHelp(uint32_t cmd_idx, char **remaining_line)
     return(EXIT_SUCCESS);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsCd(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsCd(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will try to set the current directory using the supplied parameter
 \*---------------------------------------------------------------------------------------------------------*/
@@ -70,7 +70,7 @@ uint32_t ccCmdsCd(uint32_t cmd_idx, char **remaining_line)
     char   *wd;
     char    cwd_buf[CC_PATH_LEN];
 
-    arg = ccParseNextArg(remaining_line);
+    arg = ccParseNextArg(&remaining_line);
 
     // If no argument supplied then use the base path for cctest project
 
@@ -78,7 +78,7 @@ uint32_t ccCmdsCd(uint32_t cmd_idx, char **remaining_line)
     {
         arg = ccfile.base_path;
     }
-    else if(ccParseNoMoreArgs(remaining_line) == EXIT_FAILURE)
+    else if(ccParseNoMoreArgs(&remaining_line) == EXIT_FAILURE)
     {
         return(EXIT_FAILURE);
     }
@@ -124,7 +124,7 @@ uint32_t ccCmdsCd(uint32_t cmd_idx, char **remaining_line)
     return(ccCmdsPwd(0, remaining_line));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsPwd(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsPwd(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will display the current directory
 \*---------------------------------------------------------------------------------------------------------*/
@@ -134,7 +134,7 @@ uint32_t ccCmdsPwd(uint32_t cmd_idx, char **remaining_line)
 
     // No arguments expected
 
-    if(ccParseNoMoreArgs(remaining_line) == EXIT_FAILURE)
+    if(ccParseNoMoreArgs(&remaining_line) == EXIT_FAILURE)
     {
         return(EXIT_FAILURE);
     }
@@ -154,7 +154,7 @@ uint32_t ccCmdsPwd(uint32_t cmd_idx, char **remaining_line)
     return(EXIT_SUCCESS);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsLs(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsLs(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will display the contents of the current directory using the ls command.  It will supply
   any arguments provided to ls.
@@ -166,9 +166,9 @@ uint32_t ccCmdsLs(uint32_t cmd_idx, char **remaining_line)
 
     strcpy(ls_command, "ls ");
 
-    if(*remaining_line != NULL)
+    if(remaining_line != NULL)
     {
-        strcat(ls_command, *remaining_line);
+        strcat(ls_command, remaining_line);
     }
 
     // Use system to run ls command
@@ -181,7 +181,7 @@ uint32_t ccCmdsLs(uint32_t cmd_idx, char **remaining_line)
     return(EXIT_SUCCESS);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsRead(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsRead(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will try to read lines from stdin or from file named in the supplied parameter. It can be
   called recursively via the call to ccTestParseLine(). It protects against nesting open files too deeply.
@@ -204,9 +204,9 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char **remaining_line)
 
     // Get the first argument (if provided) and check that there are no more arguments after that
 
-    arg = ccParseNextArg(remaining_line);
+    arg = ccParseNextArg(&remaining_line);
 
-    if(ccParseNoMoreArgs(remaining_line))
+    if(ccParseNoMoreArgs(&remaining_line))
     {
         return(EXIT_FAILURE);
     }
@@ -314,7 +314,7 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char **remaining_line)
     return(exit_status);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsSave(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsSave(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will save all the parameters to file
 \*---------------------------------------------------------------------------------------------------------*/
@@ -324,7 +324,7 @@ uint32_t ccCmdsSave(uint32_t cmd_idx, char **remaining_line)
     char *default_filename = "cctest_pars";
     struct cccmds *cmd;
 
-    arg = ccParseNextArg(remaining_line);
+    arg = ccParseNextArg(&remaining_line);
 
     // If no argument supplied then use the default filename
 
@@ -332,7 +332,7 @@ uint32_t ccCmdsSave(uint32_t cmd_idx, char **remaining_line)
     {
         arg = default_filename;
     }
-    else if(ccParseNoMoreArgs(remaining_line) == EXIT_FAILURE)
+    else if(ccParseNoMoreArgs(&remaining_line) == EXIT_FAILURE)
     {
         return(EXIT_FAILURE);
     }
@@ -367,14 +367,14 @@ uint32_t ccCmdsSave(uint32_t cmd_idx, char **remaining_line)
     return(EXIT_SUCCESS);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsDebug(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsDebug(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will display the debug information for all the active parameters from the previous run.
 \*---------------------------------------------------------------------------------------------------------*/
 {
     // No arguments expected
 
-    if(ccParseNoMoreArgs(remaining_line))
+    if(ccParseNoMoreArgs(&remaining_line))
     {
         return(EXIT_FAILURE);
     }
@@ -386,7 +386,7 @@ uint32_t ccCmdsDebug(uint32_t cmd_idx, char **remaining_line)
     return(EXIT_SUCCESS);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsRun(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsRun(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will launch a run of the function generation and optionally simulate the voltage source
   and load.
@@ -396,7 +396,7 @@ uint32_t ccCmdsRun(uint32_t cmd_idx, char **remaining_line)
 
     // No arguments expected
 
-    if(ccParseNoMoreArgs(remaining_line))
+    if(ccParseNoMoreArgs(&remaining_line))
     {
         return(EXIT_FAILURE);
     }
@@ -539,14 +539,14 @@ uint32_t ccCmdsRun(uint32_t cmd_idx, char **remaining_line)
            ccLogReportBadValues(&meas_log));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsPar(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsPar(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will print or set parameters
 \*---------------------------------------------------------------------------------------------------------*/
 {
     // If no parameter name provided then print all parameter values
 
-    if(*remaining_line == NULL)
+    if(remaining_line == NULL)
     {
         ccParsPrintAll(stdout, cmds[cmd_idx].name, cmds[cmd_idx].pars, ccfile.cyc_sel, ccfile.array_idx);
     }
@@ -554,14 +554,14 @@ uint32_t ccCmdsPar(uint32_t cmd_idx, char **remaining_line)
     {
         struct ccpars *par_matched;
 
-        if(ccParseParName(cmd_idx, remaining_line, &par_matched) == EXIT_FAILURE)
+        if(ccParseParName(cmd_idx, &remaining_line, &par_matched) == EXIT_FAILURE)
         {
             return(EXIT_FAILURE);
         }
 
         // If arguments provided then use them to set the parameter
 
-        if(*remaining_line == NULL)
+        if(remaining_line == NULL)
         {
             ccParsPrint(stdout, cmds[cmd_idx].name, par_matched, ccfile.cyc_sel, ccfile.array_idx);
         }
@@ -573,12 +573,12 @@ uint32_t ccCmdsPar(uint32_t cmd_idx, char **remaining_line)
     return(EXIT_SUCCESS);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsExit(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsExit(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will stop reading from the open file or stop the program if reading from stdin
 \*---------------------------------------------------------------------------------------------------------*/
 {
-    if(ccParseNoMoreArgs(remaining_line) == EXIT_FAILURE)
+    if(ccParseNoMoreArgs(&remaining_line) == EXIT_FAILURE)
     {
         return(EXIT_FAILURE);
     }
@@ -595,12 +595,12 @@ uint32_t ccCmdsExit(uint32_t cmd_idx, char **remaining_line)
     return(EXIT_FAILURE);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-uint32_t ccCmdsQuit(uint32_t cmd_idx, char **remaining_line)
+uint32_t ccCmdsQuit(uint32_t cmd_idx, char *remaining_line)
 /*---------------------------------------------------------------------------------------------------------*\
   This function will stop execution of cctest immediately
 \*---------------------------------------------------------------------------------------------------------*/
 {
-    if(ccParseNoMoreArgs(remaining_line) == EXIT_FAILURE)
+    if(ccParseNoMoreArgs(&remaining_line) == EXIT_FAILURE)
     {
         return(EXIT_FAILURE);
     }

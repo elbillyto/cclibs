@@ -22,17 +22,7 @@
 #ifndef CCFLOT_H
 #define CCFLOT_H
 
-#include <stdint.h>
-
-#include "ccPars.h"
-
-// GLOBALS should be defined in the source file where global variables should be defined
-
-#ifdef GLOBALS
-#define CCFLOT_EXT
-#else
-#define CCFLOT_EXT extern
-#endif
+#include <stdio.h>
 
 // Constants
 

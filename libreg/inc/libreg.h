@@ -99,6 +99,7 @@ enum reg_jurys_result
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <libreg_vars.h>
 #include <libreg/delay.h>
 #include <libreg/err.h>
 #include <libreg/lim.h>
@@ -106,7 +107,7 @@ enum reg_jurys_result
 #include <libreg/meas.h>
 #include <libreg/rst.h>
 #include <libreg/sim.h>
-#include <pars.h>
+#include <libreg_pars.h>
 #include <libreg/conv.h>
 
 #endif // LIBREG_H

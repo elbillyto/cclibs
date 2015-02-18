@@ -71,6 +71,7 @@ struct reg_meas_signal
 struct reg_meas_filter
 {
     bool                  is_running;                            //!< Filter is running control flag
+    int32_t               buf_len;                               //!< Total length of buffer in elements
 
     uint32_t              extrapolation_len_iters;               //!< Extrapolation length (normally regulation period)
     uint32_t              extrapolation_index;                   //!< Index to oldest sample in extrapolation buffer
@@ -129,9 +130,10 @@ extern "C" {
  * This is a non-Real-Time function: do not call from the real-time thread or interrupt
  *
  * @param[out]    filter                     Measurement filter object. Buffer is allocated to reg_meas_filter::fir_buf
- * @param[in]     buf                        Pointer to buffer of sufficient size
+ * @param[in]     buf                        Pointer to buffer
+ * @param[in]     buf_len                    Length of buffer in elements
  */
-void regMeasFilterInitBuffer(struct reg_meas_filter *filter, int32_t *buf);
+void regMeasFilterInitBuffer(struct reg_meas_filter *filter, int32_t *buf, uint32_t buf_len);
 
 /*!
  * Initialise the FIR measurement filter.
