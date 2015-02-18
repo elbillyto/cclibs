@@ -1,0 +1,147 @@
+PAR_GROUP,PAR_NAME,TYPE,CONV_VAR,COMMENT
+ITER,PERIOD,float,iter_period,Iteration (measurement) period in seconds
+,,,,
+REF,ADVANCE,float,ref_advance,Currently active reference advance in seconds
+,,,,
+REG,PERIOD,float,reg_period,Regulation period (field or current if active) in seconds
+REG,MODE,enum reg_mode,reg_mode,Regulation mode
+,,,,
+BREG,ITER_COUNTER,uint32_t,b.iteration_counter,Field regulation iteration counter (0=RST algorithm will run)
+BREG,PERIOD_ITERS,uint32_t,b.reg_period_iters,Field regulation period in iterations
+BREG,PERIOD,float,b.reg_period,Field regulation period in seconds
+BREG,FREQUENCY,float,b.inv_reg_period,Field regulation frequency in Hz
+BREG,INVALID_MEAS_COUNTER,uint32_t,b.invalid_input_counter,Counter for invalid field measurements
+,,,,
+BREG,REF,float,b.ref,Field reference
+BREG,REF_LIMITED,float,b.ref_limited,Field reference after limits
+BREG,REF_RST,float,b.ref_rst,Field reference saved in RST history
+BREG,REF_OPENLOOP,float,b.ref_openloop,Field reference for openloop mode
+BREG,REF_DELAYED,float,b.ref_delayed,Field reference delayed for regulation error calculation
+BREG,MEAS,float,b.meas.reg,Field measurement used for regulation
+BREG,ERR,float,b.err.err,Field regulation error
+BREG,MAX_ABS_ERR,float,b.err.max_abs_err,Maximum absolute field regulation error
+BREG,TRACK_DELAY_PERIODS,float,b.track_delay_periods,Measured field regulation track delay in regulation periods
+,,,,
+BREG_OP,REF_ADVANCE,float,b.last_op_rst_pars.status,Reference advance from last attempt to update the operational field regulation RST coefficients
+BREG_OP,PURE_DELAY_PERIODS,float,b.last_op_rst_pars.pure_delay_periods,Pure delay from last attempt to update the operational field regulation RST coefficients
+BREG_OP,TRACK_DELAY_PERIODS,float,b.track_delay_periods,Track delay from last attempt to update the operational field regulation RST coefficients
+BREG_OP,REF_DELAY_PERIODS,float,b.last_op_rst_pars.ref_delay_periods,Reference delay from last attempt to update the operational field regulation RST coefficients
+BREG_OP,STATUS,enum reg_status,b.last_op_rst_pars.status,Status of last attempt to update the operational field regulation RST coefficients
+BREG_OP,JURYS_RESULT,enum reg_jurys_result,b.last_op_rst_pars.jurys_result,Jury's result from last attempt to update the operational field regulation RST coefficients
+BREG_OP,MODULUS_MARGIN,float,b.last_op_rst_pars.modulus_margin,Modulus margin from last attempt to update the operational field regulation RST coefficients
+BREG_OP,MODULUS_MARGIN_FREQ,float,b.last_op_rst_pars.modulus_margin_freq,Modulus margin frequency from last attempt to update the operational field regulation RST coefficients
+,,,,
+BREG_TEST,REF_ADVANCE,float,b.last_test_rst_pars.status,Reference advance from last attempt to update the test field regulation RST coefficients
+BREG_TEST,PURE_DELAY_PERIODS,float,b.last_test_rst_pars.pure_delay_periods,Pure delay from last attempt to update the test field regulation RST coefficients
+BREG_TEST,TRACK_DELAY_PERIODS,float,b.last_test_rst_pars.track_delay_periods,Track delay from last attempt to update the test field regulation RST coefficients
+BREG_TEST,REF_DELAY_PERIODS,float,b.last_test_rst_pars.ref_delay_periods,Reference delay from last attempt to update the test field regulation RST coefficients
+BREG_TEST,STATUS,enum reg_status,b.last_test_rst_pars.status,Status of last attempt to update the test field regulation RST coefficients
+BREG_TEST,JURYS_RESULT,enum reg_jurys_result,b.last_test_rst_pars.jurys_result,Jury's result from last attempt to update the test field regulation RST coefficients
+BREG_TEST,MODULUS_MARGIN,float,b.last_test_rst_pars.modulus_margin,Modulus margin from last attempt to update the test field regulation RST coefficients
+BREG_TEST,MODULUS_MARGIN_FREQ,float,b.last_test_rst_pars.modulus_margin_freq,Modulus margin frequency from last attempt to update the test field regulation RST coefficients
+,,,,
+IREG,ITER_COUNTER,uint32_t,i.iteration_counter,Current regulation iteration counter (0=RST algorithm will run)
+IREG,PERIOD_ITERS,uint32_t,i.reg_period_iters,Current regulation period in iterations
+IREG,PERIOD,float,i.reg_period,Current regulation period in seconds
+IREG,FREQUENCY,float,i.inv_reg_period,Current regulation frequency in Hz
+IREG,INVALID_MEAS_COUNTER,uint32_t,i.invalid_input_counter,Counter for invalid current measurements
+,,,,
+IREG,REF,float,i.ref,Current reference
+IREG,REF_LIMITED,float,i.ref_limited,Current reference after limits
+IREG,REF_RST,float,i.ref_rst,Current reference saved in RST history
+IREG,REF_OPENLOOP,float,i.ref_openloop,Current reference for openloop mode
+IREG,REF_DELAYED,float,i.ref_delayed,Current reference delayed for regulation error calculation
+IREG,MEAS,float,i.meas.reg,Current measurement used for regulation
+IREG,ERR,float,i.err.err,Current regulation error
+IREG,MAX_ABS_ERR,float,i.err.max_abs_err,Maximum absolute current regulation error
+IREG,TRACK_DELAY_PERIODS,float,i.track_delay_periods,Measured current regulation track delay in regulation periods
+,,,,
+IREG_OP,REF_ADVANCE,float,i.last_op_rst_pars.status,Reference advance from last attempt to update the operational current regulation RST coefficients
+IREG_OP,PURE_DELAY_PERIODS,float,i.last_op_rst_pars.pure_delay_periods,Pure delay from last attempt to update the operational current regulation RST coefficients
+IREG_OP,TRACK_DELAY_PERIODS,float,i.last_op_rst_pars.track_delay_periods,Track delay from last attempt to update the operational current regulation RST coefficients
+IREG_OP,REF_DELAY_PERIODS,float,i.last_op_rst_pars.ref_delay_periods,Reference delay from last attempt to update the operational current regulation RST coefficients
+IREG_OP,STATUS,enum reg_status,i.last_op_rst_pars.status,Status of last attempt to update the operational current regulation RST coefficients
+IREG_OP,JURYS_RESULT,enum reg_jurys_result,i.last_op_rst_pars.jurys_result,Jury's result from last attempt to update the operational current regulation RST coefficients
+IREG_OP,MODULUS_MARGIN,float,i.last_op_rst_pars.modulus_margin,Modulus margin from last attempt to update the operational current regulation RST coefficients
+IREG_OP,MODULUS_MARGIN_FREQ,float,i.last_op_rst_pars.modulus_margin_freq,Modulus margin frequency from last attempt to update the operational current regulation RST coefficients
+,,,,
+IREG_TEST,REF_ADVANCE,float,i.last_test_rst_pars.status,Reference advance from last attempt to update the test current regulation RST coefficients
+IREG_TEST,PURE_DELAY_PERIODS,float,i.last_test_rst_pars.pure_delay_periods,Pure delay from last attempt to update the test current regulation RST coefficients
+IREG_TEST,TRACK_DELAY_PERIODS,float,i.last_test_rst_pars.track_delay_periods,Track delay from last attempt to update the test current regulation RST coefficients
+IREG_TEST,REF_DELAY_PERIODS,float,i.last_test_rst_pars.ref_delay_periods,Reference delay from last attempt to update the test current regulation RST coefficients
+IREG_TEST,STATUS,enum reg_status,i.last_test_rst_pars.status,Status of last attempt to update the test current regulation RST coefficients
+IREG_TEST,JURYS_RESULT,enum reg_jurys_result,i.last_test_rst_pars.jurys_result,Jury's result from last attempt to update the test current regulation RST coefficients
+IREG_TEST,MODULUS_MARGIN,float,i.last_test_rst_pars.modulus_margin,Modulus margin from last attempt to update the test current regulation RST coefficients
+IREG_TEST,MODULUS_MARGIN_FREQ,float,i.last_test_rst_pars.modulus_margin_freq,Modulus margin frequency from last attempt to update the test current regulation RST coefficients
+,,,,
+V,REF,float,v.ref,Voltage reference
+V,REF_SAT,float,v.ref_sat,Voltage reference with magnet saturation compensation
+V,REF_LIMITED,float,v.ref_limited,voltage reference after limits
+V,MEAS,float,v.meas,Voltage measurement
+V,ERR,float,v.err.err,Voltage regulation error
+V,MAX_ABS_ERR,float,v.err.max_abs_err,Maximum absolute voltage regulation error
+,,,,
+SIM,B_MAGNET,float,sim_load_vars.magnet_field,Simulated field in the magnet without delay
+SIM,I_MAGNET,float,sim_load_vars.magnet_current,Simulated current in the magnet without delay
+SIM,I_CIRCUIT,float,sim_load_vars.circuit_current,Simulated current in the circuit without delay
+SIM,V_CIRCUIT,float,sim_load_vars.circuit_voltage,Simulated voltage across the circuit without delay
+,,,,
+FLAG,B_UNIPOLAR,bool,b.lim_ref.flags.unipolar,True if converter (without polarity switch) can only generate a unipolar field
+FLAG,I_UNIPOLAR,bool,i.lim_ref.flags.unipolar,True if converter (without polarity switch) can only generate a unipolar current
+FLAG,V_UNIPOLAR,bool,v.lim_ref.flags.unipolar,True if converter (without polarity switch) can only generate a unipolar voltage
+FLAG,REG_OPENLOOP,bool,is_openloop,True if openloop regulation is active
+FLAG,REF_CLIPPED,bool,flags.ref_clip,True if reference is currently being clipped
+FLAG,REF_RATE_CLIPPED,bool,flags.ref_rate,True if the rate of change of the reference is being clipped
+,,,,
+FLAG,B_MEAS_TRIP,bool,b.lim_meas.flags.trip,True if field measurement exceeds trip limit
+FLAG,B_MEAS_LOW,bool,b.lim_meas.flags.low,True if field measurement is below low limit
+FLAG,B_MEAS_ZERO,bool,b.lim_meas.flags.zero,True if field measurement is below zero limit
+FLAG,B_REF_CLIPPED,bool,b.lim_ref.flags.clip,True if field reference is being clipped
+FLAG,B_REF_RATE_CLIPPED,bool,b.lim_ref.flags.rate,True if rate of change of the field reference is being limited
+FLAG,B_REG_ERR_WARNING,bool,b.err.warning.flag,True if field regulation error exceeds warning limit
+FLAG,B_REG_ERR_FAULT,bool,b.err.fault.flag,True if field regulation error exceeds fault limit
+,,,,
+FLAG,I_MEAS_TRIP,bool,i.lim_meas.flags.trip,True if current measurement exceeds trip limit
+FLAG,I_MEAS_LOW,bool,i.lim_meas.flags.low,True if current measurement is below low limit
+FLAG,I_MEAS_ZERO,bool,i.lim_meas.flags.zero,True if current measurement is below zero limit
+FLAG,I_REF_CLIPPED,bool,i.lim_ref.flags.clip,True if current reference is being clipped
+FLAG,I_REF_RATE_CLIPPED,bool,i.lim_ref.flags.rate,True if rate of change of the current reference is being limited
+FLAG,I_REG_ERR_WARNING,bool,i.err.warning.flag,True if current regulation error exceeds warning limit
+FLAG,I_REG_ERR_FAULT,bool,i.err.fault.flag,True if current regulation error exceeds fault limit
+,,,,
+FLAG,V_REF_CLIPPED,bool,v.lim_ref.flags.clip,True if voltage reference is being clipped
+FLAG,V_REF_RATE_CLIPPED,bool,v.lim_ref.flags.rate,True if rate of change of the voltage reference is being limited
+FLAG,V_REG_ERR_WARNING,bool,v.err.warning.flag,True if voltage regulation error exceeds warning limit
+FLAG,V_REG_ERR_FAULT,bool,v.err.fault.flag,True if voltage regulation error exceeds fault limit
+,,,,
+FLAG,I_RMS_WARNING,bool,lim_i_rms.flags.warning,True if RMS current is above the converter warning limit
+FLAG,I_RMS_FAULT,bool,lim_i_rms.flags.fault,True if RMS current is above the converter fault limit
+FLAG,I_RMS_LOAD_WARNING,bool,lim_i_rms_load.flags.warning,True if RMS current is above the load warning limit
+FLAG,I_RMS_LOAD_FAULT,bool,lim_i_rms_load.flags.fault,True if RMS current is above the load fault limit
+,,,,
+LIMITS,B_POS,float,b.lim_ref.pos,Operational positive field reference limit
+LIMITS,B_MIN,float,b.lim_ref.min,Operational minimum field reference limit
+LIMITS,B_NEG,float,b.lim_ref.neg,Operational negative field reference limit
+LIMITS,B_RATE,float,b.lim_ref.rate,Operational rate of change of field reference limit
+LIMITS,B_ACCELERATION,float,b.lim_ref.acceleration,Operational field reference acceleration limit
+,,,,
+LIMITS,I_POS,float,i.lim_ref.pos,Operational positive current reference limit
+LIMITS,I_MIN,float,i.lim_ref.min,Operational minimum current reference limit
+LIMITS,I_NEG,float,i.lim_ref.neg,Operational negative current reference limit
+LIMITS,I_RATE,float,i.lim_ref.rate,Operational rate of change of current reference limit
+LIMITS,I_ACCELERATION,float,i.lim_ref.acceleration,Operational current reference acceleration limit
+,,,,
+LIMITS,V_POS,float,v.lim_ref.pos,Operational positive voltage reference limit
+LIMITS,V_NEG,float,v.lim_ref.neg,Operational negative voltage reference limit
+LIMITS,V_RATE,float,v.lim_ref.rate,Operational rate of change of voltage reference limit
+LIMITS,V_ACCELERATION,float,v.lim_ref.acceleration,Operational voltage reference acceleration limit
+,,,,
+MEAS,B_UNFILTERED,float,b.meas.signal[REG_MEAS_UNFILTERED],Unfiltered field measurement
+MEAS,B_FILTERED,float,b.meas.signal[REG_MEAS_FILTERED],Filtered field measurement
+MEAS,B_EXTRAPOLATED,float,b.meas.signal[REG_MEAS_EXTRAPOLATED],Extrapolated field measurement
+MEAS,B_RATE,float,b.rate.estimate,Estimate rate of change of field measurement
+,,,,
+MEAS,I_UNFILTERED,float,i.meas.signal[REG_MEAS_UNFILTERED],Unfiltered current measurement
+MEAS,I_FILTERED,float,i.meas.signal[REG_MEAS_FILTERED],Filtered current measurement
+MEAS,I_EXTRAPOLATED,float,i.meas.signal[REG_MEAS_EXTRAPOLATED],Extrapolated current measurement
+MEAS,I_RATE,float,i.rate.estimate,Estimate rate of change of current measurement

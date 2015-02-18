@@ -1,10 +1,10 @@
 #!/usr/bin/awk -f
 #
-# read_only_vars.awk
+# vars.awk
 # Converter Control Regulation library read-only variables header file generator
 #
 # All libreg variables that might be interesting to an application are
-# identified in read_only_vars.csv. This allows this script to create a
+# identified in vars.csv. This allows this script to create a
 # header file with a macro and constants that allow the application developer
 # to easily access the variables.
 #

@@ -153,159 +153,159 @@ BEGIN {
         n_pars++
     }
 
-# Generate parameter header file inc/pars.h
+# Generate parameter header file inc/libreg_pars.h
 
-    of = "inc/pars.h"   # Set output file (of) to pars.h
+    of = "inc/libreg_pars.h"   # Set output file (of) 
 
-    print "/*!"                                                                                  > of
-    print " * @file  pars.h"                                                                     > of
-    print " * @brief Converter Control Regulation library generated parameters header file"      > of
-    print " *"                                                                                   > of
-    print " * IMPORTANT - DO NOT EDIT - This file is generated from libreg/parameters/pars.csv"  > of
-    print " *"                                                                                   > of
-    print " * All libreg parameters are defined in pars.csv and this is transformed into"        > of
-    print " * this header file by libreg/parameters/pars.awk."                                   > of
-    print " *"                                                                                   > of
-    print " * <h2>Contact</h2>"                                                                  > of
-    print " *"                                                                                   > of
-    print " * cclibs-devs@cern.ch"                                                               > of
-    print " *"                                                                                   > of
-    print " * <h2>Copyright</h2>"                                                                > of
-    print " *"                                                                                   > of
-    print " * Copyright CERN 2014. This project is released under the GNU Lesser General"        > of
-    print " * Public License version 3."                                                         > of
-    print " *"                                                                                   > of
-    print " * <h2>License</h2>"                                                                  > of
-    print " *"                                                                                   > of
-    print " * This file is part of libreg."                                                      > of
-    print " *"                                                                                   > of
-    print " * libreg is free software: you can redistribute it and/or modify it under the"       > of
-    print " * terms of the GNU Lesser General Public License as published by the Free"           > of
-    print " * Software Foundation, either version 3 of the License, or (at your option)"         > of
-    print " * any later version."                                                                > of
-    print " *"                                                                                   > of
-    print " * This program is distributed in the hope that it will be useful, but WITHOUT"       > of
-    print " * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or"             > of
-    print " * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License"       > of
-    print " * for more details."                                                                 > of
-    print " *"                                                                                   > of
-    print " * You should have received a copy of the GNU Lesser General Public License"          > of
-    print " * along with this program.  If not, see <http://www.gnu.org/licenses/>."             > of
-    print " *"                                                                                   > of
-    print " * <h2>Parameter initialization template</h2>"                                        > of
-    print " *"                                                                                   > of
-    print " * To use libreg, the calling program should initialize the parameter value"          > of
-    print " * pointers to access the parameter variables in the calling program. Here"           > of
-    print " * is an example template for all the libreg parameters, which assumes that"          > of
-    print " * the reg_conv struct is called conv. Copy this into your initialization"            > of
-    print " * function and for each parameter that you want to control, replace"                 > of
-    print " * REG_PAR_NOT_USED with the address of your variable.\n"                             > of
+    print "/*!"                                                                                             > of
+    print " * @file  libreg_pars.h"                                                                         > of
+    print " * @brief Converter Control Regulation library generated parameters header file"                 > of
+    print " *"                                                                                              > of
+    print " * IMPORTANT - DO NOT EDIT - This file is generated from libreg/parameters/read_write_pars.csv"  > of
+    print " *"                                                                                              > of
+    print " * All libreg parameters are defined in read_write_pars.csv and this is transformed into"        > of
+    print " * this header file by libreg/parameters/read_write_pars.awk."                                   > of
+    print " *"                                                                                              > of
+    print " * <h2>Contact</h2>"                                                                             > of
+    print " *"                                                                                              > of
+    print " * cclibs-devs@cern.ch"                                                                          > of
+    print " *"                                                                                              > of
+    print " * <h2>Copyright</h2>"                                                                           > of
+    print " *"                                                                                              > of
+    print " * Copyright CERN 2014. This project is released under the GNU Lesser General"                   > of
+    print " * Public License version 3."                                                                    > of
+    print " *"                                                                                              > of
+    print " * <h2>License</h2>"                                                                             > of
+    print " *"                                                                                              > of
+    print " * This file is part of libreg."                                                                 > of
+    print " *"                                                                                              > of
+    print " * libreg is free software: you can redistribute it and/or modify it under the"                  > of
+    print " * terms of the GNU Lesser General Public License as published by the Free"                      > of
+    print " * Software Foundation, either version 3 of the License, or (at your option)"                    > of
+    print " * any later version."                                                                           > of
+    print " *"                                                                                              > of
+    print " * This program is distributed in the hope that it will be useful, but WITHOUT"                  > of
+    print " * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or"                        > of
+    print " * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License"                  > of
+    print " * for more details."                                                                            > of
+    print " *"                                                                                              > of
+    print " * You should have received a copy of the GNU Lesser General Public License"                     > of
+    print " * along with this program.  If not, see <http://www.gnu.org/licenses/>."                        > of
+    print " *"                                                                                              > of
+    print " * <h2>Parameter initialization template</h2>"                                                   > of
+    print " *"                                                                                              > of
+    print " * To use libreg, the calling program should initialize the parameter value"                     > of
+    print " * pointers to access the parameter variables in the calling program. Here"                      > of
+    print " * is an example template for all the libreg parameters, which assumes that"                     > of
+    print " * the reg_conv struct is called conv. Copy this into your initialization"                       > of
+    print " * function and for each parameter that you want to control, replace"                            > of
+    print " * REG_PAR_NOT_USED with the address of your variable.\n"                                        > of
 
     for(i=0 ; i < n_pars ; i++)
     {
-        printf "    regConvParInitPointer(&conv,%-30s,REG_PAR_NOT_USED);\n", par_variable[i]     > of
+        printf "    regConvParInitPointer(&conv,%-30s,REG_PAR_NOT_USED);\n", par_variable[i]                > of
     }
 
-    print "\n * If a parameter is not used by your program, you can delete the macro"            > of
-    print " * and the default value from pars.csv will be used instead."                         > of
-    print " * If you want a fixed value for a parameter that is different to the"                > of
-    print " * default value in pars.csv, you can set it using another macro:"                    > of
-    print " *"                                                                                   > of
-    print " *  regConvParInitValue(&conv,{parameter_name},{array_index},{initial_value});"       > of
-    print " *"                                                                                   > of
-    print " * For example, if a given application will always work with the actuation"           > of
-    print " * set to REG_CURRENT_REF, then this can be done using:\n"                            > of
-    print "    regConvParInitValue(&conv,global_actuation,0,REG_CURRENT_REF);"                   > of
-    print " */\n"                                                                                > of
-    print "#ifndef LIBREG_PARS_H"                                                                > of
-    print "#define LIBREG_PARS_H\n"                                                              > of
-    print "#define REG_NUM_PARS                  ", n_pars                                       > of
-    print "#define REG_PAR_NOT_USED              (void*)0\n"                                     > of
+    print "\n * If a parameter is not used by your program, you can delete the macro"                       > of
+    print " * and the default value from pars.csv will be used instead."                                    > of
+    print " * If you want a fixed value for a parameter that is different to the"                           > of
+    print " * default value in pars.csv, you can set it using another macro:"                               > of
+    print " *"                                                                                              > of
+    print " *  regConvParInitValue(&conv,{parameter_name},{array_index},{initial_value});"                  > of
+    print " *"                                                                                              > of
+    print " * For example, if a given application will always work with the actuation"                      > of
+    print " * set to REG_CURRENT_REF, then this can be done using:\n"                                       > of
+    print "    regConvParInitValue(&conv,global_actuation,0,REG_CURRENT_REF);"                              > of
+    print " */\n"                                                                                           > of
+    print "#ifndef LIBREG_PARS_H"                                                                           > of
+    print "#define LIBREG_PARS_H\n"                                                                         > of
+    print "#define REG_NUM_PARS                  ", n_pars                                                  > of
+    print "#define REG_PAR_NOT_USED              (void*)0\n"                                                > of
 
     print "#define regConvParInitPointer(conv,par_name,value_p)        (conv)->pars.par_name.value=value_p"             > of
     print "#define regConvParInitValue(conv,par_name,index,init_value) (conv)->par_values.par_name[index]=init_value\n" > of
 
     for(i=0 ; i < n_flags ; i++)
     {
-        printf "#define %-40s(1u<<%d)\n", flag[i], i                                             > of
+        printf "#define %-40s(1u<<%d)\n", flag[i], i                                                        > of
     }
 
-    print "\nstruct reg_par"                                                                     > of
-    print "{"                                                                                    > of
-    print "    void                     *value;"                                                 > of
-    print "    void                     *copy_of_value;"                                         > of
-    print "    uint32_t                  size_in_bytes;"                                         > of
-    print "    uint32_t                  sizeof_type;"                                           > of
-    print "    uint32_t                  flags;"                                                 > of
-    print "};\n"                                                                                 > of
-    print "struct reg_pars"                                                                      > of
-    print "{"                                                                                    > of
+    print "\nstruct reg_par"                                                                                > of
+    print "{"                                                                                               > of
+    print "    void                     *value;"                                                            > of
+    print "    void                     *copy_of_value;"                                                    > of
+    print "    uint32_t                  size_in_bytes;"                                                    > of
+    print "    uint32_t                  sizeof_type;"                                                      > of
+    print "    uint32_t                  flags;"                                                            > of
+    print "};\n"                                                                                            > of
+    print "struct reg_pars"                                                                                 > of
+    print "{"                                                                                               > of
 
     for(i=0 ; i < n_pars ; i++)
     {
-        printf "    struct reg_par            %s;\n", par_variable[i]                            > of
+        printf "    struct reg_par            %s;\n", par_variable[i]                                       > of
     }
 
-    print "};\n"                                                                                 > of
-    print "struct reg_par_values"                                                                > of
-    print "{"                                                                                    > of
+    print "};\n"                                                                                            > of
+    print "struct reg_par_values"                                                                           > of
+    print "{"                                                                                               > of
 
     for(i=0 ; i < n_pars ; i++)
     {
-        printf "    %-25s %-30s[%s];\n", par_type[i], par_variable[i], par_length[i]             > of
+        printf "    %-25s %-30s[%s];\n", par_type[i], par_variable[i], par_length[i]                        > of
     }
 
-    print "};\n"                                                                                 > of
-    print "#endif // LIBREG_PARS_H\n"                                                            > of
-    print "// EOF"                                                                               > of
+    print "};\n"                                                                                            > of
+    print "#endif // LIBREG_PARS_H\n"                                                                       > of
+    print "// EOF"                                                                                          > of
 
     close(of)
 
 # Generate parameter initialisation function in inc/init_pars.h
 
-    of = "inc/init_pars.h"    # Set output file (of) to init_pars.h
+    of = "inc/libreg_init_pars.h"    # Set output file (of) to init_pars.h
 
-    print "/*!"                                                                                  > of
-    print " * @file  init_pars.h"                                                                > of
-    print " * @brief Libreg generated parameter initialisation header file"                      > of
-    print " *"                                                                                   > of
-    print " * IMPORTANT - DO NOT EDIT - This file is generated from libreg/parameters/pars.csv"  > of
-    print " *"                                                                                   > of
-    print " * All libreg parameters are defined in pars.csv and this is transformed into"        > of
-    print " * this header file (and pars.h) by libreg/parameters/pars.awk."                      > of
-    print " *"                                                                                   > of
-    print " * <h2>Contact</h2>"                                                                  > of
-    print " *"                                                                                   > of
-    print " * cclibs-devs@cern.ch"                                                               > of
-    print " *"                                                                                   > of
-    print " * <h2>Copyright</h2>"                                                                > of
-    print " *"                                                                                   > of
-    print " * Copyright CERN 2014. This project is released under the GNU Lesser General"        > of
-    print " * Public License version 3."                                                         > of
-    print " *"                                                                                   > of
-    print " * <h2>License</h2>"                                                                  > of
-    print " *"                                                                                   > of
-    print " * This file is part of libreg."                                                      > of
-    print " *"                                                                                   > of
-    print " * libreg is free software: you can redistribute it and/or modify it under the"       > of
-    print " * terms of the GNU Lesser General Public License as published by the Free"           > of
-    print " * Software Foundation, either version 3 of the License, or (at your option)"         > of
-    print " * any later version."                                                                > of
-    print " *"                                                                                   > of
-    print " * This program is distributed in the hope that it will be useful, but WITHOUT"       > of
-    print " * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or"             > of
-    print " * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License"       > of
-    print " * for more details."                                                                 > of
-    print " *"                                                                                   > of
-    print " * You should have received a copy of the GNU Lesser General Public License"          > of
-    print " * along with this program.  If not, see <http://www.gnu.org/licenses/>."             > of
-    print " */\n"                                                                                > of
-    print "#ifndef LIBREG_INIT_PARS_H"                                                           > of
-    print "#define LIBREG_INIT_PARS_H\n"                                                         > of
+    print "/*!"                                                                                             > of
+    print " * @file  libreg_init_pars.h"                                                                    > of
+    print " * @brief Libreg generated parameter initialisation header file"                                 > of
+    print " *"                                                                                              > of
+    print " * IMPORTANT - DO NOT EDIT - This file is generated from libreg/parameters/pars.csv"             > of
+    print " *"                                                                                              > of
+    print " * All libreg parameters are defined in pars.csv and this is transformed into"                   > of
+    print " * this header file (and pars.h) by libreg/parameters/pars.awk."                                 > of
+    print " *"                                                                                              > of
+    print " * <h2>Contact</h2>"                                                                             > of
+    print " *"                                                                                              > of
+    print " * cclibs-devs@cern.ch"                                                                          > of
+    print " *"                                                                                              > of
+    print " * <h2>Copyright</h2>"                                                                           > of
+    print " *"                                                                                              > of
+    print " * Copyright CERN 2014. This project is released under the GNU Lesser General"                   > of
+    print " * Public License version 3."                                                                    > of
+    print " *"                                                                                              > of
+    print " * <h2>License</h2>"                                                                             > of
+    print " *"                                                                                              > of
+    print " * This file is part of libreg."                                                                 > of
+    print " *"                                                                                              > of
+    print " * libreg is free software: you can redistribute it and/or modify it under the"                  > of
+    print " * terms of the GNU Lesser General Public License as published by the Free"                      > of
+    print " * Software Foundation, either version 3 of the License, or (at your option)"                    > of
+    print " * any later version."                                                                           > of
+    print " *"                                                                                              > of
+    print " * This program is distributed in the hope that it will be useful, but WITHOUT"                  > of
+    print " * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or"                        > of
+    print " * FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License"                  > of
+    print " * for more details."                                                                            > of
+    print " *"                                                                                              > of
+    print " * You should have received a copy of the GNU Lesser General Public License"                     > of
+    print " * along with this program.  If not, see <http://www.gnu.org/licenses/>."                        > of
+    print " */\n"                                                                                           > of
+    print "#ifndef LIBREG_INIT_PARS_H"                                                                      > of
+    print "#define LIBREG_INIT_PARS_H\n"                                                                    > of
 
-    print "static void regConvParsInit(struct reg_conv *conv)"                                   > of
-    print "{"                                                                                    > of
-    print "    uint32_t i;"                                                                      > of
+    print "static void regConvParsInit(struct reg_conv *conv)"                                              > of
+    print "{"                                                                                               > of
+    print "    uint32_t i;"                                                                                 > of
 
 
     for(i=0 ; i < n_pars ; i++)
@@ -325,9 +325,9 @@ BEGIN {
         }
     }
 
-    print "}\n"                                                                                  > of
-    print "#endif // LIBREG_INIT_PARS_H\n"                                                       > of
-    print "// EOF"                                                                               > of
+    print "}\n"                                                                                             > of
+    print "#endif // LIBREG_INIT_PARS_H\n"                                                                  > of
+    print "// EOF"                                                                                          > of
     close(of)
 
     exit 0
