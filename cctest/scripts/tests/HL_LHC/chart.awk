@@ -17,11 +17,10 @@ BEGIN {
         exit -1
     }
 
-    print "--------------------------------------"
-
-    print "Creating charts for signal " signal
-
     signal = ARGV[1]
+
+    print "--------------------------------------"
+    print "Creating charts for signal " signal
 
     for(file_idx = 2; file_idx < ARGC ; file_idx++)
     {
