@@ -10,7 +10,6 @@ BREG,ITER_COUNTER,uint32_t,b.iteration_counter,Field regulation iteration counte
 BREG,PERIOD_ITERS,uint32_t,b.reg_period_iters,Field regulation period in iterations
 BREG,PERIOD,float,b.reg_period,Field regulation period in seconds
 BREG,FREQUENCY,float,b.inv_reg_period,Field regulation frequency in Hz
-BREG,INVALID_MEAS_COUNTER,uint32_t,b.invalid_input_counter,Counter for invalid field measurements
 ,,,,
 BREG,REF,float,b.ref,Field reference
 BREG,REF_LIMITED,float,b.ref_limited,Field reference after limits
@@ -44,7 +43,6 @@ IREG,ITER_COUNTER,uint32_t,i.iteration_counter,Current regulation iteration coun
 IREG,PERIOD_ITERS,uint32_t,i.reg_period_iters,Current regulation period in iterations
 IREG,PERIOD,float,i.reg_period,Current regulation period in seconds
 IREG,FREQUENCY,float,i.inv_reg_period,Current regulation frequency in Hz
-IREG,INVALID_MEAS_COUNTER,uint32_t,i.invalid_input_counter,Counter for invalid current measurements
 ,,,,
 IREG,REF,float,i.ref,Current reference
 IREG,REF_LIMITED,float,i.ref_limited,Current reference after limits
@@ -77,7 +75,6 @@ IREG_TEST,MODULUS_MARGIN_FREQ,float,i.last_test_rst_pars.modulus_margin_freq,Mod
 V,REF,float,v.ref,Voltage reference
 V,REF_SAT,float,v.ref_sat,Voltage reference with magnet saturation compensation
 V,REF_LIMITED,float,v.ref_limited,voltage reference after limits
-V,MEAS,float,v.meas,Voltage measurement
 V,ERR,float,v.err.err,Voltage regulation error
 V,MAX_ABS_ERR,float,v.err.max_abs_err,Maximum absolute voltage regulation error
 ,,,,
@@ -140,8 +137,19 @@ MEAS,B_UNFILTERED,float,b.meas.signal[REG_MEAS_UNFILTERED],Unfiltered field meas
 MEAS,B_FILTERED,float,b.meas.signal[REG_MEAS_FILTERED],Filtered field measurement
 MEAS,B_EXTRAPOLATED,float,b.meas.signal[REG_MEAS_EXTRAPOLATED],Extrapolated field measurement
 MEAS,B_RATE,float,b.rate.estimate,Estimate rate of change of field measurement
+MEAS,B_INVALID_COUNTER,uint32_t,b.invalid_input_counter,Counter for invalid field measurements
+MEAS,B_INVALID_SEQ_COUNTER,uint32_t,b.invalid_seq_counter,Counter of consecutive invalid field measurements
 ,,,,
 MEAS,I_UNFILTERED,float,i.meas.signal[REG_MEAS_UNFILTERED],Unfiltered current measurement
 MEAS,I_FILTERED,float,i.meas.signal[REG_MEAS_FILTERED],Filtered current measurement
 MEAS,I_EXTRAPOLATED,float,i.meas.signal[REG_MEAS_EXTRAPOLATED],Extrapolated current measurement
 MEAS,I_RATE,float,i.rate.estimate,Estimate rate of change of current measurement
+MEAS,I_INVALID_COUNTER,uint32_t,i.invalid_input_counter,Counter for invalid current measurements
+MEAS,I_INVALID_SEQ_COUNTER,uint32_t,i.invalid_seq_counter,Counter of consecutive invalid current measurements
+,,,,
+MEAS,V,float,v.meas,Estimate rate of change of current measurement
+MEAS,V_INVALID_COUNTER,uint32_t,v.invalid_input_counter,Counter for invalid current measurements
+MEAS,V_INVALID_SEQ_COUNTER,uint32_t,v.invalid_seq_counter,Counter of consecutive invalid current measurements
+,,,,
+LOAD,SELECT,uint32_t,par_values.load_select[0],Validated load select
+LOAD,TEST_SELECT,uint32_t,par_values.load_test_select[0],Validated test load select

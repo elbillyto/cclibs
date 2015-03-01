@@ -56,7 +56,7 @@ enum fg_gen_status ccRefDirectGen(struct fg_table *pars, const double *time, flo
 
     if(pars->seg_idx > 0)
     {
-        prev_rate = (*ref - prev_ref) / conv.reg_period;
+        prev_rate = (*ref - prev_ref) / reg_mgr.reg_period;
         prev_ref  = *ref;
     }
     else // DIRECT has not yet started
@@ -93,26 +93,26 @@ enum fg_gen_status ccRefDirectGen(struct fg_table *pars, const double *time, flo
 
         // Clip reference
 
-        if(conv.reg_signal->lim_ref.invert_limits == REG_DISABLED)
+        if(reg_mgr.reg_signal->lim_ref.invert_limits == REG_DISABLED)
         {
-            if(next_ref > conv.lim_ref->pos)
+            if(next_ref > reg_mgr.lim_ref->pos)
             {
-                final_ref = conv.lim_ref->pos;
+                final_ref = reg_mgr.lim_ref->pos;
             }
-            else if(next_ref < conv.lim_ref->neg)
+            else if(next_ref < reg_mgr.lim_ref->neg)
             {
-                final_ref = conv.lim_ref->neg;
+                final_ref = reg_mgr.lim_ref->neg;
             }
         }
         else
         {
-            if(next_ref > -conv.lim_ref->neg)
+            if(next_ref > -reg_mgr.lim_ref->neg)
             {
-                final_ref = -conv.lim_ref->neg;
+                final_ref = -reg_mgr.lim_ref->neg;
             }
-            else if(next_ref < -conv.lim_ref->pos)
+            else if(next_ref < -reg_mgr.lim_ref->pos)
             {
-                final_ref = -conv.lim_ref->pos;
+                final_ref = -reg_mgr.lim_ref->pos;
             }
         }
 
@@ -120,13 +120,13 @@ enum fg_gen_status ccRefDirectGen(struct fg_table *pars, const double *time, flo
 
         fgRampCalc(ccpars_load.pol_swi_auto,
                    ccpars_limits.invert, 
-                   func_time - conv.reg_period,
+                   func_time - reg_mgr.reg_period,
                    prev_rate,
                    *ref,
                    final_ref,
-                   ccpars_default.pars[conv.reg_mode].acceleration,
-                   ccpars_default.pars[conv.reg_mode].linear_rate,
-                   ccpars_default.pars[conv.reg_mode].deceleration,
+                   ccpars_default.pars[reg_mgr.reg_mode].acceleration,
+                   ccpars_default.pars[reg_mgr.reg_mode].linear_rate,
+                   ccpars_default.pars[reg_mgr.reg_mode].deceleration,
                    &ccrun.prefunc.pars,
                    NULL);
     }
@@ -203,7 +203,7 @@ enum fg_error ccRefInitTABLE(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
                         ccpars_global.run_delay,
-                        conv.iter_period,
+                        reg_mgr.iter_period,
                         ccpars_table[cyc_sel].ref,
                         table_pars[0].num_elements[cyc_sel],
                         ccpars_table[cyc_sel].time,
@@ -318,15 +318,12 @@ enum fg_error ccRefInitCTRIM(struct fg_meta *fg_meta, uint32_t cyc_sel)
 enum fg_error ccRefInitPULSE(struct fg_meta *fg_meta, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    // Initialise a flat TRIM to produce the flat reference of the required duration, at the required time
-
-    return(fgTrimInit(  ccrun.fg_limits,
+    return(fgPulseInit( ccrun.fg_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
                         ccpars_global.run_delay + ccpars_pulse[cyc_sel].time,
-                        FG_TRIM_LINEAR,
                         ccpars_pulse[cyc_sel].ref,
-                        ccpars_pulse[cyc_sel].ref,
+                        ccpars_pulse[cyc_sel].linear_rate,
                         ccpars_pulse[cyc_sel].duration,
                         &fg_pulse[cyc_sel],
                         fg_meta));

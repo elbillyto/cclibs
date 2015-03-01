@@ -59,12 +59,12 @@ struct ccpars_pc
     enum ref_state              ref;                // Reference state control
     enum reg_actuation          actuation;          // Power converter actuation (VOLTAGE REF or CURRENT REF)
     float                       act_delay_iters;    // Power converter control delay in iterations
-    float                       quantization;       // Actuation quantization (V or A)
-    float                       ripple;             // Peak-peak ripple
     float                       bandwidth;          // Power converter (voltage source or current source) second order bandwidth
     float                       z;                  // Second order damping factor
     float                       tau_zero;           // Second order time constant of zero (0 if not required)
     struct reg_sim_pc_pars      sim_pc_pars;        // Power converter third order model if bandwidth is zero
+    float                       sim_quantization;   // Simulated actuation quantization (V or A)
+    float                       sim_ripple;         // Simulated peak-peak ripple
 };
 
 CCPARS_PC_EXT struct ccpars_pc ccpars_pc
@@ -74,13 +74,13 @@ CCPARS_PC_EXT struct ccpars_pc ccpars_pc
         REF_OFF,                 // PC REF
         REG_VOLTAGE_REF,         // PC ACTUATION
         1.0,                     // PC ACT_DELAY_ITERS
-        0.0,                     // PC QUANTIZATION
-        0.0,                     // PC RIPPLE
         200.0,                   // PC BANDWIDTH
         0.9,                     // PC Z
         0.0,                     // PC TAU_ZERO
         {  { 1.0 },              // PC SIM_NUM
            { 1.0 }  },           // PC SIM_DEN
+        0.0,                     // PC SIM_QUANTIZATION
+        0.0,                     // PC SIM_RIPPLE
 }
 #endif
 ;
@@ -93,31 +93,31 @@ enum pc_pars_index_enum
     PC_REF                 ,
     PC_ACTUATION           ,
     PC_ACT_DELAY_ITERS     ,
-    PC_QUANTIZATION        ,
-    PC_RIPPLE              ,
     PC_BANDWIDTH           ,
     PC_Z                   ,
     PC_TAU_ZERO            ,
     PC_SIM_NUM             ,
     PC_SIM_DEN             ,
+    PC_SIM_QUANTIZATION    ,
+    PC_SIM_RIPPLE          ,
 };
 
 // Power converter parameters description structure
 
 CCPARS_PC_EXT struct ccpars pc_pars[]
 #ifdef GLOBALS
-= {// "Signal name"      type,      max_n_els,            *enum,                      *value,                       num_defaults,    cyc_sel_step, flags
-    { "STATE",           PAR_ENUM,  1,                     enum_state_pc,      { .u = &ccpars_pc.state           }, 1,                     0, PARS_RW                               },
-    { "REF",             PAR_ENUM,  1,                     enum_state_ref,     { .u = &ccpars_pc.ref             }, 1,                     0, PARS_RW                               },
-    { "ACTUATION",       PAR_ENUM,  1,                     enum_reg_actuation, { .u = &ccpars_pc.actuation       }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "ACT_DELAY_ITERS", PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.act_delay_iters }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "QUANTIZATION",    PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.quantization    }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "RIPPLE",          PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.ripple          }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "BANDWIDTH",       PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.bandwidth       }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "Z",               PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.z               }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "TAU_ZERO",        PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.tau_zero        }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "SIM_NUM",         PAR_FLOAT, REG_NUM_PC_SIM_COEFFS, NULL,               { .f =  ccpars_pc.sim_pc_pars.num }, REG_NUM_PC_SIM_COEFFS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "SIM_DEN",         PAR_FLOAT, REG_NUM_PC_SIM_COEFFS, NULL,               { .f =  ccpars_pc.sim_pc_pars.den }, REG_NUM_PC_SIM_COEFFS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+= {// "Signal name"       type,      max_n_els,            *enum,                      *value,                       num_defaults,    cyc_sel_step, flags
+    { "STATE",            PAR_ENUM,  1,                     enum_state_pc,      { .u = &ccpars_pc.state            }, 1,                     0, PARS_RW                               },
+    { "REF",              PAR_ENUM,  1,                     enum_state_ref,     { .u = &ccpars_pc.ref              }, 1,                     0, PARS_RW                               },
+    { "ACTUATION",        PAR_ENUM,  1,                     enum_reg_actuation, { .u = &ccpars_pc.actuation        }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "ACT_DELAY_ITERS",  PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.act_delay_iters  }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "BANDWIDTH",        PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.bandwidth        }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "Z",                PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.z                }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "TAU_ZERO",         PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.tau_zero         }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "SIM_NUM",          PAR_FLOAT, REG_NUM_PC_SIM_COEFFS, NULL,               { .f =  ccpars_pc.sim_pc_pars.num  }, REG_NUM_PC_SIM_COEFFS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "SIM_DEN",          PAR_FLOAT, REG_NUM_PC_SIM_COEFFS, NULL,               { .f =  ccpars_pc.sim_pc_pars.den  }, REG_NUM_PC_SIM_COEFFS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "SIM_QUANTIZATION", PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.sim_quantization }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "SIM_RIPPLE",       PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.sim_ripple       }, 1,                     0, PARS_RW|PARS_REG|PARS_CFG             },
     { NULL }
 }
 #endif

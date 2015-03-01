@@ -101,9 +101,9 @@ static void ccStatusMeas(char *label, enum reg_mode reg_mode, float meas)
 {
     printf("  " TERM_CSI TERM_BOLD TERM_SGR "%s" TERM_NORMAL ":", label);
 
-    if(conv.reg_mode == reg_mode)
+    if(reg_mgr.reg_mode == reg_mode)
     {
-        if(conv.is_openloop)
+        if(reg_mgr.is_openloop)
         {
             printf(TERM_CSI TERM_FG_CYAN TERM_SGR);
         }
@@ -146,10 +146,11 @@ static void ccStatusFlags(struct cccmds *cmd, char *active_fg, char *active_bg)
 
 void ccStatus(bool overwrite)
 {
-    struct timeval tp               = ccrun.iter_time;
+    struct timeval tp              = ccrun.iter_time;
     double         time_till_event = ccrun.time_till_event_us * 1.0E-6;
-    uint32_t       cyc_idx          = ccrun.cycle_idx;
+    uint32_t       cyc_idx;
     uint32_t       cyc_sel;
+    uint32_t       ref_cyc_sel;
 
     struct tm      tm;
 
@@ -171,7 +172,7 @@ void ccStatus(bool overwrite)
     // Time of day
 
     printf(TERM_CSI TERM_BOLD TERM_SGR "%02u:%02u:%02u.%03u  " TERM_NORMAL,
-            tm.tm_hour, tm.tm_min, tm.tm_sec, tp.tv_usec/1000);
+            tm.tm_hour, tm.tm_min, tm.tm_sec, (uint32_t)tp.tv_usec/1000);
 
     // PC state
 
@@ -208,12 +209,13 @@ void ccStatus(bool overwrite)
 
     // CYC_IDX/CYC_SEL/REF_CYC_SEL
 
-    cyc_sel = ccpars_global.cycle_selector[cyc_idx]/100;
+    pthread_mutex_lock(&ccrun.supercycle.mutex);
 
-    if(cyc_sel > CC_MAX_CYC_SEL)
-    {
-        cyc_sel = 0;
-    }
+    cyc_idx     = ccrun.supercycle.cyc_idx;
+    cyc_sel     = ccrun.supercycle.cyc_sel;
+    ref_cyc_sel = ccrun.supercycle.ref_cyc_sel;
+
+    pthread_mutex_unlock(&ccrun.supercycle.mutex);
 
     printf(TERM_CSI TERM_BOLD TERM_SGR "CYC" TERM_NORMAL ":");
     printf("%02u/",cyc_idx);
@@ -222,16 +224,16 @@ void ccStatus(bool overwrite)
     {
         printf(TERM_CSI TERM_FG_YELLOW TERM_SGR "%02u/", cyc_sel);
 
-        if(cyc_sel == ccpars_global.test_ref_cyc_sel)
+        if(cyc_sel == ref_cyc_sel)
         {
             printf(TERM_CSI TERM_FG_GREEN TERM_SGR);
         }
 
-        printf("%02u" TERM_NORMAL, ccpars_global.test_ref_cyc_sel);
+        printf("%02u  " TERM_NORMAL, ref_cyc_sel);
     }
     else
     {
-        printf("%02u/%02u  ",cyc_sel, cyc_sel);
+        printf("%02u/%02u  ",cyc_sel, ref_cyc_sel);
     }
 
     // Time till event
@@ -261,16 +263,20 @@ void ccStatus(bool overwrite)
 
     // Field measurement
 
-    ccStatusMeas("B", REG_FIELD,   conv.b.meas.signal[REG_MEAS_EXTRAPOLATED]);
-    ccStatusMeas("I", REG_CURRENT, conv.i.meas.signal[REG_MEAS_EXTRAPOLATED]);
-    ccStatusMeas("V", REG_VOLTAGE, conv.v.meas);
+    ccStatusMeas("B", REG_FIELD,   reg_mgr.b.meas.signal[REG_MEAS_EXTRAPOLATED]);
+    ccStatusMeas("I", REG_CURRENT, reg_mgr.i.meas.signal[REG_MEAS_EXTRAPOLATED]);
+    ccStatusMeas("V", REG_VOLTAGE, reg_mgr.v.meas);
 
     ccStatusFlags(&cmds[CMD_FAULTS],   TERM_FG_WHITE, TERM_BG_RED);
     ccStatusFlags(&cmds[CMD_WARNINGS], TERM_FG_BLACK, TERM_BG_YELLOW);
 
+    // Scroll window to anticipate newline when user presses enter
+
+    printf("\n\n" TERM_CSI "2" TERM_UP);
+
     // Display prompt
 
-    printf("\n\r" TERM_CLR_LINE CC_PROMPT);
+    printf("\n\r" CC_PROMPT);
 }
 
 // EOF

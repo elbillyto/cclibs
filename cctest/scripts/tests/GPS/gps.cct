@@ -95,8 +95,8 @@ GLOBAL CYCLE_SELECTOR       1 2
 # Simulations with Bruker
 
 PC BANDWIDTH                1000
-PC RIPPLE                   1.0E-3
-PC QUANTIZATION             0.0
+PC SIM_RIPPLE               1.0E-3
+PC SIM_QUANTIZATION         0.0
 GLOBAL FILE                 gps-bruker-nn
 LOAD SELECT                 0
 RUN
@@ -104,8 +104,8 @@ RUN
 # Simulations with COBALT
 
 PC BANDWIDTH                2000
-PC RIPPLE                   20.0E-3
-PC QUANTIZATION             1.0E-03
+PC SIM_RIPPLE               20.0E-3
+PC SIM_QUANTIZATION         1.0E-03
 GLOBAL FILE                 gps-cobalt-nn
 LOAD SELECT                 1
 RUN
@@ -117,8 +117,8 @@ RUN
 MEAS B_SIM_NOISE_PP         0.05
 
 PC BANDWIDTH                1000
-PC RIPPLE                   1.0E-3
-PC QUANTIZATION             0.0
+PC SIM_RIPPLE               1.0E-3
+PC SIM_QUANTIZATION         0.0
 GLOBAL FILE                 gps-bruker
 LOAD SELECT                 0
 RUN
@@ -126,8 +126,8 @@ RUN
 # Simulations with COBALT
 
 PC BANDWIDTH                2000
-PC RIPPLE                   6.0E-3
-PC QUANTIZATION             1.0E-03
+PC SIM_RIPPLE               6.0E-3
+PC SIM_QUANTIZATION         1.0E-03
 GLOBAL FILE                 gps-cobalt
 LOAD SELECT                 1
 RUN

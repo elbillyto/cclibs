@@ -88,12 +88,12 @@ enum cclog_ana_reg_idx
 CCLOG_EXT struct cclog_ana_sigs ana_breg_sigs[]
 #ifdef GLOBALS
 = { // Name                  Trailing_step
-    { "B_MEAS_REG",             true,       &regConvVar(conv, BREG_MEAS               )     },
-    { "B_REF",                  true,       &regConvVar(conv, BREG_REF                )     },
-    { "B_REF_LIMITED",          true,       &regConvVar(conv, BREG_REF_LIMITED        )     },
-    { "B_REF_RST",              true,       &regConvVar(conv, BREG_REF_RST            )     },
-    { "B_REF_OPENLOOP",         true,       &regConvVar(conv, BREG_REF_OPENLOOP       )     },
-    { "B_TRACK_DELAY",          true,       &regConvVar(conv, BREG_TRACK_DELAY_PERIODS)     },
+    { "B_MEAS_REG",             true,       &regMgrVar(reg_mgr, BREG_MEAS               )     },
+    { "B_REF",                  true,       &regMgrVar(reg_mgr, BREG_REF                )     },
+    { "B_REF_LIMITED",          true,       &regMgrVar(reg_mgr, BREG_REF_LIMITED        )     },
+    { "B_REF_RST",              true,       &regMgrVar(reg_mgr, BREG_REF_RST            )     },
+    { "B_REF_OPENLOOP",         true,       &regMgrVar(reg_mgr, BREG_REF_OPENLOOP       )     },
+    { "B_TRACK_DELAY",          true,       &regMgrVar(reg_mgr, BREG_TRACK_DELAY_PERIODS)     },
 }
 #endif
 ;
@@ -121,12 +121,12 @@ CCLOG_EXT float    i_rms_load;
 CCLOG_EXT struct cclog_ana_sigs ana_ireg_sigs[]
 #ifdef GLOBALS
 = { // Name                  Trailing_step
-    { "I_MEAS_REG",             true,       &regConvVar(conv, IREG_MEAS               )     },
-    { "I_REF",                  true,       &regConvVar(conv, IREG_REF                )     },
-    { "I_REF_LIMITED",          true,       &regConvVar(conv, IREG_REF_LIMITED        )     },
-    { "I_REF_RST",              true,       &regConvVar(conv, IREG_REF_RST            )     },
-    { "I_REF_OPENLOOP",         true,       &regConvVar(conv, IREG_REF_OPENLOOP       )     },
-    { "I_TRACK_DELAY",          true,       &regConvVar(conv, IREG_TRACK_DELAY_PERIODS)     },
+    { "I_MEAS_REG",             true,       &regMgrVar(reg_mgr, IREG_MEAS               )     },
+    { "I_REF",                  true,       &regMgrVar(reg_mgr, IREG_REF                )     },
+    { "I_REF_LIMITED",          true,       &regMgrVar(reg_mgr, IREG_REF_LIMITED        )     },
+    { "I_REF_RST",              true,       &regMgrVar(reg_mgr, IREG_REF_RST            )     },
+    { "I_REF_OPENLOOP",         true,       &regMgrVar(reg_mgr, IREG_REF_OPENLOOP       )     },
+    { "I_TRACK_DELAY",          true,       &regMgrVar(reg_mgr, IREG_TRACK_DELAY_PERIODS)     },
 }
 #endif
 ;
@@ -181,34 +181,34 @@ enum cclog_ana_meas_idx
 CCLOG_EXT struct cclog_ana_sigs ana_meas_sigs[]     // IMPORTANT: This must be in the same order as enum cclog_ana_meas_idx (above)
 #ifdef GLOBALS
 = { // Name                  Trailing_step
-    { "B_MAGNET",               true ,           &regConvVar(conv, SIM_B_MAGNET)           },
-    { "B_MEAS",                 false,           &regConvVar(conv, MEAS_B_UNFILTERED)      },
-    { "B_MEAS_FLTR",            false,           &regConvVar(conv, MEAS_B_FILTERED)        },
-    { "B_MEAS_EXTR",            false,           &regConvVar(conv, MEAS_B_EXTRAPOLATED)    },
-    { "B_REF_DELAYED",          true ,           &regConvVar(conv, BREG_REF_DELAYED)       },
+    { "B_MAGNET",               true ,           &regMgrVar(reg_mgr, SIM_B_MAGNET)           },
+    { "B_MEAS",                 false,           &regMgrVar(reg_mgr, MEAS_B_UNFILTERED)      },
+    { "B_MEAS_FLTR",            false,           &regMgrVar(reg_mgr, MEAS_B_FILTERED)        },
+    { "B_MEAS_EXTR",            false,           &regMgrVar(reg_mgr, MEAS_B_EXTRAPOLATED)    },
+    { "B_REF_DELAYED",          true ,           &regMgrVar(reg_mgr, BREG_REF_DELAYED)       },
 
-    { "I_MAGNET",               true ,           &regConvVar(conv, SIM_I_MAGNET)           },
-    { "I_CIRCUIT",              true ,           &regConvVar(conv, SIM_I_CIRCUIT)          },
+    { "I_MAGNET",               true ,           &regMgrVar(reg_mgr, SIM_I_MAGNET)           },
+    { "I_CIRCUIT",              true ,           &regMgrVar(reg_mgr, SIM_I_CIRCUIT)          },
     { "I_RMS",                  false,           &i_rms                                    },
     { "I_RMS_LOAD",             false,           &i_rms_load                               },
-    { "I_MEAS",                 false,           &regConvVar(conv, MEAS_I_UNFILTERED)      },
-    { "I_MEAS_FLTR",            false,           &regConvVar(conv, MEAS_I_FILTERED)        },
-    { "I_MEAS_EXTR",            false,           &regConvVar(conv, MEAS_I_EXTRAPOLATED)    },
-    { "I_REF_DELAYED",          true ,           &regConvVar(conv, IREG_REF_DELAYED)       },
+    { "I_MEAS",                 false,           &regMgrVar(reg_mgr, MEAS_I_UNFILTERED)      },
+    { "I_MEAS_FLTR",            false,           &regMgrVar(reg_mgr, MEAS_I_FILTERED)        },
+    { "I_MEAS_EXTR",            false,           &regMgrVar(reg_mgr, MEAS_I_EXTRAPOLATED)    },
+    { "I_REF_DELAYED",          true ,           &regMgrVar(reg_mgr, IREG_REF_DELAYED)       },
 
-    { "V_REF",                  true ,           &regConvVar(conv, V_REF)                  },
-    { "V_REF_SAT",              true ,           &regConvVar(conv, V_REF_SAT)              },
-    { "V_REF_LIMITED",          true ,           &regConvVar(conv, V_REF_LIMITED)          },
-    { "V_CIRCUIT",              true ,           &regConvVar(conv, SIM_V_CIRCUIT)          },
-    { "V_MEAS",                 false,           &regConvVar(conv, V_MEAS)                 },
+    { "V_REF",                  true ,           &regMgrVar(reg_mgr, V_REF)                  },
+    { "V_REF_SAT",              true ,           &regMgrVar(reg_mgr, V_REF_SAT)              },
+    { "V_REF_LIMITED",          true ,           &regMgrVar(reg_mgr, V_REF_LIMITED)          },
+    { "V_CIRCUIT",              true ,           &regMgrVar(reg_mgr, SIM_V_CIRCUIT)          },
+    { "V_MEAS",                 false,           &regMgrVar(reg_mgr, MEAS_V)                 },
 
-    { "B_ERR",                  true ,           &regConvVar(conv, BREG_ERR)               },
-    { "I_ERR",                  true ,           &regConvVar(conv, IREG_ERR)               },
-    { "V_ERR",                  true ,           &regConvVar(conv, V_ERR)                  },
+    { "B_ERR",                  true ,           &regMgrVar(reg_mgr, BREG_ERR)               },
+    { "I_ERR",                  true ,           &regMgrVar(reg_mgr, IREG_ERR)               },
+    { "V_ERR",                  true ,           &regMgrVar(reg_mgr, V_ERR)                  },
 
-    { "MAX_ABS_B_ERR",          true ,           &regConvVar(conv, BREG_MAX_ABS_ERR)       },
-    { "MAX_ABS_I_ERR",          true ,           &regConvVar(conv, IREG_MAX_ABS_ERR)       },
-    { "MAX_ABS_V_ERR",          true ,           &regConvVar(conv, V_MAX_ABS_ERR)          },
+    { "MAX_ABS_B_ERR",          true ,           &regMgrVar(reg_mgr, BREG_MAX_ABS_ERR)       },
+    { "MAX_ABS_I_ERR",          true ,           &regMgrVar(reg_mgr, IREG_MAX_ABS_ERR)       },
+    { "MAX_ABS_V_ERR",          true ,           &regMgrVar(reg_mgr, V_MAX_ABS_ERR)          },
 }
 #endif
 ;
@@ -253,33 +253,33 @@ enum cclog_dig_meas_idx
 CCLOG_EXT struct cclog_dig_sigs dig_meas_sigs[]     // IMPORTANT: This must be in the same order as enum cclog_dig_meas_idx (above)
 #ifdef GLOBALS
 = { // Name
-    { "B_MEAS_TRIP"     ,        &regConvVar(conv,FLAG_B_MEAS_TRIP)           },
-    { "B_MEAS_LOW"      ,        &regConvVar(conv,FLAG_B_MEAS_LOW)            },
-    { "B_MEAS_ZERO"     ,        &regConvVar(conv,FLAG_B_MEAS_ZERO)           },
+    { "B_MEAS_TRIP"     ,        &regMgrVar(reg_mgr,FLAG_B_MEAS_TRIP)           },
+    { "B_MEAS_LOW"      ,        &regMgrVar(reg_mgr,FLAG_B_MEAS_LOW)            },
+    { "B_MEAS_ZERO"     ,        &regMgrVar(reg_mgr,FLAG_B_MEAS_ZERO)           },
 
-    { "B_REF_CLIP"      ,        &regConvVar(conv,FLAG_B_REF_CLIPPED)         },
-    { "B_REF_RATE_CLIP" ,        &regConvVar(conv,FLAG_B_REF_RATE_CLIPPED)    },
-    { "B_REG_ERR_WARN"  ,        &regConvVar(conv,FLAG_B_REG_ERR_WARNING)     },
-    { "B_REG_ERR_FLT"   ,        &regConvVar(conv,FLAG_B_REG_ERR_FAULT)       },
+    { "B_REF_CLIP"      ,        &regMgrVar(reg_mgr,FLAG_B_REF_CLIPPED)         },
+    { "B_REF_RATE_CLIP" ,        &regMgrVar(reg_mgr,FLAG_B_REF_RATE_CLIPPED)    },
+    { "B_REG_ERR_WARN"  ,        &regMgrVar(reg_mgr,FLAG_B_REG_ERR_WARNING)     },
+    { "B_REG_ERR_FLT"   ,        &regMgrVar(reg_mgr,FLAG_B_REG_ERR_FAULT)       },
 
-    { "I_MEAS_TRIP"     ,        &regConvVar(conv,FLAG_I_MEAS_TRIP)           },
-    { "I_MEAS_LOW"      ,        &regConvVar(conv,FLAG_I_MEAS_LOW)            },
-    { "I_MEAS_ZERO"     ,        &regConvVar(conv,FLAG_I_MEAS_ZERO)           },
+    { "I_MEAS_TRIP"     ,        &regMgrVar(reg_mgr,FLAG_I_MEAS_TRIP)           },
+    { "I_MEAS_LOW"      ,        &regMgrVar(reg_mgr,FLAG_I_MEAS_LOW)            },
+    { "I_MEAS_ZERO"     ,        &regMgrVar(reg_mgr,FLAG_I_MEAS_ZERO)           },
 
-    { "I_RMS_WARN"      ,        &regConvVar(conv,FLAG_I_RMS_WARNING)         },
-    { "I_RMS_FLT"       ,        &regConvVar(conv,FLAG_I_RMS_FAULT)           },
-    { "I_RMS_LOAD_WARN" ,        &regConvVar(conv,FLAG_I_RMS_LOAD_WARNING)    },
-    { "I_RMS_LOAD_FLT"  ,        &regConvVar(conv,FLAG_I_RMS_LOAD_FAULT)      },
+    { "I_RMS_WARN"      ,        &regMgrVar(reg_mgr,FLAG_I_RMS_WARNING)         },
+    { "I_RMS_FLT"       ,        &regMgrVar(reg_mgr,FLAG_I_RMS_FAULT)           },
+    { "I_RMS_LOAD_WARN" ,        &regMgrVar(reg_mgr,FLAG_I_RMS_LOAD_WARNING)    },
+    { "I_RMS_LOAD_FLT"  ,        &regMgrVar(reg_mgr,FLAG_I_RMS_LOAD_FAULT)      },
 
-    { "I_REF_CLIP"      ,        &regConvVar(conv,FLAG_I_REF_CLIPPED)         },
-    { "I_REF_RATE_CLIP" ,        &regConvVar(conv,FLAG_I_REF_RATE_CLIPPED)    },
-    { "I_REG_ERR_WARN"  ,        &regConvVar(conv,FLAG_I_REG_ERR_WARNING)     },
-    { "I_REG_ERR_FLT"   ,        &regConvVar(conv,FLAG_I_REG_ERR_FAULT)       },
+    { "I_REF_CLIP"      ,        &regMgrVar(reg_mgr,FLAG_I_REF_CLIPPED)         },
+    { "I_REF_RATE_CLIP" ,        &regMgrVar(reg_mgr,FLAG_I_REF_RATE_CLIPPED)    },
+    { "I_REG_ERR_WARN"  ,        &regMgrVar(reg_mgr,FLAG_I_REG_ERR_WARNING)     },
+    { "I_REG_ERR_FLT"   ,        &regMgrVar(reg_mgr,FLAG_I_REG_ERR_FAULT)       },
 
-    { "V_REF_CLIP"      ,        &regConvVar(conv,FLAG_V_REF_CLIPPED)         },
-    { "V_REF_RATE_CLIP" ,        &regConvVar(conv,FLAG_V_REF_RATE_CLIPPED)    },
-    { "V_REG_ERR_WARN"  ,        &regConvVar(conv,FLAG_V_REG_ERR_WARNING)     },
-    { "V_REG_ERR_FLT"   ,        &regConvVar(conv,FLAG_V_REG_ERR_FAULT)       },
+    { "V_REF_CLIP"      ,        &regMgrVar(reg_mgr,FLAG_V_REF_CLIPPED)         },
+    { "V_REF_RATE_CLIP" ,        &regMgrVar(reg_mgr,FLAG_V_REF_RATE_CLIPPED)    },
+    { "V_REG_ERR_WARN"  ,        &regMgrVar(reg_mgr,FLAG_V_REG_ERR_WARNING)     },
+    { "V_REG_ERR_FLT"   ,        &regMgrVar(reg_mgr,FLAG_V_REG_ERR_FAULT)       },
 
     { "INVALID_MEAS"    ,        &ccrun.invalid_meas.flag                     },
 }

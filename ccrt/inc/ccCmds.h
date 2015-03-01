@@ -93,6 +93,7 @@ uint32_t ccCmdsPar   (uint32_t cmd_idx, char *remaining_line);
 uint32_t ccCmdsHelp  (uint32_t cmd_idx, char *remaining_line);
 uint32_t ccCmdsRead  (uint32_t cmd_idx, char *remaining_line);
 uint32_t ccCmdsArm   (uint32_t cmd_idx, char *remaining_line);
+uint32_t ccCmdsWait  (uint32_t cmd_idx, char *remaining_line);
 uint32_t ccCmdsLog   (uint32_t cmd_idx, char *remaining_line);
 uint32_t ccCmdsExit  (uint32_t cmd_idx, char *remaining_line);
 uint32_t ccCmdsQuit  (uint32_t cmd_idx, char *remaining_line);
@@ -130,6 +131,7 @@ enum cccmds_enum
     CMD_HELP,
     CMD_READ,
     CMD_ARM,
+    CMD_WAIT,
     CMD_LOG,
     CMD_EXIT,
     CMD_QUIT,
@@ -180,6 +182,7 @@ CCCMDS_EXT struct cccmds cmds[] // The order must match enum cccmds_enum (above)
     { "HELP",      ccCmdsHelp , NULL          , "           Print this help message"                                },
     { "READ",      ccCmdsRead , NULL          , "[filename] Read parameters from named file or from stdin"          },
     { "ARM",       ccCmdsArm  , NULL          , "[cyc_sel]  Arm reference function for cyc_sel"                     },
+    { "WAIT",      ccCmdsWait , NULL          , "[seconds]  Wait specified time (default is 1s)"                    },
     { "LOG",       ccCmdsLog  , NULL          , "           Write log file with length GLOBAL LOG_DURATION"         },
     { "EXIT",      ccCmdsExit , NULL          , "           Exit from current file or quit when from stdin"         },
     { "QUIT",      ccCmdsQuit , NULL          , "           Quit program immediately"                               },

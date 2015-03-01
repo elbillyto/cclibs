@@ -38,6 +38,9 @@
 #include <unistd.h>
 #include <libgen.h>
 #include <errno.h>
+#include <pthread.h>
+#include <signal.h>
+#include <time.h>
 
 // Declare all variables in ccTest.c
 
@@ -51,17 +54,90 @@
 #include "ccFile.h"
 #include "ccInit.h"
 #include "ccRun.h"
+#include "ccSim.h"
 #include "ccRef.h"
 #include "ccLog.h"
 #include "ccFlot.h"
 
+// Constants
+
+#define TIMER_PRIORITY  0        // 0 for non-realtime Linux kernel
+
 // Static variables
 
-static char cwd_buf[CC_PATH_LEN];
+static char             cwd_buf[CC_PATH_LEN];
+
+struct cc_thread
+{
+    pthread_attr_t          thread_attr;    // Thread attricute
+    struct sched_param      thread_param;   // Thread scheduling parameters
+    struct itimerspec       timer_spec;     // Timer specification
+    timer_t                 timer_id;       // ID of new timer
+    struct sigevent         event;          // Event configuration
+};
+
+static struct cc_thread      rt_thread;
+static struct cc_thread      sc_thread;
 
 
 
-void AtExit(void)
+static void StartRtThread(uint32_t rt_period_s, uint32_t rt_period_ns, struct cc_thread *cc_thread, void (*function)(union sigval))
+{
+    // Configure thread attributes
+
+    if(pthread_attr_init(&cc_thread->thread_attr) == -1)
+    {
+        printf("Error - pthread_attr_init\n");
+        exit(EXIT_FAILURE);
+    }
+
+#if TIMER_PRIORITY == 0
+    pthread_attr_setinheritsched(&cc_thread->thread_attr, PTHREAD_INHERIT_SCHED);
+
+    sched_getparam(getpid(), &cc_thread->thread_param);
+    pthread_attr_setschedparam(&cc_thread->thread_attr, &cc_thread->thread_param);
+#else
+    pthread_attr_setinheritsched(&cc_thread->thread_attr, PTHREAD_EXPLICIT_SCHED);
+    pthread_attr_setschedpolicy( &cc_thread->thread_attr, SCHED_FIFO);
+
+    sched_getparam(getpid(), &cc_thread->thread_param);
+    cc_thread->thread_param.sched_priority = TIMER_PRIORITY;
+    pthread_attr_setschedparam(&cc_thread->thread_attr, &cc_thread->thread_param);
+#endif
+
+    // Configure event handler
+
+    cc_thread->event.sigev_notify              = SIGEV_THREAD;
+    cc_thread->event.sigev_notify_attributes   = &cc_thread->thread_attr;
+    cc_thread->event.sigev_notify_function     = function;
+
+    // Create timer
+
+    if(timer_create(CLOCK_REALTIME, &cc_thread->event, &cc_thread->timer_id))
+    {
+        printf("Error - timer_create : %s (%d)\n", strerror(errno), errno);
+        exit(EXIT_FAILURE);
+    }
+
+    // Configure timer specification
+
+    cc_thread->timer_spec.it_value.tv_sec     = 1;
+    cc_thread->timer_spec.it_value.tv_nsec    = rt_period_ns;
+    cc_thread->timer_spec.it_interval.tv_sec  = rt_period_s;
+    cc_thread->timer_spec.it_interval.tv_nsec = rt_period_ns;
+
+    // Start the timer
+
+    if(timer_settime(cc_thread->timer_id, 0, &cc_thread->timer_spec, NULL))
+    {
+        printf("Error - timer_settime : %s (%d)\n", strerror(errno), errno);
+        exit(EXIT_FAILURE);
+    }
+}
+
+
+
+static void AtExit(void)
 {
     // Restore current working directory from when the program started
 
@@ -72,6 +148,7 @@ void AtExit(void)
 
 int main(int argc, char **argv)
 {
+    uint32_t rt_period_ns = CC_ITER_PERIOD_US * 1000;     // 1ms by default
     char     line[CC_PATH_LEN];
     char    *script_file = "";
     char    *default_converter = "default";
@@ -93,6 +170,7 @@ int main(int argc, char **argv)
 
         if(argc == 3)
         {
+            rt_period_ns /= CC_OFFLINE_ACCELERATION;     // Run faster than real-time when processing a script file
             script_file = argv[2];
         }
     }
@@ -129,7 +207,7 @@ int main(int argc, char **argv)
 
     // Welcome message
 
-    printf("\nWelcome to ccrt v%.2f - Converter type: %s\n", CC_VERSION, ccfile.converter);
+    printf("\nWelcome to ccrt v%.2f - Converter type: %s\n\n", CC_VERSION, ccfile.converter);
 
     // Check the necessary sub-directories exist, or try to make them if they don't
 
@@ -160,19 +238,42 @@ int main(int argc, char **argv)
         exit(EXIT_FAILURE);
     }
 
-    // Initialise simulation
+    // Rewrite all configuration files
 
-    regConvSimInit(&conv, ccpars_ref[ccpars_global.cycle_selector[0]].reg_mode, 0);
+    if(ccFileSaveAllConfigPars() == EXIT_FAILURE)
+    {
+        exit(EXIT_FAILURE);
+    }
 
     // Try to arm the reference for all cycle selectors
 
+    puts("Arming functions");
+
     ccCmdsArm(0,NULL);
 
-    // Create real-time thread for simulation
-
+    // Initialise time to start on a second boundary
 
     gettimeofday(&ccrun.iter_time, NULL);
 
+    ccrun.iter_time.tv_usec = 0;
+
+    // Create real-time thread for simulation, running on a timer with specified period
+
+    puts("Starting real-time thread");
+
+    StartRtThread(0, rt_period_ns, &rt_thread, ccRun);
+
+    // Create real-time thread for simulation, running on a timer with specified period
+
+    puts("Starting supercycle thread");
+
+    StartRtThread(1, 0, &sc_thread, ccSimSuperCycle);
+
+    // Initialise simulation
+
+    puts("Starting simulation");
+
+    regMgrSimInit(&reg_mgr, REG_NONE, 0.0);
 
     // Read from stdin or from the named script
 

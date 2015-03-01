@@ -53,15 +53,16 @@ struct fg_meta * fgResetMeta(struct fg_meta *meta, struct fg_meta *local_meta, d
             meta->error.data[idx] = 0.0;
         }
 
-        meta->error.index     = 0;
-        meta->polarity        = FG_FUNC_POL_ZERO;
-        meta->limits_inverted = false;
-        meta->delay           = delay;
-        meta->duration        = 0.0;
-        meta->range.end       = 0.0;
-        meta->range.start     = initial_ref;
-        meta->range.min       = initial_ref;
-        meta->range.max       = initial_ref;
+        meta->error.index      = 0;
+        meta->polarity         = FG_FUNC_POL_ZERO;
+        meta->limits_inverted  = false;
+        meta->delay            = delay;
+        meta->duration         = 0.0;
+        meta->range.end        = 0.0;
+        meta->range.start      = initial_ref;
+        meta->range.min        = initial_ref;
+        meta->range.max        = initial_ref;
+        meta->range.final_rate = 0.0;
     }
 
     return(meta);

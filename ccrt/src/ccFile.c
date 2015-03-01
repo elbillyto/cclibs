@@ -36,10 +36,14 @@
 #include <libgen.h>
 #include <errno.h>
 
-// Include cctest program header files
+// Include ccrt program header files
 
 #include "ccCmds.h"
 #include "ccFile.h"
+#include "ccParse.h"
+#include "ccFlot.h"
+#include "ccRun.h"
+#include "ccRef.h"
 
 
 
@@ -97,6 +101,8 @@ uint32_t ccFileReadAll(char *path)
     DIR             *dp;
     char            *filename;
 
+    printf("Reading %s parameter files\n",path);
+
     if(ccFileCwd(path) == EXIT_FAILURE)
     {
         return(EXIT_FAILURE);
@@ -148,6 +154,156 @@ uint32_t ccFileReadAll(char *path)
 
     if(ccFileCwd("..") == EXIT_FAILURE)
     {
+        return(EXIT_FAILURE);
+    }
+
+    return(EXIT_SUCCESS);
+}
+
+
+
+uint32_t ccFileWriteLog(void)
+{
+    FILE    *log_file;
+
+    // Open temporary log file for writing
+
+    log_file = fopen(CC_TMP_LOG_FILE, "w");
+
+    if(log_file == NULL)
+    {
+         ccParsPrintError("opening file '%s' : %s (%d)", CC_TMP_LOG_FILE, strerror(errno), errno);
+         return(EXIT_FAILURE);
+    }
+
+    // Create Flot chart for period up to the current moment
+
+    ccFlot(log_file, ccfile.converter, ccrun.iter_time_s);
+
+    fclose(log_file);
+
+    // Rename file to replace old log
+
+    if(rename(CC_TMP_LOG_FILE, CC_LOG_FILE) != 0)
+    {
+        ccParsPrintError("failed to rename '%s' to '%s' : %s (%d)", CC_TMP_LOG_FILE, CC_LOG_FILE, strerror(errno), errno);
+        return(EXIT_FAILURE);
+    }
+
+    return(EXIT_SUCCESS);
+}
+
+
+
+uint32_t ccFileSaveAllConfigPars(void)
+{
+    struct cccmds *cmd;
+
+    puts("Writing config parameter files");
+
+    // Save all config parameters to separate config files
+
+    for(cmd = cmds ; cmd->name != NULL ; cmd++)
+    {
+        struct ccpars *par = cmd->pars;
+
+        if(par != NULL)
+        {
+            while(par->name != NULL)
+            {
+                if((par->flags & PARS_CFG) != 0)
+                {
+                    if(ccFileSaveConfigPar(cmd->name, par) == EXIT_FAILURE)
+                    {
+                         return(EXIT_FAILURE);
+                    }
+                }
+
+                par++;
+            }
+        }
+    }
+
+    return(EXIT_SUCCESS);
+}
+
+
+
+uint32_t ccFileSaveConfigPar(char *cmd_name, struct ccpars *par)
+{
+    FILE    *par_file;
+    char    path[CC_PATH_LEN];
+
+    // Create file name using parameter name
+
+    snprintf(path, CC_PATH_LEN, "../config/%s_%s", cmd_name, par->name);
+
+    // Open temporary log file for writing
+
+    par_file = fopen(CC_TMP_CONFIG_FILE, "w");
+
+    if(par_file == NULL)
+    {
+         ccParsPrintError("opening file '%s' : %s (%d)", CC_TMP_CONFIG_FILE, strerror(errno), errno);
+         return(EXIT_FAILURE);
+    }
+
+    // Write parameter name and value(s) to file
+
+    ccParsPrint(par_file, cmd_name, par, CC_ALL_CYCLES, CC_NO_INDEX);
+
+    fclose(par_file);
+
+    // Rename file to replace file
+
+    if(rename(CC_TMP_CONFIG_FILE, path) != 0)
+    {
+        ccParsPrintError("failed to rename '%s' to '%s' : %s (%d)", CC_TMP_CONFIG_FILE, path, strerror(errno), errno);
+        return(EXIT_FAILURE);
+    }
+
+    return(EXIT_SUCCESS);
+}
+
+
+
+uint32_t ccFileSaveRefPars(uint32_t cyc_sel)
+{
+    FILE           *ref_file;
+    uint32_t        cmd_idx;
+    char            path[CC_PATH_LEN];
+
+    // Create file name using parameter name
+
+    snprintf(path, CC_PATH_LEN, "../ref/%02u", cyc_sel);
+
+    // Open temporary log file for writing
+
+    ref_file = fopen(CC_TMP_REF_FILE, "w");
+
+    if(ref_file == NULL)
+    {
+         ccParsPrintError("opening file '%s' : %s (%d)", CC_TMP_REF_FILE,strerror(errno), errno);
+         return(EXIT_FAILURE);
+    }
+
+    // Write REF parameters
+
+    ccParsPrintAll(ref_file, cmds[CMD_REF].name, cmds[CMD_REF].pars, cyc_sel, CC_NO_INDEX, PARS_REF);
+
+    // Write ref function parameters
+
+    cmd_idx = funcs[ccpars_ref[cyc_sel].function].cmd_idx;
+
+    ccParsPrintAll(ref_file, cmds[cmd_idx].name, cmds[cmd_idx].pars, cyc_sel, CC_NO_INDEX, PARS_RW);
+
+    fclose(ref_file);
+
+    // Rename file to replace file
+
+    if(rename(CC_TMP_REF_FILE, path) != 0)
+    {
+        ccParsPrintError("failed to rename '%s' to '%s' : %s (%d)", CC_TMP_REF_FILE, path, strerror(errno), errno);
         return(EXIT_FAILURE);
     }
 

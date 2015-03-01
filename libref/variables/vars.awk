@@ -6,7 +6,7 @@
 # All libreg variables that might be interesting to an application are
 # identified in vars.csv. This allows this script to create a
 # header file with a macro and constants that allow the application developer
-# easy read-only access the variables.
+# to easily access the variables.
 #
 # Contact
 #
@@ -85,13 +85,13 @@ BEGIN {
     of = "inc/libreg_vars.h"   # Set output file (of)
 
     print "/*!"                                                                                                      > of
-    print " * @file  " of                                                                                            > of
+    print " * @file  libreg_vars.h"                                                                                  > of
     print " * @brief Converter Control Regulation library generated read-only variables header file"                 > of
     print " *"                                                                                                       > of
-    print " * IMPORTANT - DO NOT EDIT - This file is generated from libreg/variables/vars.csv"                       > of
+    print " * IMPORTANT - DO NOT EDIT - This file is generated from libreg/parameters/read_only_vars.csv"            > of
     print " *"                                                                                                       > of
-    print " * All libreg read-only variables are defined in vars.csv and this is transformed into"                   > of
-    print " * this header file by libreg/variables/vars.awk."                                                        > of
+    print " * All libreg read-only variables are defined in read_only_vars.csv and this is transformed into"         > of
+    print " * this header file by libreg/parameters/read_only_vars.awk."                                             > of
     print " *"                                                                                                       > of
     print " * <h2>Contact</h2>"                                                                                      > of
     print " *"                                                                                                       > of
@@ -122,9 +122,9 @@ BEGIN {
     print " */\n"                                                                                                    > of
     print "#ifndef LIBREG_VARS_H"                                                                                    > of
     print "#define LIBREG_VARS_H\n"                                                                                  > of
-    print "#include <stdint.h>"                                                                                      > of
-    print "#include <stdbool.h>\n"                                                                                   > of
-    print "#define regMgrVar(reg_mgr, var_key)  (((struct reg_mgr const *)&reg_mgr)->var_key)\n"                     > of
+    print "#include <stdint.h>"                                                                                > of
+    print "#include <stdbool.h>\n"                                                                                > of
+    print "#define regConvVar(conv, var_key)  (((struct reg_conv const *)&conv)->var_key)\n"                         > of
 
     for(i=0 ; i < n_vars ; i++)
     {
@@ -141,13 +141,13 @@ BEGIN {
     of = "inc/libreg_vars_test.h"   # Set output file (of)
 
     print "/*!"                                                                                                      > of
-    print " * @file  " of                                                                                            > of
+    print " * @file  libreg_vars_test.h"                                                                             > of
     print " * @brief Converter Control Regulation library generated read-only variables macros test file"            > of
     print " *"                                                                                                       > of
-    print " * IMPORTANT - DO NOT EDIT - This file is generated from libreg/variables/vars.csv"                       > of
+    print " * IMPORTANT - DO NOT EDIT - This file is generated from libreg/parameters/read_only_vars.csv"            > of
     print " *"                                                                                                       > of
-    print " * All libreg read-only variables are defined in vars.csv and this is transformed into"                   > of
-    print " * the inc/libreg_vars.h header file and this test file by libreg/variables/vars.awk."                    > of
+    print " * All libreg read-only variables are defined in read_only_vars.csv and this is transformed into"         > of
+    print " * the inc/libreg_vars.h header file and this test file by libreg/parameters/read_only_vars.awk."         > of
     print " *"                                                                                                       > of
     print " * <h2>Contact</h2>"                                                                                      > of
     print " *"                                                                                                       > of
@@ -177,14 +177,14 @@ BEGIN {
     print " *"                                                                                                       > of
     print " */\n"                                                                                                    > of
     print "#include <libreg_vars.h>\n"                                                                               > of
-    print "static void regMgrTestVarMacros(void)"                                                                    > of
+    print "static void regConvTestVarMacros(void)"                                                                   > of
     print "{"                                                                                                        > of
     print "    double accumulator = 0.0;     // This is used to suppress unused variable warnings"                   > of
-    print "    struct reg_mgr reg_mgr;\n"                                                                            > of
+    print "    struct reg_conv conv;\n"                                                                              > of
 
     for(i=0 ; i < n_vars ; i++)
     {
-        printf "    %-23s %-30s = regMgrVar(reg_mgr,%s);\n", var_type[i], tolower(var_id[i]), var_id[i]              > of
+        printf "    %-23s %-30s = regConvVar(conv,%s);\n", var_type[i], tolower(var_id[i]), var_id[i]                > of
         printf "    accumulator += %s;\n", tolower(var_id[i])                                                        > of
     }
 

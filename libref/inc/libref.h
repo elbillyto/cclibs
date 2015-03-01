@@ -34,9 +34,12 @@
 
 // Libref enum constants
 
+#define REF_PULSE_LEN       16
+
 /*!
  * Reference state
  */
+
 enum ref_state
 {
     REF_OFF,
@@ -56,6 +59,17 @@ enum ref_state
 
 // Include all libref header files
 
+#include <stdint.h>
+#include <stdbool.h>
+//#include <libref_vars.h>
+#include <libref_pars.h>
+
+// Structures
+
+struct ref_mgr
+{
+    struct ref_pars         pars;
+};
 
 
 #endif // LIBREF_H

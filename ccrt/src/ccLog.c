@@ -82,8 +82,8 @@ void ccLogStoreMeas(double iter_time)
 
     // Take square room for RMS signals before they are logged
 
-    i_rms      = sqrtf(conv.lim_i_rms.meas2_filter);
-    i_rms_load = sqrtf(conv.lim_i_rms_load.meas2_filter);
+    i_rms      = sqrtf(reg_mgr.lim_i_rms.meas2_filter);
+    i_rms_load = sqrtf(reg_mgr.lim_i_rms_load.meas2_filter);
 
     ccLogStoreSignals(&meas_log);
 }

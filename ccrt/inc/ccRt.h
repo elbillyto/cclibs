@@ -35,6 +35,7 @@
 #define CC_MAX_CYC_SEL              10
 #define CC_NUM_CYC_SELS             (CC_MAX_CYC_SEL+1)
 #define CC_ITER_PERIOD_US           1000
+#define CC_OFFLINE_ACCELERATION     10                  // Acceleration factor when running a script from file
 #define CC_FILTER_BUF_LEN           3000
 #define CC_LOG_LENGTH               60000
 

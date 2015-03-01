@@ -308,29 +308,38 @@ void regMeasFilterRT(struct reg_meas_filter *filter)
 
 
 
-float regMeasNoiseAndToneRT(struct reg_noise_and_tone *noise_and_tone)
+float regMeasWhiteNoiseRT(float noise_pp)
 {
-    float            noise;                                 // Roughly white noise
-    float            tone;                                  // Square wave tone
     static uint32_t  noise_random_generator = 0x8E35B19C;   // Use fixed initial seed
 
-    // Use efficient random number generator to calculate the roughly white noise
+    // Only calculate random noise if peak-peak noise level if positive
 
-    if(noise_and_tone->noise_pp != 0.0)
+    if(noise_pp > 0.0)
     {
+        // Use efficient 32-bit pseudo-random number generator to calculate the roughly white noise
+
         noise_random_generator = (noise_random_generator << 16) +
                                (((noise_random_generator >> 12) ^ (noise_random_generator >> 15)) & 0x0000FFFF);
 
-        noise = noise_and_tone->noise_pp * (float)((int32_t)noise_random_generator) / 4294967296.0;
+        // Return noise in the range -noise_pp/2 to +noise_pp/2
+
+        return(noise_pp * (float)((int32_t)noise_random_generator) / 4294967296.0);
     }
-    else
-    {
-        noise = 0.0;
-    }
+
+    // Return zero if noise_pp is zero or negative
+
+    return(0.0);
+}
+
+
+
+float regMeasNoiseAndToneRT(struct reg_noise_and_tone *noise_and_tone)
+{
+    float   tone;           // Square wave tone
 
     // Use efficient square tone generator to create tone
 
-    if(noise_and_tone->tone_amp != 0.0)
+    if(noise_and_tone->tone_amp > 0.0)
     {
         if(++noise_and_tone->iter_counter >= noise_and_tone->tone_half_period_iters)
         {
@@ -347,7 +356,7 @@ float regMeasNoiseAndToneRT(struct reg_noise_and_tone *noise_and_tone)
 
     // Return sum of noise and tone
 
-    return(noise + tone);
+    return(regMeasWhiteNoiseRT(noise_and_tone->noise_pp) + tone);
 }
 
 

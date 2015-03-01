@@ -91,9 +91,9 @@ function Squeeze(testname, inputfile, csvfile,  time_limiting)
 
     idx = 0
 
-    while((getline  < inputfile) > 0)
+    while((getline < inputfile) > 0)
     {
-        if(NF != max_cols)
+        if(NF != max_cols || $1 == "")
         {
             print "Bad record: ", $1, $2, $3, "..."
             exit -1

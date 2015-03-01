@@ -65,6 +65,10 @@ struct ccpars_meas
     float                   i_sim_noise_pp;             // Simulated current measurement peak-peak noise level
     float                   v_sim_noise_pp;             // Simulated voltage measurement peak-peak noise level
 
+    float                   b_sim_quantization;         // Simulated field   measurement quantization
+    float                   i_sim_quantization;         // Simulated current measurement quantization
+    float                   v_sim_quantization;         // Simulated voltage measurement quantization
+
     uint32_t                tone_half_period_iters;     // Simulated measurement tone half-period in iterations
     float                   b_sim_tone_amp;             // Simulated field   measurement tone amplitude
     float                   i_sim_tone_amp;             // Simulated current measurement tone amplitude
@@ -85,6 +89,9 @@ CCPARS_MEAS_EXT struct ccpars_meas ccpars_meas
         0.0,                     // MEAS B_SIM_NOISE_PP
         0.0,                     // MEAS I_SIM_NOISE_PP
         0.0,                     // MEAS V_SIM_NOISE_PP
+        0.0,                     // MEAS B_SIM_QUANTIZATION
+        0.0,                     // MEAS I_SIM_QUANTIZATION
+        0.0,                     // MEAS V_SIM_QUANTIZATION
         10,                      // MEAS TONE_HALF_PERIOD_ITERS
         0.0,                     // MEAS I_SIM_TONE_AMP
         0.0,                     // MEAS B_SIM_TONE_AMP
@@ -108,6 +115,9 @@ CCPARS_MEAS_EXT struct ccpars meas_pars[]
     { "B_SIM_NOISE_PP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.b_sim_noise_pp            }, 1, 0, 0                 },
     { "I_SIM_NOISE_PP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.i_sim_noise_pp            }, 1, 0, 0                 },
     { "V_SIM_NOISE_PP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.v_sim_noise_pp            }, 1, 0, 0                 },
+    { "B_SIM_QUANTIZATION",     PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.b_sim_quantization        }, 1, 0, 0                 },
+    { "I_SIM_QUANTIZATION",     PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.i_sim_quantization        }, 1, 0, 0                 },
+    { "V_SIM_QUANTIZATION",     PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.v_sim_quantization        }, 1, 0, 0                 },
     { "TONE_HALF_PERIOD_ITERS", PAR_UNSIGNED,  1,     NULL,                 { .u = &ccpars_meas.tone_half_period_iters    }, 1, 0, 0                 },
     { "B_SIM_TONE_AMP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.b_sim_tone_amp            }, 1, 0, 0                 },
     { "I_SIM_TONE_AMP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.i_sim_tone_amp            }, 1, 0, 0                 },

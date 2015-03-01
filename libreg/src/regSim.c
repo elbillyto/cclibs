@@ -53,7 +53,7 @@ void regSimPcInit(struct reg_sim_pc_pars *pars, float iter_period, float act_del
     float       sum_num        = 0.0;
     float       sum_den        = 0.0;
 
-    // Save act_delay so that it can be used later by regConvPureDelay()
+    // Save act_delay so that it can be used later
 
     pars->act_delay_iters = act_delay_iters;
 

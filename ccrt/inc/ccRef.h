@@ -78,7 +78,7 @@ CCREF_EXT struct fgfunc funcs[]  // Must be in enum fg_types order (in ref.h)
     {   CMD_TEST,  (char *)&fg_test,  sizeof(struct fg_test),  ccRefInitCOSINE, fgTestGen      },
     {   CMD_TRIM,  (char *)&fg_trim,  sizeof(struct fg_trim),  ccRefInitLTRIM,  fgTrimGen      },
     {   CMD_TRIM,  (char *)&fg_trim,  sizeof(struct fg_trim),  ccRefInitCTRIM,  fgTrimGen      },
-    {   CMD_TRIM,  (char *)&fg_pulse, sizeof(struct fg_trim),  ccRefInitPULSE,  fgTrimGen      },
+    {   CMD_PULSE, (char *)&fg_pulse, sizeof(struct fg_pulse), ccRefInitPULSE,  fgPulseGen     },
 }
 #endif
 ;

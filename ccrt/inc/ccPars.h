@@ -45,10 +45,10 @@
 
 #define PARS_INDENT                 34
 #define PARS_MAX_PRINT_LINE_LEN     (CC_MAX_FILE_LINE_LEN*8)      // Allow for longest print line for table
-#define PARS_INT_FORMAT             "% d"
-#define PARS_FLOAT_FORMAT           "% .6E"
-#define PARS_TIME_FORMAT            "% .6f"
-#define PARS_STRING_FORMAT          " %s"
+#define PARS_INT_FORMAT             "% d "
+#define PARS_FLOAT_FORMAT           "% .6E "
+#define PARS_TIME_FORMAT            "% .6f "
+#define PARS_STRING_FORMAT          " %s "
 
 // struct ccpars flags
 

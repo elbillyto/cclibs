@@ -52,12 +52,12 @@ struct ccpars_pc
 {
     enum reg_actuation          actuation;          // Power converter actuation (VOLTAGE REF or CURRENT REF)
     float                       act_delay_iters;    // Power converter control delay in iterations
-    float                       quantization;       // Actuation quantization (V or A)
-    float                       ripple;             // Peak-peak ripple
     float                       bandwidth;          // Power converter (voltage source or current source) second order bandwidth
     float                       z;                  // Second order damping factor
     float                       tau_zero;           // Second order time constant of zero (0 if not required)
     struct reg_sim_pc_pars      sim_pc_pars;        // Power converter third order model if bandwidth is zero
+    float                       sim_quantization;   // Simulated actuation quantization (V or A)
+    float                       sim_ripple;         // Simulated peak-peak ripple
 };
 
 CCPARS_PC_EXT struct ccpars_pc ccpars_pc
@@ -65,13 +65,13 @@ CCPARS_PC_EXT struct ccpars_pc ccpars_pc
 = {//   Default value               Parameter
         REG_VOLTAGE_REF,         // PC ACTUATION
         1.0,                     // PC ACT_DELAY_ITERS
-        0.0,                     // PC QUANTIZATION
-        0.0,                     // PC RIPPLE
         200.0,                   // PC BANDWIDTH
         0.9,                     // PC Z
         0.0,                     // PC TAU_ZERO
         {  { 1.0 },              // PC SIM_NUM
            { 1.0 }  },           // PC SIM_DEN
+        0.0,                     // PC SIM_QUANTIZATION
+        0.0,                     // PC SIM_RIPPLE
 }
 #endif
 ;
@@ -80,16 +80,16 @@ CCPARS_PC_EXT struct ccpars_pc ccpars_pc
 
 CCPARS_PC_EXT struct ccpars pc_pars[]
 #ifdef GLOBALS
-= {// "Signal name"      type,      max_n_els,            *enum,                      *value,                       num_defaults,    cyc_sel_step, flags
-    { "ACTUATION",       PAR_ENUM,  1,                     enum_reg_actuation, { .u = &ccpars_pc.actuation       }, 1,                     0, 0                 },
-    { "ACT_DELAY_ITERS", PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.act_delay_iters }, 1,                     0, 0                 },
-    { "QUANTIZATION",    PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.quantization    }, 1,                     0, 0                 },
-    { "RIPPLE",          PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.ripple          }, 1,                     0, 0                 },
-    { "BANDWIDTH",       PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.bandwidth       }, 1,                     0, 0                 },
-    { "Z",               PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.z               }, 1,                     0, 0                 },
-    { "TAU_ZERO",        PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.tau_zero        }, 1,                     0, 0                 },
-    { "SIM_NUM",         PAR_FLOAT, REG_NUM_PC_SIM_COEFFS, NULL,               { .f =  ccpars_pc.sim_pc_pars.num }, REG_NUM_PC_SIM_COEFFS, 0, PARS_FIXED_LENGTH },
-    { "SIM_DEN",         PAR_FLOAT, REG_NUM_PC_SIM_COEFFS, NULL,               { .f =  ccpars_pc.sim_pc_pars.den }, REG_NUM_PC_SIM_COEFFS, 0, PARS_FIXED_LENGTH },
+= {// "Signal name"       type,      max_n_els,            *enum,                      *value,                        num_defaults,    cyc_sel_step, flags
+    { "ACTUATION",        PAR_ENUM,  1,                     enum_reg_actuation, { .u = &ccpars_pc.actuation        }, 1,                     0, 0                 },
+    { "ACT_DELAY_ITERS",  PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.act_delay_iters  }, 1,                     0, 0                 },
+    { "BANDWIDTH",        PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.bandwidth        }, 1,                     0, 0                 },
+    { "Z",                PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.z                }, 1,                     0, 0                 },
+    { "TAU_ZERO",         PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.tau_zero         }, 1,                     0, 0                 },
+    { "SIM_NUM",          PAR_FLOAT, REG_NUM_PC_SIM_COEFFS, NULL,               { .f =  ccpars_pc.sim_pc_pars.num  }, REG_NUM_PC_SIM_COEFFS, 0, PARS_FIXED_LENGTH },
+    { "SIM_DEN",          PAR_FLOAT, REG_NUM_PC_SIM_COEFFS, NULL,               { .f =  ccpars_pc.sim_pc_pars.den  }, REG_NUM_PC_SIM_COEFFS, 0, PARS_FIXED_LENGTH },
+    { "SIM_QUANTIZATION", PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.sim_quantization }, 1,                     0, 0                 },
+    { "SIM_RIPPLE",       PAR_FLOAT, 1,                     NULL,               { .f = &ccpars_pc.sim_ripple       }, 1,                     0, 0                 },
     { NULL }
 }
 #endif

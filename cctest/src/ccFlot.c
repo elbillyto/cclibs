@@ -60,7 +60,7 @@ static uint32_t ccFlotRefs(FILE *f, double end_time)
                     fprintf(f,"[%.6f,%.7E],[%.6f,%.7E],",
                               ccrun.cycle[cycle_idx].start_time,
                               ccrun.fg_meta[cyc_sel].range.start,
-                              ccrun.cycle[cycle_idx].start_time + ccpars_global.run_delay,
+                              ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay,
                               ccrun.fg_meta[cyc_sel].range.start);
 
                     num_points += 3;
@@ -76,7 +76,7 @@ static uint32_t ccFlotRefs(FILE *f, double end_time)
 
                         for(iteration_idx = 1 ; iteration_idx < n ; iteration_idx++)
                         {
-                            time = ccrun.cycle[cycle_idx].start_time + ccpars_global.run_delay + ccpars_table[cyc_sel].time[iteration_idx];
+                            time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay + ccpars_table[cyc_sel].time[iteration_idx];
 
                             if(time <= end_time)
                             {
@@ -88,7 +88,7 @@ static uint32_t ccFlotRefs(FILE *f, double end_time)
 
                     case FG_PPPL:
 
-                        time = ccrun.cycle[cycle_idx].start_time + ccpars_global.run_delay;
+                        time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay;
 
                         fprintf(f,"[%.6f,%.7E],", time, ccpars_pppl[cyc_sel].initial_ref);
                         num_points++;
@@ -97,7 +97,7 @@ static uint32_t ccFlotRefs(FILE *f, double end_time)
 
                         for(iteration_idx = 1 ; iteration_idx < n ; iteration_idx++)
                         {
-                            time = ccrun.cycle[cycle_idx].start_time + ccpars_global.run_delay + fg_pppl[cyc_sel].time[iteration_idx];
+                            time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay + fg_pppl[cyc_sel].time[iteration_idx];
 
                             if(time <= end_time)
                             {
@@ -109,14 +109,14 @@ static uint32_t ccFlotRefs(FILE *f, double end_time)
 
                     case FG_PLEP:
 
-                        time = ccrun.cycle[cycle_idx].start_time + ccpars_global.run_delay;
+                        time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay;
 
                         fprintf(f,"[%.6f,%.7E],", time, ccpars_plep[cyc_sel].initial_ref);
                         num_points++;
 
                         for(iteration_idx = 1 ; iteration_idx <  FG_PLEP_NUM_SEGS ; iteration_idx++)
                         {
-                            time = ccrun.cycle[cycle_idx].start_time + ccpars_global.run_delay + fg_plep[cyc_sel].time[iteration_idx];
+                            time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay + fg_plep[cyc_sel].time[iteration_idx];
 
                             if(time <= end_time)
                             {
@@ -129,7 +129,7 @@ static uint32_t ccFlotRefs(FILE *f, double end_time)
 
                     // End of function point
 
-                    end_cycle_time = ccrun.cycle[cycle_idx].start_time + ccpars_global.run_delay + ccrun.fg_meta[cyc_sel].duration;
+                    end_cycle_time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay + ccrun.fg_meta[cyc_sel].duration;
 
                     if(end_cycle_time > time && end_cycle_time <= end_time)
                     {
@@ -172,7 +172,7 @@ static uint32_t ccFlotAnalog(FILE *f, struct cclog *log, uint32_t period_iters)
 {
     uint32_t       sig_idx;
     uint32_t       num_points = 0;
-    double         period = (double)period_iters * conv.iter_period;
+    double         period = (double)period_iters * reg_mgr.iter_period;
 
     // Print enabled analog signal values
 
@@ -258,7 +258,7 @@ static uint32_t ccFlotDigital(FILE *f)
             dig_offset -= 1.0;
             buf_idx     = (meas_log.last_sample_index - (meas_log.num_samples - 1) + ccpars_global.log_length) % ccpars_global.log_length;
 
-            first_sample_time = meas_log.last_sample_time - (double)(meas_log.num_samples - 1) * conv.iter_period;
+            first_sample_time = meas_log.last_sample_time - (double)(meas_log.num_samples - 1) * reg_mgr.iter_period;
 
             fprintf(f,"\"%s\": {\n lines: { steps: true },\n downsample: { threshold: 0 },\n data:[", dig_meas_sigs[sig_idx].name);
 
@@ -271,7 +271,7 @@ static uint32_t ccFlotDigital(FILE *f)
                    buf[buf_idx] != last_value)
                 {
                     fprintf(f,"[%.6f,%.2f],",
-                            first_sample_time + (double)iteration_idx * conv.iter_period,
+                            first_sample_time + (double)iteration_idx * reg_mgr.iter_period,
                             0.5 * buf[buf_idx] + dig_offset);
                     num_points++;
                 }
@@ -308,8 +308,8 @@ void ccFlot(FILE *f, char *filename)
 
     // Print enabled analog signal values
 
-    num_points += ccFlotAnalog(f, &breg_log, conv.b.reg_period_iters);
-    num_points += ccFlotAnalog(f, &ireg_log, conv.i.reg_period_iters);
+    num_points += ccFlotAnalog(f, &breg_log, reg_mgr.b.reg_period_iters);
+    num_points += ccFlotAnalog(f, &ireg_log, reg_mgr.i.reg_period_iters);
     num_points += ccFlotAnalog(f, &meas_log, 1);
 
     // Print start of digital signals

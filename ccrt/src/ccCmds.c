@@ -44,6 +44,8 @@
 #include "ccFlot.h"
 #include "ccInit.h"
 #include "ccRun.h"
+#include "ccStatus.h"
+
 
 
 
@@ -79,7 +81,26 @@ uint32_t ccCmdsPar(uint32_t cmd_idx, char *remaining_line)
         }
         else
         {
-            return(ccParsGet(cmds[cmd_idx].name, par_matched, remaining_line));
+            uint32_t exit_status = ccParsGet(cmds[cmd_idx].name, par_matched, remaining_line);
+
+            // If parameter is used by libreg then inform libreg that a parameter has been changed
+
+            if(cmd_idx > 0 && (par_matched->flags & PARS_REG) != 0)
+            {
+                regMgrPars(&reg_mgr);
+            }
+
+            // If reading from stdin and a configuration parameter is changed then store it in a file
+
+            if(ccfile.using_stdin && (par_matched->flags & PARS_CFG) != 0)
+            {
+                if(ccFileSaveConfigPar(cmds[cmd_idx].name, par_matched) == EXIT_FAILURE)
+                {
+                    return(EXIT_FAILURE);
+                }
+            }
+
+            return(exit_status);
         }
     }
     return(EXIT_SUCCESS);
@@ -145,6 +166,7 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char *remaining_line)
         // Read from stdin
 
         f = stdin;
+        ccfile.using_stdin = true;
         ccfile.input_idx++;
         ccfile.input[ccfile.input_idx].line_number = 0;
         ccfile.input[ccfile.input_idx].path        = default_file_name;
@@ -165,7 +187,10 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char *remaining_line)
              return(EXIT_FAILURE);
         }
 
-        printf("Reading parameters from '%s'\n", arg);
+        if(cmd_idx != 0)
+        {
+            printf("Reading parameters from '%s'\n", arg);
+        }
 
         // Stack new file information
 
@@ -198,7 +223,7 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char *remaining_line)
 
         // Print prompt when using stdin
 
-        if(f == stdin)
+        if(ccfile.using_stdin)
         {
             ccStatus(ccfile.empty_line);
         }
@@ -215,7 +240,11 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char *remaining_line)
 
     // If reading from a file then close it
 
-    if(f != stdin)
+    if(ccfile.using_stdin)
+    {
+        ccfile.using_stdin = false;
+    }
+    else
     {
         fclose(f);
         ccfile.input_idx--;
@@ -242,7 +271,7 @@ uint32_t ccCmdsArm(uint32_t cmd_idx, char *remaining_line)
     }
     else    // Treat arguments as a series of cycle selectors
     {
-        while((arg = ccParseNextArg(&remaining_line)) == NULL)
+        while((arg = ccParseNextArg(&remaining_line)) != NULL)
         {
             char    *remaining_arg;
 
@@ -267,36 +296,69 @@ uint32_t ccCmdsArm(uint32_t cmd_idx, char *remaining_line)
 
 
 
+uint32_t ccCmdsWait(uint32_t cmd_idx, char *remaining_line)
+{
+    char      *arg;
+    useconds_t sleep_time_us;
+
+    // If no arguments provided, try to arm every cycle selector
+
+    if(remaining_line == NULL)
+    {
+        // Default is 1s
+
+        sleep_time_us = 1000000;
+    }
+    else    // Treat arguments as a series of cycle selectors
+    {
+        char    *remaining_arg;
+        double   value;
+
+        arg = ccParseNextArg(&remaining_line);
+
+        if(ccParseNoMoreArgs(&remaining_line))
+        {
+            return(EXIT_FAILURE);
+        }
+
+        value = strtod(arg, &remaining_arg);
+
+        if(*remaining_arg != '\0' || errno != 0 || value <= 0.0 || value > 1000.0)
+        {
+            ccParsPrintError("invalid sleep time: %s", ccParseAbbreviateArg(arg));
+            return(EXIT_FAILURE);
+        }
+
+        sleep_time_us = (useconds_t)(value * 1000000);
+    }
+
+    // Adjust sleep time when running from script faster than real-time
+
+    if(ccfile.using_stdin == false)
+    {
+        sleep_time_us /= CC_OFFLINE_ACCELERATION;
+    }
+
+    // Sleep for specified time
+
+    usleep(sleep_time_us);
+
+    return(EXIT_SUCCESS);
+}
+
+
+
 uint32_t ccCmdsLog(uint32_t cmd_idx, char *remaining_line)
 {
-    FILE    *html_file;
-
     if(ccParseNoMoreArgs(&remaining_line) == EXIT_FAILURE)
     {
         return(EXIT_FAILURE);
     }
 
-    // Open temporary log file for writing
+    // Write log data to file
 
-    html_file = fopen("../logs/log.tmp", "w");
-
-    if(html_file == NULL)
+    if(ccFileWriteLog() == EXIT_FAILURE)
     {
-         ccParsPrintError("opening file 'logs/log.html' : %s (%d)", strerror(errno), errno);
-         return(EXIT_FAILURE);
-    }
-
-    // Create Flot chart for period up to the current moment
-
-    ccFlot(html_file, ccfile.converter, ccrun.iter_time_s);
-
-    fclose(html_file);
-
-    // Rename file to replace old log
-
-    if(rename("../logs/log.tmp", "../logs/log.html") != 0)
-    {
-        ccParsPrintError("failed to rename 'logs/log.tmp' to 'logs/log.html' : %s (%d)", strerror(errno), errno);
         return(EXIT_FAILURE);
     }
 

@@ -160,6 +160,11 @@ static void ccLogStoreSignals(struct cclog *log)
 
 void ccLogInit(void)
 {
+    // This function does nothing useful at run time but the compiler checks that all
+    // libreg variable macros are valid
+
+    regMgrTestVarMacros();
+
     // Disable all signals and free log memory
 
     ccLogResetSignals(&breg_log);
@@ -183,8 +188,8 @@ void ccLogInit(void)
         ana_meas_sigs[ANA_B_MAGNET ].time_offset =
         ana_meas_sigs[ANA_I_MAGNET ].time_offset =
         ana_meas_sigs[ANA_I_CIRCUIT].time_offset =
-        ana_meas_sigs[ANA_V_CIRCUIT].time_offset = conv.iter_period * (ccpars_pc.act_delay_iters +
-                                                  (conv.sim_pc_pars.is_pc_undersampled == 0 ? 0.0 : conv.sim_pc_pars.rsp_delay_iters));
+        ana_meas_sigs[ANA_V_CIRCUIT].time_offset = reg_mgr.iter_period * (ccpars_pc.act_delay_iters +
+                                                  (reg_mgr.sim_pc_pars.is_pc_undersampled == 0 ? 0.0 : reg_mgr.sim_pc_pars.rsp_delay_iters));
 
         if(ccpars_pc.actuation == REG_VOLTAGE_REF)
         {
@@ -304,7 +309,7 @@ void ccLogInit(void)
 
             // Current simulation signals
 
-            if(conv.sim_load_pars.is_load_undersampled == false)
+            if(reg_mgr.sim_load_pars.is_load_undersampled == false)
             {
                 ccLogEnableAnaSignal(&ana_meas_sigs[ANA_I_MAGNET]);
             }
@@ -326,7 +331,7 @@ void ccLogInit(void)
                 ccLogEnableDigSignal(&dig_meas_sigs[DIG_I_REF_RATE_CLIP]);
             }
 
-            ana_ireg_sigs[ANA_MEAS_REG].time_offset = -conv.iter_period * (uint32_t)(conv.i.meas.delay_iters[ccpars_meas.i_reg_select] + 0.499);
+            ana_ireg_sigs[ANA_MEAS_REG].time_offset = -reg_mgr.iter_period * (uint32_t)(reg_mgr.i.meas.delay_iters[ccpars_meas.i_reg_select] + 0.499);
         }
 
         // Current simulation signals
@@ -419,8 +424,8 @@ void ccLogStoreMeas(double iter_time)
 
     // Take square room for RMS signals before they are logged
 
-    i_rms      = sqrtf(conv.lim_i_rms.meas2_filter);
-    i_rms_load = sqrtf(conv.lim_i_rms_load.meas2_filter);
+    i_rms      = sqrtf(reg_mgr.lim_i_rms.meas2_filter);
+    i_rms_load = sqrtf(reg_mgr.lim_i_rms_load.meas2_filter);
 
     ccLogStoreSignals(&meas_log);
 }

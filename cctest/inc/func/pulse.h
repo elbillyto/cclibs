@@ -26,7 +26,7 @@
 
 #include "ccTest.h"
 #include "ccPars.h"
-#include "libfg/trim.h"
+#include "libfg/pulse.h"
 
 // GLOBALS is defined in source file where global variables should be defined
 
@@ -38,7 +38,7 @@
 
 // Libfg TRIM parameter structures for PULSE
 
-CCPARS_PULSE_EXT struct fg_trim fg_pulse[CC_NUM_CYC_SELS];
+CCPARS_PULSE_EXT struct fg_pulse fg_pulse[CC_NUM_CYC_SELS];
 
 // Pulse data structure
 
@@ -49,6 +49,7 @@ struct ccpars_pulse
     float                       time;                           // Start of pulse time
     float                       duration;                       // Pulse duration
     float                       ref;                            // Pulse reference
+    float                       linear_rate;                    // Pulse linear rate
 };
 
 CCPARS_PULSE_EXT struct ccpars_pulse ccpars_pulse[CC_NUM_CYC_SELS]
@@ -56,7 +57,8 @@ CCPARS_PULSE_EXT struct ccpars_pulse ccpars_pulse[CC_NUM_CYC_SELS]
 = {// Default value                 Parameter
     {   1.0,                     // PULSE TIME
         1.0,                     // PULSE DURATION
-        0.0   },                 // PULSE REF
+        1.0,                     // PULSE REF
+        0.1   },                 // PULSE LINEAR_RATE
 }
 #endif
 ;
@@ -64,10 +66,11 @@ CCPARS_PULSE_EXT struct ccpars_pulse ccpars_pulse[CC_NUM_CYC_SELS]
 
 CCPARS_PULSE_EXT struct ccpars   pulse_pars[]
 #ifdef GLOBALS
-= {// "Signal name", type,  max_n_els, *enum,        *value,                num_defaults      cyc_sel_step      flags
-    { "TIME",        PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].time     }, 1, sizeof(struct ccpars_pulse), 0 },
-    { "DURATION",    PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].duration }, 1, sizeof(struct ccpars_pulse), 0 },
-    { "REF",         PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].ref      }, 1, sizeof(struct ccpars_pulse), 0 },
+= {// "Signal name", type,  max_n_els, *enum,        *value,                  num_defaults      cyc_sel_step      flags
+    { "TIME",        PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].time       }, 1, sizeof(struct ccpars_pulse), 0 },
+    { "DURATION",    PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].duration   }, 1, sizeof(struct ccpars_pulse), 0 },
+    { "REF",         PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].ref        }, 1, sizeof(struct ccpars_pulse), 0 },
+    { "LINEAR_RATE", PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].linear_rate}, 1, sizeof(struct ccpars_pulse), 0 },
     { NULL }
 }
 #endif

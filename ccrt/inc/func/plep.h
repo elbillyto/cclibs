@@ -53,7 +53,6 @@ struct ccpars_plep
 
     float                       initial_ref;                    // Initial reference
     float                       final_ref;                      // Final reference
-    float                       final_rate;                     // Final rate of change
     float                       acceleration;                   // Acceleration of the parabolic segments (absolute value is used)
     float                       linear_rate;                    // Maximum linear rate (absolute value is used)
     float                       exp_tc;                         // Exponential time constant
@@ -65,7 +64,6 @@ CCPARS_PLEP_EXT struct ccpars_plep ccpars_plep[CC_NUM_CYC_SELS]
 = {// Default value           Parameter
     { 0.0,                 // PLEP INITIAL_REF
       1.0,                 // PLEP FINAL_REF
-      0.0,                 // PLEP FINAL_RATE
       1.0,                 // PLEP ACCELERATION
       1.0,                 // PLEP LINEAR_RATE
       0.0,                 // PLEP EXP_TC
@@ -81,7 +79,6 @@ CCPARS_PLEP_EXT struct ccpars   plep_pars[]
 = {// "Signal name"   type,     max_n_els,*enum,        *value,                   num_defaults      cyc_sel_step     flags
     { "INITIAL_REF",  PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].initial_ref  }, 1, sizeof(struct ccpars_plep), PARS_RW|PARS_REF },
     { "FINAL_REF",    PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].final_ref    }, 1, sizeof(struct ccpars_plep), PARS_RW|PARS_REF },
-    { "FINAL_RATE",   PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].final_rate   }, 1, sizeof(struct ccpars_plep), PARS_RW|PARS_REF },
     { "ACCELERATION", PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].acceleration }, 1, sizeof(struct ccpars_plep), PARS_RW|PARS_REF },
     { "LINEAR_RATE",  PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].linear_rate  }, 1, sizeof(struct ccpars_plep), PARS_RW|PARS_REF },
     { "EXP_TC",       PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].exp_tc       }, 1, sizeof(struct ccpars_plep), PARS_RW|PARS_REF },

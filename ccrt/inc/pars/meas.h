@@ -30,6 +30,7 @@
 #define CCPARS_MEAS_H
 
 #include "ccPars.h"
+#include "pars/reg.h"
 
 // GLOBALS should be defined in the source file where global variables should be defined
 
@@ -70,6 +71,10 @@ struct ccpars_meas
     float                   i_sim_noise_pp;             // Simulated current measurement peak-peak noise level
     float                   v_sim_noise_pp;             // Simulated voltage measurement peak-peak noise level
 
+    float                   b_sim_quantization;         // Simulated field   measurement quantization
+    float                   i_sim_quantization;         // Simulated current measurement quantization
+    float                   v_sim_quantization;         // Simulated voltage measurement quantization
+
     uint32_t                tone_half_period_iters;     // Simulated measurement tone half-period in iterations
     float                   b_sim_tone_amp;             // Simulated field   measurement tone amplitude
     float                   i_sim_tone_amp;             // Simulated current measurement tone amplitude
@@ -90,6 +95,9 @@ CCPARS_MEAS_EXT struct ccpars_meas ccpars_meas
         0.0,                     // MEAS B_SIM_NOISE_PP
         0.0,                     // MEAS I_SIM_NOISE_PP
         0.0,                     // MEAS V_SIM_NOISE_PP
+        0.0,                     // MEAS B_SIM_QUANTIZATION
+        0.0,                     // MEAS I_SIM_QUANTIZATION
+        0.0,                     // MEAS V_SIM_QUANTIZATION
         10,                      // MEAS TONE_HALF_PERIOD_ITERS
         0.0,                     // MEAS I_SIM_TONE_AMP
         0.0,                     // MEAS B_SIM_TONE_AMP
@@ -102,21 +110,27 @@ CCPARS_MEAS_EXT struct ccpars_meas ccpars_meas
 
 CCPARS_MEAS_EXT struct ccpars meas_pars[]
 #ifdef GLOBALS
-= {// "Signal name"             type,      max_n_els,*enum,                        *value,                        num_defaults,cyc_sel_step,flags
-    { "B_REG_SELECT",           PAR_ENUM,      1,     enum_reg_meas_select, { .u = &ccpars_meas.b_reg_select              }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "I_REG_SELECT",           PAR_ENUM,      1,     enum_reg_meas_select, { .u = &ccpars_meas.i_reg_select              }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "B_DELAY_ITERS",          PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.b_delay_iters             }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "I_DELAY_ITERS",          PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.i_delay_iters             }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "V_DELAY_ITERS",          PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.v_delay_iters             }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "B_FIR_LENGTHS",          PAR_UNSIGNED,  2,     NULL,                 { .u =  ccpars_meas.b_fir_lengths             }, 2, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
-    { "I_FIR_LENGTHS",          PAR_UNSIGNED,  2,     NULL,                 { .u =  ccpars_meas.i_fir_lengths             }, 2, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
-    { "B_SIM_NOISE_PP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.b_sim_noise_pp            }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "I_SIM_NOISE_PP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.i_sim_noise_pp            }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "V_SIM_NOISE_PP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.v_sim_noise_pp            }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "TONE_HALF_PERIOD_ITERS", PAR_UNSIGNED,  1,     NULL,                 { .u = &ccpars_meas.tone_half_period_iters    }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "B_SIM_TONE_AMP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.b_sim_tone_amp            }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "I_SIM_TONE_AMP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.i_sim_tone_amp            }, 1, 0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "INVALID_PROBABILITY",    PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.invalid_probability       }, 1, 0, PARS_RW|PARS_CFG                      },
+= {// "Signal name"             type,      max_n_els,*enum,                        *value,                                     num_defaults,cyc_sel_step,flags
+    { "B_REG_SELECT",           PAR_ENUM,      1,     enum_reg_meas_select, { .u = &ccpars_meas.b_reg_select                           }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "I_REG_SELECT",           PAR_ENUM,      1,     enum_reg_meas_select, { .u = &ccpars_meas.i_reg_select                           }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "B_DELAY_ITERS",          PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.b_delay_iters                          }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "I_DELAY_ITERS",          PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.i_delay_iters                          }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "V_DELAY_ITERS",          PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.v_delay_iters                          }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "B_FIR_LENGTHS",          PAR_UNSIGNED,  2,     NULL,                 { .u =  ccpars_meas.b_fir_lengths                          }, 2,      0,     PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
+    { "I_FIR_LENGTHS",          PAR_UNSIGNED,  2,     NULL,                 { .u =  ccpars_meas.i_fir_lengths                          }, 2,      0,     PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
+    { "B_SIM_NOISE_PP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.b_sim_noise_pp                         }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "I_SIM_NOISE_PP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.i_sim_noise_pp                         }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "V_SIM_NOISE_PP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.v_sim_noise_pp                         }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "B_SIM_QUANTIZATION",     PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.b_sim_quantization                     }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "I_SIM_QUANTIZATION",     PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.i_sim_quantization                     }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "V_SIM_QUANTIZATION",     PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.v_sim_quantization                     }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "TONE_HALF_PERIOD_ITERS", PAR_UNSIGNED,  1,     NULL,                 { .u = &ccpars_meas.tone_half_period_iters                 }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "B_SIM_TONE_AMP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.b_sim_tone_amp                         }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "I_SIM_TONE_AMP",         PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.i_sim_tone_amp                         }, 1,      0,     PARS_RW|PARS_CFG|PARS_REG             },
+    { "INVALID_PROBABILITY",    PAR_FLOAT,     1,     NULL,                 { .f = &ccpars_meas.invalid_probability                    }, 1,      0,     PARS_RW|PARS_CFG                      },
+    { "B_INVALID_COUNTER",      PAR_UNSIGNED,  1,     NULL,                 { .u = (uint32_t *)&regMgrVar(conv,MEAS_B_INVALID_COUNTER)}, 1,      0,     PARS_RO                               },
+    { "I_INVALID_COUNTER",      PAR_UNSIGNED,  1,     NULL,                 { .u = (uint32_t *)&regMgrVar(conv,MEAS_I_INVALID_COUNTER)}, 1,      0,     PARS_RO                               },
+    { "V_INVALID_COUNTER",      PAR_UNSIGNED,  1,     NULL,                 { .u = (uint32_t *)&regMgrVar(conv,MEAS_V_INVALID_COUNTER)}, 1,      0,     PARS_RO                               },
     { NULL }
 }
 #endif

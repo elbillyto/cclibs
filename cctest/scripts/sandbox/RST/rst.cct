@@ -465,4 +465,12 @@ GLOBAL FILE                 gauss-pppl-ext-2.16
 REF FUNCTION                PPPL
 RUN
 
+# Test 7 - Measurement quantization test
+
+GLOBAL FILE                 gauss-pppl-ext-2.16-quantization
+MEAS B_SIM_QUANTIZATION     0.01
+MEAS I_SIM_QUANTIZATION     0.04
+MEAS V_SIM_QUANTIZATION     0.02
+RUN
+
 # EOF

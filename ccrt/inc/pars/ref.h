@@ -152,7 +152,7 @@ enum ref_pars_index_enum
 CCPARS_REF_EXT struct ccpars ref_pars[]
 #ifdef GLOBALS
 = {// "Signal name"      type,     max_n_els,          *enum,                         *value,                     num_defaults,                  cyc_sel_step,    flags
-    { "REF_PLAY",        PAR_ENUM,     1,               enum_enabled_disabled, { .u = &ccpars_ref[0].reg_mode                }, 1,               sizeof(struct ccpars_ref), PARS_RW|PARS_REF },
+    { "PLAY",            PAR_ENUM,     1,               enum_enabled_disabled, { .u = &ccpars_ref[0].play                    }, 1,               sizeof(struct ccpars_ref), PARS_RW|PARS_CFG },
     { "REG_MODE",        PAR_ENUM,     1,               enum_reg_mode,         { .u = &ccpars_ref[0].reg_mode                }, 1,               sizeof(struct ccpars_ref), PARS_RW|PARS_REF },
     { "FUNCTION",        PAR_ENUM,     1,               enum_function_type,    { .u = &ccpars_ref[0].function                }, 1,               sizeof(struct ccpars_ref), PARS_RW|PARS_REF },
     { "ARMED_REG_MODE",  PAR_ENUM,     1,               enum_reg_mode,         { .u = &ccpars_ref[0].armed_reg_mode          }, 1,               sizeof(struct ccpars_ref), PARS_RO          },

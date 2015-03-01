@@ -91,7 +91,7 @@ GLOBAL CYCLE_SELECTOR       1 2 3 4
 
 # Simulations with Bruker
 
-PC RIPPLE                   2.0E-3
+PC SIM_RIPPLE               2.0E-3
 
 GLOBAL FILE                 hrs90-bruker
 LOAD SELECT                 0
@@ -104,7 +104,7 @@ RUN
 # Simulations with APOLLO
 
 PULSE REF(1)                200         -480          480         220
-PC RIPPLE                   1.0E-2
+PC SIM_RIPPLE               1.0E-2
 
 GLOBAL FILE                 hrs90-comet
 LOAD SELECT                 2
@@ -116,7 +116,7 @@ RUN
 
 # Simulations with Bruker and PT2026
 
-PC RIPPLE                   2.0E-3
+PC SIM_RIPPLE               2.0E-3
 PULSE REF(1)                10000   9900    10100   10000
 DEFAULT B_ACCELERATION      1.000000E+02
 DEFAULT B_DECELERATION      1.000000E+01

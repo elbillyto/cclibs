@@ -135,6 +135,8 @@ extern "C" {
  */
 void regMeasFilterInitBuffer(struct reg_meas_filter *filter, int32_t *buf, uint32_t buf_len);
 
+
+
 /*!
  * Initialise the FIR measurement filter.
  *
@@ -163,6 +165,8 @@ void regMeasFilterInitBuffer(struct reg_meas_filter *filter, int32_t *buf, uint3
 void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
                        uint32_t extrapolation_len_iters, float pos, float neg, float meas_delay_iters);
 
+
+
 /*!
  * Set the noise and tone characteristics for a simulated measurement.
  *
@@ -176,28 +180,46 @@ void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
 void regMeasSetNoiseAndTone(struct reg_noise_and_tone *noise_and_tone, float noise_pp,
                             float tone_amp, uint32_t tone_half_period_iters);
 
+
+
 /*!
  * Filter the measurement with a two-stage cascaded box car filter and extrapolate
  * to estimate the measurement without the measurement and FIR filtering delays.
  * If the filter is not running then the output is simply the unfiltered input.
  *
- * This is a Real-Time function (thread safe).
+ * This is a Real-Time function.
  *
  * @param[in,out] filter                     Measurement filter object to update
  */
 void regMeasFilterRT(struct reg_meas_filter *filter);
 
+
+
 /*!
- * Generate a tone. The tone is simulated using the sum of white noise (generated
+ * Generate Pseudo white noise using an efficient pseudo random number generator.
+ *
+ * This is a Real-Time function.
+ *
+ * @param[in] noise_pp                      Peak-peak amplitude of noise
+ * @returns Pseudo white noise with peak-peak amplitude given by noise_pp, centred on zero
+ */
+float regMeasWhiteNoiseRT(float noise_pp);
+
+
+
+/*!
+ * Generate noise and tone. This is simulated using the sum of white noise (generated
  * using a simple pseudo-random number generator) and a square wave. The frequency
  * of the tone is defined by reg_noise_and_tone::tone_half_period_iters.
  *
- * This is a Real-Time function (thread safe).
+ * This is a Real-Time function.
  *
- * @param[in,out] noise_and_tone             Noise and tone object (maintains state of pseudo-random number sequence)
+ * @param[in] noise_and_tone                Pointer to noise and tone structure
  * @returns Sum of noise and tone values
  */
 float regMeasNoiseAndToneRT(struct reg_noise_and_tone *noise_and_tone);
+
+
 
 /*!
  * Calculate the estimated measurement rate by least-squares regression across

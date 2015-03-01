@@ -41,6 +41,10 @@
 
 #define CC_PATH_LEN                 256
 #define CC_INPUT_FILE_NEST_LIMIT    4
+#define CC_TMP_LOG_FILE             "../logs/tmp"
+#define CC_LOG_FILE                 "../logs/log.html"
+#define CC_TMP_CONFIG_FILE          "../config/tmp"
+#define CC_TMP_REF_FILE             "../ref/tmp"
 
 // Global i/o structure
 
@@ -58,15 +62,20 @@ struct ccfile
     struct ccinput          input        [CC_INPUT_FILE_NEST_LIMIT];
     char                   *converter;
     bool                    empty_line;
+    bool                    using_stdin;
 };
 
 CCFILE_EXT struct ccfile ccfile;
 
 // Function declarations
 
-uint32_t ccFileCwd              (char *path);
-uint32_t ccFileReadAll          (char *path);
-uint32_t ccFileMakePath         (char *path);
+uint32_t ccFileCwd                  (char *path);
+uint32_t ccFileMakePath             (char *path);
+uint32_t ccFileReadAll              (char *path);
+uint32_t ccFileWriteLog             (void);
+uint32_t ccFileSaveAllConfigPars    (void);
+uint32_t ccFileSaveConfigPar        (char *cmd_name, struct ccpars *par);
+uint32_t ccFileSaveRefPars          (uint32_t cyc_sel);
 
 #endif
 // EOF

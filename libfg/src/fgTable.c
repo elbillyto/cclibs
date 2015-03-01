@@ -81,7 +81,7 @@ enum fg_error fgTableInit(struct   fg_limits *limits,
     {
         if(time[i] < (time[i - 1] + min_time_step))        // Check time values
         {
-            meta->error.index     = i;
+            meta->error.index   = i;
             meta->error.data[0] = time[i];
             meta->error.data[1] = time[i - 1] + min_time_step;
             meta->error.data[2] = min_time_step;
@@ -95,8 +95,9 @@ enum fg_error fgTableInit(struct   fg_limits *limits,
 
     // Complete meta data
 
-    meta->duration  = time[i - 1];
-    meta->range.end = ref [i - 1];
+    meta->duration         = time[i - 1];
+    meta->range.end        = ref [i - 1];
+    meta->range.final_rate = (ref[i - 1] - ref[i - 2]) / (time[i - 1] - time[i - 2]);
 
     fgSetFuncPolarity(meta, pol_switch_auto, pol_switch_neg);
 

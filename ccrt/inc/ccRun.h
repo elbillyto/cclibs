@@ -29,7 +29,9 @@
 #ifndef CCRUN_H
 #define CCRUN_H
 
-#include <sys/time.h>
+#include <time.h>
+#include <signal.h>
+#include <pthread.h>
 
 #include "pars/global.h"
 
@@ -54,6 +56,7 @@ struct ccrun_vars
     int32_t                         time_till_event_us;                 // Number of iterations for the simulation
     uint32_t                        cycle_idx;                          // Active reference function index
     uint32_t                        cyc_sel;                            // Cycle selector for current cycle
+    bool                            fault;                              // Fault active flag
 
     double                          cycle_start_time;                   // Start time (iter_time) for current cycle
     double                          cycle_duration;                     // Cycle duration including run delay
@@ -61,9 +64,17 @@ struct ccrun_vars
     bool                            play;                               // Function is to be played
     enum fg_gen_status            (*fgen_func)();                       // Function to generate the active reference
     void                           *fgen_pars;                          // Parameter structure for active reference
-    struct fg_limits               *fg_limits;                          // Pointer to NULL or ccrun.fgen_limits
-    struct fg_limits                fgen_limits;                        // Pointer to fg_limits (b/i/v)
+    struct fg_limits                fg_limits;                          // fg_limits for arming references (b/i/v)
     struct reg_lim_ref              fg_lim_v_ref;                       // Libreg voltage measurement limits structure for fg converter limits
+
+    struct ccrun_supercycle
+    {
+        pthread_mutex_t             mutex;                              // Mutex to protect the supercycle structure
+        uint32_t                    seconds_remaining;                  // Time remaining in the current cycle
+        uint32_t                    cyc_idx;                            // Index with the supercycle (ccpars_globsl.cycle_selector)
+        uint32_t                    cyc_sel;                            // Cycle selector for the current cycle
+        uint32_t                    ref_cyc_sel;                        // Cycle selector for reference generation for the current cycle
+    } supercycle;
 
     struct ccrun_cycle
     {
@@ -73,12 +84,6 @@ struct ccrun_vars
         float                       ref_advance;                        // Ref advance used with each function
     } cycle[MAX_CYCLES];
 
-    struct ccrun_invalid_meas
-    {
-        int                         random_threshold;                   // Threshold for random() for an invalid measurement
-        bool                        flag;                               // Invalid measurement flag for logging
-    } invalid_meas;
-
     struct ccrun_prefunc
     {
         uint32_t                    idx;                                // Pre-function stage index (0,1,2,3)
@@ -86,25 +91,19 @@ struct ccrun_vars
         float                       final_ref[MAX_PREFUNCS];            // Final ref for each pre-function ramp
         struct fg_ramp              pars;                               // Libfg parameters for pre-function ramps
     } prefunc;
-
-    struct ccrun_polswitch
-    {
-        uint32_t                    timer;                              // Switch movement time
-        enum polswitch_cmd          command;                            // Pol switch command
-        bool                        enabled;                            // Pol switch is enabled if POLSWITCH TIMEOUT is not zero
-        bool                        automatic;                          // Pol switch is automatically controlled (for Libfg init functions)
-        bool                        negative;                           // Pol switch is currently negative (for Libfg init functions)
-        enum reg_enabled_disabled   limits_invert;                      // Real-time limites should be inverted (for Libreg)
-    } polswitch;
 };
 
-CCRUN_EXT struct ccrun_vars ccrun;
+CCRUN_EXT struct ccrun_vars ccrun
+#ifdef GLOBALS
+= {
+        .supercycle = { .mutex = PTHREAD_MUTEX_INITIALIZER }
+}
+#endif
+;
 
 // Function prototypes
 
-void    ccRunSimulation         (void);
-void    ccRunFuncGen            (void);
-void    ccRunFuncGenReverseTime (void);
+void    ccRun   (union sigval sigval);
 
 #endif
 

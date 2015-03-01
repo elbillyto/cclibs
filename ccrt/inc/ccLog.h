@@ -47,7 +47,7 @@ struct cclog_ana_sigs
 {
     char                       *name;                   // Signal name
     bool                        is_trailing_step;       // Trailing step flag
-    float                      *source;                 // Pointer to source of analogue signal
+    float const                *source;                 // Pointer to source of analogue signal
     uint32_t                    num_bad_values;         // Counter for bad values
     float                       buf[CC_LOG_LENGTH];     // Signal circular buffer
 };
@@ -82,10 +82,10 @@ enum cclog_ana_reg_idx
 CCLOG_EXT struct cclog_ana_sigs ana_breg_sigs[]
 #ifdef GLOBALS
 = { // Name                  Trailing_step             Source
-    { "B_REF",                  true,           &conv.b.ref             },
-    { "B_REF_LIMITED",          true,           &conv.b.ref_limited     },
-    { "B_REF_RST",              true,           &conv.b.ref_rst         },
-    { "B_REF_OPENLOOP",         true,           &conv.b.ref_openloop    },
+    { "B_REF",                  true,           &regMgrVar(conv, BREG_REF         )    },
+    { "B_REF_LIMITED",          true,           &regMgrVar(conv, BREG_REF_LIMITED )    },
+    { "B_REF_RST",              true,           &regMgrVar(conv, BREG_REF_RST     )    },
+    { "B_REF_OPENLOOP",         true,           &regMgrVar(conv, BREG_REF_OPENLOOP)    },
 }
 #endif
 ;
@@ -104,10 +104,10 @@ CCLOG_EXT struct cclog breg_log
 CCLOG_EXT struct cclog_ana_sigs ana_ireg_sigs[]
 #ifdef GLOBALS
 = { // Name                  Trailing_step             Source
-    { "I_REF",                  true,           &conv.i.ref             },
-    { "I_REF_LIMITED",          true,           &conv.i.ref_limited     },
-    { "I_REF_RST",              true,           &conv.i.ref_rst         },
-    { "I_REF_OPENLOOP",         true,           &conv.i.ref_openloop    },
+    { "I_REF",                  true,           &regMgrVar(conv, IREG_REF         )   },
+    { "I_REF_LIMITED",          true,           &regMgrVar(conv, IREG_REF_LIMITED )   },
+    { "I_REF_RST",              true,           &regMgrVar(conv, IREG_REF_RST     )   },
+    { "I_REF_OPENLOOP",         true,           &regMgrVar(conv, IREG_REF_OPENLOOP)   },
 }
 #endif
 ;
@@ -152,26 +152,26 @@ enum cclog_ana_meas_idx
 CCLOG_EXT struct cclog_ana_sigs ana_meas_sigs[]     // IMPORTANT: This must be in the same order as enum cclog_ana_meas_idx (above)
 #ifdef GLOBALS
 = { // Name                  Trailing_step               Source
-    { "B_MEAS",                 false,          &conv.b.meas.signal[REG_MEAS_UNFILTERED]    },
-    { "B_MEAS_FLTR",            false,          &conv.b.meas.signal[REG_MEAS_FILTERED]      },
-    { "B_MEAS_EXTR",            false,          &conv.b.meas.signal[REG_MEAS_EXTRAPOLATED]  },
+    { "B_MEAS",                 false,          &regMgrVar(conv, MEAS_B_UNFILTERED)        },
+    { "B_MEAS_FLTR",            false,          &regMgrVar(conv, MEAS_B_FILTERED)          },
+    { "B_MEAS_EXTR",            false,          &regMgrVar(conv, MEAS_B_EXTRAPOLATED)      },
 
     { "I_RMS",                  false,          &i_rms                                      },
     { "I_RMS_LOAD",             false,          &i_rms_load                                 },
-    { "I_MEAS",                 false,          &conv.i.meas.signal[REG_MEAS_UNFILTERED]    },
-    { "I_MEAS_FLTR",            false,          &conv.i.meas.signal[REG_MEAS_FILTERED]      },
-    { "I_MEAS_EXTR",            false,          &conv.i.meas.signal[REG_MEAS_EXTRAPOLATED]  },
+    { "I_MEAS",                 false,          &regMgrVar(conv, MEAS_I_UNFILTERED)        },
+    { "I_MEAS_FLTR",            false,          &regMgrVar(conv, MEAS_I_FILTERED)          },
+    { "I_MEAS_EXTR",            false,          &regMgrVar(conv, MEAS_I_EXTRAPOLATED)      },
 
-    { "V_REF",                  true,           &conv.v.ref                                 },
-    { "V_REF_SAT",              true,           &conv.v.ref_sat                             },
-    { "V_REF_LIMITED",          true,           &conv.v.ref_limited                         },
-    { "V_MEAS",                 false,          &conv.v.meas                                },
+    { "V_REF",                  true,           &regMgrVar(conv, V_REF)                    },
+    { "V_REF_SAT",              true,           &regMgrVar(conv, V_REF_SAT)                },
+    { "V_REF_LIMITED",          true,           &regMgrVar(conv, V_REF_LIMITED)            },
+    { "V_MEAS",                 false,          &regMgrVar(conv, MEAS_V)                   },
 
-    { "B_ERR",                  true,           &conv.b.err.err                             },
-    { "I_ERR",                  true,           &conv.i.err.err                             },
+    { "B_ERR",                  true,           &regMgrVar(conv, BREG_ERR)                 },
+    { "I_ERR",                  true,           &regMgrVar(conv, IREG_ERR)                 },
 
-    { "MAX_ABS_B_ERR",          true,           &conv.b.err.max_abs_err                     },
-    { "MAX_ABS_I_ERR",          true,           &conv.i.err.max_abs_err                     },
+    { "MAX_ABS_B_ERR",          true,           &regMgrVar(conv, BREG_MAX_ABS_ERR)         },
+    { "MAX_ABS_I_ERR",          true,           &regMgrVar(conv, IREG_MAX_ABS_ERR)         },
 }
 #endif
 ;

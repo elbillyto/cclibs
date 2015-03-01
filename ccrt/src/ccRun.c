@@ -28,6 +28,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
+#include <signal.h>
 #include <math.h>
 
 // Include cctest program header files
@@ -39,6 +41,63 @@
 #include "ccRef.h"
 #include "ccLog.h"
 #include "ccRun.h"
+#include "ccSim.h"
+
+
+
+static bool ccRunFaultLatch(enum reg_enabled_disabled *fault, bool flag)
+{
+    if(ccpars_pc.state == PC_ON)
+    {
+        *fault = *fault == REG_ENABLED || flag ? REG_ENABLED : REG_DISABLED;
+    }
+    else
+    {
+        *fault = flag ? REG_ENABLED : REG_DISABLED;
+    }
+
+    return(*fault == REG_ENABLED);
+}
+
+
+
+static void ccRunWarning(enum reg_enabled_disabled *warning, bool flag)
+{
+    *warning = flag ? REG_ENABLED : REG_DISABLED;
+}
+
+
+
+static void ccRunFaultsAndWarnings(void)
+{
+    bool    sum_of_faults = false;
+
+    // Latch active faults and accumulate the sum of faults
+
+    sum_of_faults |= ccRunFaultLatch(&ccpars_faults.b_meas_invalid,
+                        regMgrVar(reg_mgr, MEAS_B_INVALID_SEQ_COUNTER) > regMgrVar(reg_mgr, BREG_PERIOD_ITERS));
+    sum_of_faults |= ccRunFaultLatch(&ccpars_faults.i_meas_invalid,
+                        regMgrVar(reg_mgr, MEAS_I_INVALID_SEQ_COUNTER) > regMgrVar(reg_mgr, IREG_PERIOD_ITERS));
+
+    sum_of_faults |= ccRunFaultLatch(&ccpars_faults.b_meas_limit,   regMgrVar(reg_mgr, FLAG_B_MEAS_TRIP)       );
+    sum_of_faults |= ccRunFaultLatch(&ccpars_faults.b_reg_err,      regMgrVar(reg_mgr, FLAG_B_REG_ERR_FAULT)   );
+    sum_of_faults |= ccRunFaultLatch(&ccpars_faults.i_meas_limit,   regMgrVar(reg_mgr, FLAG_I_MEAS_TRIP)       );
+    sum_of_faults |= ccRunFaultLatch(&ccpars_faults.i_reg_err,      regMgrVar(reg_mgr, FLAG_I_REG_ERR_FAULT)   );
+    sum_of_faults |= ccRunFaultLatch(&ccpars_faults.v_reg_err,      regMgrVar(reg_mgr, FLAG_V_REG_ERR_FAULT)   );
+    sum_of_faults |= ccRunFaultLatch(&ccpars_faults.i_rms,          regMgrVar(reg_mgr, FLAG_I_RMS_FAULT)       );
+    sum_of_faults |= ccRunFaultLatch(&ccpars_faults.i_rms_load,     regMgrVar(reg_mgr, FLAG_I_RMS_LOAD_FAULT)  );
+    sum_of_faults |= ccRunFaultLatch(&ccpars_faults.polswitch,      ccpars_state.polswitch == POLSWITCH_FAULT);
+
+    ccrun.fault = sum_of_faults;
+
+    // Set warnings parameters
+
+    ccRunWarning(&ccpars_warnings.b_reg_err,  regMgrVar(reg_mgr, FLAG_B_REG_ERR_WARNING) );
+    ccRunWarning(&ccpars_warnings.i_reg_err,  regMgrVar(reg_mgr, FLAG_I_REG_ERR_WARNING) );
+    ccRunWarning(&ccpars_warnings.v_reg_err,  regMgrVar(reg_mgr, FLAG_V_REG_ERR_WARNING) );
+    ccRunWarning(&ccpars_warnings.i_rms,      regMgrVar(reg_mgr, FLAG_I_RMS_WARNING)     );
+    ccRunWarning(&ccpars_warnings.i_rms_load, regMgrVar(reg_mgr, FLAG_I_RMS_LOAD_WARNING));
+}
 
 
 
@@ -69,7 +128,7 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
             // start pre-function between two functions
 
             {
-                float invert_limits = conv.reg_signal->lim_ref.invert_limits == REG_ENABLED ? -1.0 : 1.0;
+                float invert_limits = reg_mgr.reg_signal->lim_ref.invert_limits == REG_ENABLED ? -1.0 : 1.0;
 
                 // Set cyc_sel for the next cycle
 
@@ -77,7 +136,7 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
 
                 // Set regulation mode for the next function
 
-                regConvModeSetRT(&conv, ccpars_ref[ccrun.cyc_sel].reg_mode);
+                regMgrModeSetRT(&reg_mgr, ccpars_ref[ccrun.cyc_sel].reg_mode);
 
                 // Set up pre-function segment references according to the pre-function policy
 
@@ -101,15 +160,15 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
 
                 delay = 0;
 
-                if(conv.reg_mode == REG_VOLTAGE)
+                if(reg_mgr.reg_mode == REG_VOLTAGE)
                 {
-                    *ref = regRstPrevActRT (&conv.reg_signal->rst_vars);
-                    rate = regRstAverageDeltaActRT(&conv.reg_signal->rst_vars) / conv.reg_period;
+                    *ref = regRstPrevActRT (&reg_mgr.reg_signal->rst_vars);
+                    rate = regRstAverageDeltaActRT(&reg_mgr.reg_signal->rst_vars) / reg_mgr.reg_period;
                 }
                 else
                 {
-                    *ref = regRstPrevRefRT (&conv.reg_signal->rst_vars);
-                    rate = conv.reg_signal->rate.estimate;
+                    *ref = regRstPrevRefRT (&reg_mgr.reg_signal->rst_vars);
+                    rate = reg_mgr.reg_signal->rate.estimate;
                 }
 
                 if(prefunc_final_ref == *ref)
@@ -134,23 +193,23 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
 
         // Arm a RAMP for the next pre-function segment - flip reference sign when limits are inverted
 
-        fgRampCalc(ccrun.polswitch.automatic,
-                   ccrun.polswitch.negative,
+        fgRampCalc(ccsim.polswitch.automatic,
+                   ccsim.polswitch.negative,
                    delay,
                    rate,
                    *ref,
                    prefunc_final_ref,
-                   ccpars_default.pars[conv.reg_mode].acceleration,
-                   ccpars_default.pars[conv.reg_mode].linear_rate,
-                   ccpars_default.pars[conv.reg_mode].deceleration,
+                   ccpars_default.pars[reg_mgr.reg_mode].acceleration,
+                   ccpars_default.pars[reg_mgr.reg_mode].linear_rate,
+                   ccpars_default.pars[reg_mgr.reg_mode].deceleration,
                    &ccrun.prefunc.pars,
                    &meta);
 
-        ccrun.cycle_start_time = iter_time + conv.ref_advance;
+        ccrun.cycle_start_time = iter_time + reg_mgr.ref_advance;
 
-        if(conv.reg_mode != REG_VOLTAGE)
+        if(reg_mgr.reg_mode != REG_VOLTAGE)
         {
-            ccrun.cycle_start_time -= conv.reg_signal->iteration_counter * conv.iter_period;
+            ccrun.cycle_start_time -= reg_mgr.reg_signal->iteration_counter * reg_mgr.iter_period;
         }
         ccrun.prefunc.idx++;
     }
@@ -167,7 +226,7 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
 
         // Set regulation mode (which won't change) to reset max abs error values
 
-        regConvModeSetRT(&conv, ccpars_ref[ccrun.cyc_sel].reg_mode);
+        regMgrModeSetRT(&reg_mgr, ccpars_ref[ccrun.cyc_sel].reg_mode);
 
         // Prepare to generate new function
 
@@ -180,7 +239,7 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
 
         ccrun.cycle_start_time = iter_time;
 
-        ccrun.cycle[ccrun.cycle_idx].ref_advance = conv.ref_advance;
+        ccrun.cycle[ccrun.cycle_idx].ref_advance = reg_mgr.ref_advance;
         ccrun.cycle[ccrun.cycle_idx].start_time  = iter_time;
 
         // Reset pre-function index for when this new function ends
@@ -190,6 +249,92 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
     }
 
     return(1); // Return 1 to continue the simulation
+}
+
+
+
+void ccRun(union sigval sigval)
+{
+    uint32_t    reg_iteration_counter;
+    double      ref_time;
+    float       ref;
+    bool        use_sim_meas;
+
+
+    // Adjust time stamp
+
+    ccrun.iter_time.tv_usec += CC_ITER_PERIOD_US;
+
+    if(ccrun.iter_time.tv_usec >= 1000000)
+    {
+        ccrun.iter_time.tv_sec++;
+        ccrun.iter_time.tv_usec -= 1000000;
+    }
+
+    ccrun.iter_time_s = (double)ccrun.iter_time.tv_sec + (double)ccrun.iter_time.tv_usec * 1.0E-6;
+
+    // Calculate reference time taking into account the ref advance for the active regulation mode
+
+    ref_time = ccrun.iter_time_s - ccrun.cycle_start_time + regMgrVar(reg_mgr, REF_ADVANCE);
+
+    // The "real" measurements are invalid while the simulated measurements are good so setting
+    // the use_sim_meas is equivalent to indicating to libreg that the measurements are invalid on
+    // this iteration.
+
+    use_sim_meas = rand() > (int)(RAND_MAX * ccpars_meas.invalid_probability);
+
+    // Give new measurements to libreg and receive iteration counter (it's zero on regulation iterations)
+
+    reg_iteration_counter = regMgrMeasSetRT(&reg_mgr, REG_OPERATIONAL_RST_PARS, 0, 0, use_sim_meas, false);
+
+    if(ccpars_state.pc == PC_ON && reg_iteration_counter == 0)
+    {
+        switch(regMgrVar(reg_mgr, REG_MODE))
+        {
+            case REG_NONE:      ref = 0;                    break;
+            case REG_VOLTAGE:   ref = ccpars_direct.v_ref;  break;
+            case REG_CURRENT:   ref = ccpars_direct.i_ref;  break;
+            case REG_FIELD:     ref = ccpars_direct.b_ref;  break;
+        }
+
+        regMgrRegulateRT(&reg_mgr, &ref);
+    }
+
+    // Simulate voltage source and load response
+
+    regMgrSimulateRT(&reg_mgr, NULL, 0.0);
+
+    // Check faults and warnings
+
+    ccRunFaultsAndWarnings();
+
+    // Store field regulation signals in log at regulation rate
+
+    if(regMgrVar(reg_mgr, BREG_ITER_COUNTER) == 0)
+    {
+        ccLogStoreReg(&breg_log, ccrun.iter_time_s);
+    }
+
+    // Store current regulation signals in log at regulation rate
+
+    if(regMgrVar(reg_mgr, IREG_ITER_COUNTER) == 0)
+    {
+        ccLogStoreReg(&ireg_log, ccrun.iter_time_s);
+    }
+
+    // Store measurement rate signals in log every iteration
+
+    ccLogStoreMeas(ccrun.iter_time_s);
+
+    // Simulate PC state and Polarity Switch behaviour
+
+    ccSimPcState();
+    ccSimPolSwitch();
+
+    if(ccpars_state.pc == PC_ON)
+    {
+        regMgrModeSetRT(&reg_mgr, ccpars_ref[0].reg_mode);
+    }
 }
 
 
@@ -206,33 +351,6 @@ void ccRunSimulation(void)
     bool               is_max_abs_err_enabled = false;    // Control max_abs_err calculation
     enum fg_gen_status fg_gen_status;                     // Function generation status
 
-    // Prepare to generation the first function with no pre-function
-
-    ccrun.prefunc.idx       = 0;
-    ccrun.prefunc.num_ramps = 0;
-    ccrun.cycle_idx         = 0;
-    ccrun.is_pc_tripped     = false;
-    ccrun.cyc_sel           = ccrun.cycle[0].cyc_sel;
-
-    // Call once with conv.reg_mode equal REG_NONE to set iteration counters
-
-    regConvMeasSetRT(&conv, ccrun.cycle[0].reg_rst_source, 0, 0, true, is_max_abs_err_enabled);
-
-    ref = ccrun.fg_meta[ccrun.cyc_sel].range.start;
-
-    ccRunStartFunction(iter_time, &ref);
-
-    // Loop until all functions have completed
-
-    for(;;)
-    {
-        uint32_t        reg_iteration_counter;      // Regulation iteration counter from libreg (0=start of reg period)
-        bool            use_sim_meas;
-        int             rand_value = rand();        // Random int between 0 and RAND_MAX
-
-        // Calculate reference time taking into account the ref advance for the active regulation mode
-
-        ref_time = iter_time - ccrun.cycle_start_time + conv.ref_advance;
 
         // Set measurements to simulated values but support bad value with a defined probability
         // The "real" measurements are invalid while the simulated measurements are good
@@ -297,87 +415,7 @@ void ccRunSimulation(void)
                 }
             }
 
-            // Apply voltage reference quantisation if specified
-
-            if(ccpars_pc.quantization > 0.0)
-            {
-                conv.v.ref_limited = ccpars_pc.quantization * nearbyintf(conv.v.ref_limited / ccpars_pc.quantization);
-            }
         }
 
-        // Apply voltage perturbation from the specified time
-
-        if(iter_time >= ccpars_load.perturb_time && perturb_volts == 0.0)
-        {
-            perturb_volts = ccpars_load.perturb_volts;
-        }
-
-        // Simulate voltage source and load response (with voltage perturbation and ripple added)
-
-        regConvSimulateRT(&conv, NULL, perturb_volts + ccpars_pc.ripple * (float)(rand_value - RAND_MAX/2) * (1.0 / RAND_MAX));
-
-        // Check if simulated converter should be trip
-
-        if(ccrun.is_pc_tripped == false)
-        {
-            if(conv.b.lim_meas.flags.trip      ||
-               conv.i.lim_meas.flags.trip      ||
-               conv.lim_i_rms.flags.fault      ||
-               conv.lim_i_rms_load.flags.fault ||
-               conv.b.err.fault.flag           ||
-               conv.i.err.fault.flag           ||
-               conv.v.err.fault.flag          )
-            {
-                // Simulate converter trip by switching to regulation mode to NONE
-
-                trip_time = iter_time;
-                ccrun.is_pc_tripped = true;
-
-                regConvModeSetRT(&conv, REG_NONE);
-
-                puts("Trip");
-
-                // Cancel any subsequent functions
-
-                if(ccrun.prefunc.idx == 0)
-                {
-                    ccrun.num_cycles = ccrun.cycle_idx + 1;
-                }
-                else
-                {
-                    ccrun.num_cycles = ccrun.cycle_idx;
-                }
-            }
-        }
-        else if((iter_time - trip_time) > ccpars_global.stop_delay)
-        {
-            // After a trip, stop after STOP_DELAY
-
-            break;
-        }
-
-        // Store field regulation signals in log at regulation rate
-
-        if(ccrun.is_breg_enabled && conv.b.iteration_counter == 0)
-        {
-            ccLogStoreReg(&breg_log, iter_time);
-        }
-
-        // Store current regulation signals in log at regulation rate
-
-        if(ccrun.is_ireg_enabled && conv.i.iteration_counter == 0)
-        {
-            ccLogStoreReg(&ireg_log, iter_time);
-        }
-
-        // Store measurement rate signals in log every iteration
-
-        ccLogStoreMeas(iter_time);
-
-        // Calculate next iteration time
-
-        iter_time = conv.iter_period * ++iteration_idx;
-    }
-}
 */
 // EOF

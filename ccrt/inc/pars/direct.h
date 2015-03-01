@@ -64,8 +64,8 @@ CCPARS_DIRECT_EXT struct ccpars direct_pars[]
 #ifdef GLOBALS
 = {// "Signal name" type,  max_n_els, *enum,        *value,       num_directs,cyc_sel_step,flags
     { "B_REF",      PAR_FLOAT, 1,      NULL, { .f = &ccpars_direct.b_ref }, 1,      0,     PARS_RW|PARS_CFG },
-    { "I_REF",      PAR_FLOAT, 1,      NULL, { .f = &ccpars_direct.b_ref }, 1,      0,     PARS_RW|PARS_CFG },
-    { "V_REF",      PAR_FLOAT, 1,      NULL, { .f = &ccpars_direct.b_ref }, 1,      0,     PARS_RW|PARS_CFG },
+    { "I_REF",      PAR_FLOAT, 1,      NULL, { .f = &ccpars_direct.i_ref }, 1,      0,     PARS_RW|PARS_CFG },
+    { "V_REF",      PAR_FLOAT, 1,      NULL, { .f = &ccpars_direct.v_ref }, 1,      0,     PARS_RW|PARS_CFG },
     { NULL }
 }
 #endif

@@ -100,27 +100,27 @@ READ functions/amps/table_d
 RUN
 
 GLOBAL FILE                 psb-rb-quantization-0.1V
-PC QUANTIZATION             0.1
+PC SIM_QUANTIZATION         0.1
 RUN
 
 GLOBAL FILE                 psb-rb-quantization-0.3V
-PC QUANTIZATION             0.3
+PC SIM_QUANTIZATION         0.3
 RUN
 
 GLOBAL FILE                 psb-rb-quantization-1V
-PC QUANTIZATION             1
+PC SIM_QUANTIZATION         1
 RUN
 
 GLOBAL FILE                 psb-rb-quantization-3V
-PC QUANTIZATION             3
+PC SIM_QUANTIZATION         3
 RUN
 
 GLOBAL FILE                 psb-rb-quantization-10V
-PC QUANTIZATION             10
+PC SIM_QUANTIZATION         10
 RUN
 
 GLOBAL FILE                 psb-rb-quantization-30V
-PC QUANTIZATION             30
+PC SIM_QUANTIZATION         30
 RUN
 
 # EOF

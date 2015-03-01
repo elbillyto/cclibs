@@ -41,7 +41,7 @@
 static void ccFlotAnalog(FILE *f, struct cclog *log, double time_origin, uint32_t period_iters)
 {
     uint32_t       sig_idx;
-    double         period       = (double)period_iters * conv.iter_period;
+    double         period       = (double)period_iters * reg_mgr.iter_period;
     uint32_t       num_periods  = (uint32_t)(ccpars_global.log_duration / period) - 1;
 
     // Write each signal in the log
@@ -96,8 +96,8 @@ void ccFlot(FILE *f, char *converter_name, double time_origin)
 
     // Print enabled analog signal values
 
-    ccFlotAnalog(f, &breg_log, time_origin, conv.b.reg_period_iters);
-    ccFlotAnalog(f, &ireg_log, time_origin, conv.i.reg_period_iters);
+    ccFlotAnalog(f, &breg_log, time_origin, reg_mgr.b.reg_period_iters);
+    ccFlotAnalog(f, &ireg_log, time_origin, reg_mgr.i.reg_period_iters);
     ccFlotAnalog(f, &meas_log, time_origin, 1);
 
     // Print the rest of the web page

@@ -1,0 +1,63 @@
+# CCTEST global control file
+
+GLOBAL ITER_PERIOD_US       100
+GLOBAL RUN_DELAY            0.001
+GLOBAL STOP_DELAY           0.001
+GLOBAL FG_LIMITS            ENABLED
+GLOBAL SIM_LOAD             ENABLED
+GLOBAL GROUP                tests
+GLOBAL PROJECT              RF_C16
+
+IREG PERIOD_ITERS           4
+IREG AUXPOLE1_HZ            200
+IREG AUXPOLES2_HZ           200
+IREG AUXPOLES2_Z            0.9
+
+LIMITS I_POS                1400.0
+LIMITS I_MIN                5.0
+LIMITS I_NEG                0.0
+LIMITS I_CLOSELOOP          4.0
+LIMITS I_RATE               1E5
+LIMITS I_ACCELERATION       0.0
+LIMITS I_ERR_WARNING        0.0
+LIMITS I_ERR_FAULT          0.0
+LIMITS I_QUADRANTS41        0.0,0.0
+
+LIMITS V_POS                30
+LIMITS V_NEG                -30
+LIMITS V_RATE               0
+LIMITS V_ACCELERATION       0.0
+LIMITS V_ERR_WARNING        0.0
+LIMITS V_ERR_FAULT          0.0
+LIMITS V_QUADRANTS41        0.0,0.0
+
+LOAD OHMS_PAR               1E8
+LOAD OHMS_SER               15E-3
+LOAD OHMS_MAG               0
+LOAD HENRYS                 90E-6
+LOAD HENRYS_SAT             10E-6
+LOAD I_SAT_START            50
+LOAD I_SAT_END              200
+LOAD SIM_TC_ERROR           0.2
+
+MEAS I_REG_SELECT           UNFILTERED
+MEAS I_FIR_LENGTHS          1 1
+MEAS I_SIM_NOISE_PP         0.0
+MEAS I_DELAY_ITERS          1.3
+MEAS V_DELAY_ITERS          1.3
+
+PC BANDWIDTH                5000
+PC Z                        0.9
+PC ACT_DELAY_ITERS          1.1
+
+REF FUNCTION                TABLE
+REF REG_MODE                CURRENT
+
+TABLE TIME                  0.000, 0.001, 0.015, 0.035, 0.050, 0.07
+TABLE REF                   10,   10,   1200,   1200, 10, 10
+
+GLOBAL FILE                 c16
+RUN
+
+
+# EOF

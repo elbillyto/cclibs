@@ -31,7 +31,7 @@
 
 #include "ccRt.h"
 #include "ccPars.h"
-#include "libfg/trim.h"
+#include "libfg/pulse.h"
 
 // GLOBALS is defined in source file where global variables should be defined
 
@@ -41,9 +41,9 @@
 #define CCPARS_PULSE_EXT extern
 #endif
 
-// Libfg TRIM parameter structures for PULSE
+// Libfg PULSE parameter structures for PULSE
 
-CCPARS_PULSE_EXT struct fg_trim fg_pulse[CC_NUM_CYC_SELS];
+CCPARS_PULSE_EXT struct fg_pulse fg_pulse[CC_NUM_CYC_SELS];
 
 // Pulse data structure
 
@@ -51,31 +51,47 @@ struct ccpars_pulse
 {
     // cctest PULSE parameters
 
-    float                       time;                           // Start of pulse time
-    float                       duration;                       // Pulse duration
-    float                       ref;                            // Pulse reference
-    float                       linear_rate;                    // Pulse ramp rate
+    uint32_t                    index;                               // Index in time/duration/ref/linear_rate arrays
+    float                       time       [REF_PULSE_LEN];          // Start of pulse time
+    float                       duration   [REF_PULSE_LEN];          // Pulse duration
+    float                       ref        [REF_PULSE_LEN];          // Pulse reference
+    float                       linear_rate[REF_PULSE_LEN];          // Pulse ramp rate
 };
 
 CCPARS_PULSE_EXT struct ccpars_pulse ccpars_pulse[CC_NUM_CYC_SELS]
 #ifdef GLOBALS
 = {// Default value                 Parameter
-    {   1.0,                     // PULSE TIME
-        1.0,                     // PULSE DURATION
-        0.0,                     // PULSE REF
-        0.0   },                 // PULSE LINEAR_RATE
+    {         0,                 // PULSE INDEX
+        {   1.0   },             // PULSE TIME
+        {   1.0   },             // PULSE DURATION
+        {   0.0   },             // PULSE REF
+        {   0.0   }              // PULSE LINEAR_RATE
+    }
 }
 #endif
 ;
+
+// Pulse parameters enum to allow access to named fields
+
+enum pulse_pars_index_enum
+{
+    PULSE_INDEX,
+    PULSE_TIME,
+    PULSE_DURATION,
+    PULSE_REF,
+    PULSE_LINEAR_RATE,
+};
+
 // Pulse data description structure
 
 CCPARS_PULSE_EXT struct ccpars   pulse_pars[]
 #ifdef GLOBALS
-= {// "Signal name", type,  max_n_els, *enum,        *value,                num_defaults      cyc_sel_step      flags
-    { "TIME",        PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].time     }, 1, sizeof(struct ccpars_pulse), PARS_RW|PARS_REF },
-    { "DURATION",    PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].duration }, 1, sizeof(struct ccpars_pulse), PARS_RW|PARS_REF },
-    { "REF",         PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].ref      }, 1, sizeof(struct ccpars_pulse), PARS_RW|PARS_REF },
-    { "LINEAR_RATE", PAR_FLOAT, 1,      NULL, { .f = &ccpars_pulse[0].ref      }, 1, sizeof(struct ccpars_pulse), PARS_RW|PARS_REF },
+= {// "Signal name", type,         max_n_els,    *enum,        *value,                num_defaults      cyc_sel_step      flags
+    { "INDEX",       PAR_UNSIGNED, 1,             NULL, { .u = &ccpars_pulse[0].index    }, 1, sizeof(struct ccpars_pulse), PARS_RW|PARS_REF },
+    { "TIME",        PAR_FLOAT,    REF_PULSE_LEN, NULL, { .f =  ccpars_pulse[0].time     }, 1, sizeof(struct ccpars_pulse), PARS_RW|PARS_REF },
+    { "DURATION",    PAR_FLOAT,    REF_PULSE_LEN, NULL, { .f =  ccpars_pulse[0].duration }, 1, sizeof(struct ccpars_pulse), PARS_RW|PARS_REF },
+    { "REF",         PAR_FLOAT,    REF_PULSE_LEN, NULL, { .f =  ccpars_pulse[0].ref      }, 1, sizeof(struct ccpars_pulse), PARS_RW|PARS_REF },
+    { "LINEAR_RATE", PAR_FLOAT,    REF_PULSE_LEN, NULL, { .f =  ccpars_pulse[0].ref      }, 1, sizeof(struct ccpars_pulse), PARS_RW|PARS_REF },
     { NULL }
 }
 #endif

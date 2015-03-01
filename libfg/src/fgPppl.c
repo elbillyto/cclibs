@@ -278,8 +278,9 @@ enum fg_error fgPpplInit(struct   fg_limits *limits,
 
     // Complete meta data
 
-    meta->duration  = segs_t [num_segs-1];
-    meta->range.end = segs_a0[num_segs-1];
+    meta->duration         = segs_t [num_segs-1];
+    meta->range.end        = segs_a0[num_segs-1];
+    meta->range.final_rate = segs_a1[num_segs-1];
 
     fgSetFuncPolarity(meta, pol_switch_auto, pol_switch_neg);
 

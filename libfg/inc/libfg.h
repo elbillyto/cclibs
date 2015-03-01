@@ -112,8 +112,19 @@ struct fg_meta
         float           end;                    //!< Reference value at the end of the function
         float           min;                    //!< Minimum value of the function
         float           max;                    //!< Maximum value of the function
+        float           final_rate;             //!< Rate of change of reference value at the end of the function
     } range;
 };
+
+// Include all libfg header files
+
+#include <libfg/plep.h>
+#include <libfg/pppl.h>
+#include <libfg/pulse.h>
+#include <libfg/ramp.h>
+#include <libfg/table.h>
+#include <libfg/test.h>
+#include <libfg/trim.h>
 
 // External functions
 

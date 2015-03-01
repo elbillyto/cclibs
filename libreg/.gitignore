@@ -1,4 +1,4 @@
 libreg_vars.h
 libreg_vars_test.h
 libreg_pars.h
-libreg_init_pars.h
+libreg_pars_init.h
