@@ -1,4 +1,4 @@
-PAR_GROUP,PAR_NAME,TYPE,CONV_VAR,COMMENT
+PAR_GROUP,PAR_NAME,TYPE,REG_MGR_VAR,COMMENT
 ITER,PERIOD,float,iter_period,Iteration (measurement) period in seconds
 ,,,,
 REF,ADVANCE,float,ref_advance,Currently active reference advance in seconds

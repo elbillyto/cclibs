@@ -77,6 +77,7 @@ CCPARS_STATE_EXT struct ccpars_enum enum_state_ref[]
     { REF_IDLE,             "IDLE",             CC_ENUM_GREEN                    },
     { REF_ARMED,            "ARMED",            CC_ENUM_CYAN|CC_ENUM_READ_ONLY   },
     { REF_RUNNING,          "RUNNING",          CC_ENUM_CYAN|CC_ENUM_READ_ONLY   },
+    { REF_PAUSED,           "PAUSED",           CC_ENUM_CYAN|CC_ENUM_READ_ONLY   },
     { 0,                     NULL                                                },
 }
 #endif

@@ -195,19 +195,17 @@ BEGIN {
     print "#define REF_NUM_PARS                  ", n_pars                                                  > of
     print "#define REF_PAR_NOT_USED              (void*)0\n"                                                > of
 
-    print "#define refParInitPointers(ref_mgr,par_name,value_p,num_els_p) (ref_mgr)->pars.par_name.value=value_p,(ref_mgr)->pars.par_name.num_els=num_els_p\n" > of
+    print "#define refParInitPointers(ref_mgr,par_name,value_p,num_els_p,cyc_sel_step) (ref_mgr)->pars.par_name.value=value_p,(ref_mgr)->pars.par_name.num_els=num_els_p\n" > of
 
     for(i=0 ; i < n_flags ; i++)
     {
         printf "#define %-40s(1u<<%d)\n", flag[i], i                                                        > of
     }
 
-    print "\nstruct ref_par"                                                                                > of
+    print "\nstruct ref_par_meta"                                                                           > of
     print "{"                                                                                               > of
-    print "    void                     *value;"                                                            > of
     print "    uint32_t                 *num_els;"                                                          > of
-    print "    uint32_t                  size_in_bytes;"                                                    > of
-    print "    uint32_t                  sizeof_type;"                                                      > of
+    print "    uint32_t                  cyc_sel_step;"                                                     > of
     print "    uint32_t                  flags;"                                                            > of
     print "};\n"                                                                                            > of
     print "struct ref_pars"                                                                                 > of
@@ -215,7 +213,8 @@ BEGIN {
 
     for(i=0 ; i < n_pars ; i++)
     {
-        printf "    struct ref_par            %s;\n", par_variable[i]                                       > of
+        printf "    %30s%s;\n", par_type[i], par_variable[i]                                                > of
+        printf "    struct ref_par            %s_meta;\n", par_variable[i]                                  > of
     }
 
     print "};\n"                                                                                            > of
@@ -271,9 +270,7 @@ BEGIN {
 
     for(i=0 ; i < n_pars ; i++)
     {
-        printf   "    ref_mgr->pars.%s.size_in_bytes = sizeof(ref_mgr->par_values.%s);\n", par_variable[i], par_variable[i]    > of
-        printf   "    ref_mgr->pars.%s.sizeof_type   = sizeof(%s);\n", par_variable[i], par_type[i]                         > of
-        printf   "    ref_mgr->pars.%s.flags         = %s;\n", par_variable[i], par_flags[i]                                > of
+        printf   "    ref_mgr->pars.%s.flags = %s;\n", par_variable[i], par_flags[i]                        > of
     }
 
     print "}\n"                                                                                             > of

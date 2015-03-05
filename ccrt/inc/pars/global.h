@@ -60,7 +60,6 @@ CCPARS_GLOBAL_EXT struct ccpars_enum enum_reg_err_rate[]
 
 struct ccpars_global
 {
-    enum ref_state              ref_state;                  // Reference state control
     uint32_t                    cycle_selector[MAX_CYCLES]; // Cycle selectors: CCLL   CC=Cycle selector  LL=Length in seconds
     uint32_t                    test_cyc_sel;               // Cycle selector on which to use test RST parameters
     uint32_t                    test_ref_cyc_sel;           // Cycle selector for reference function when playing test_cyc_sel
@@ -72,7 +71,6 @@ struct ccpars_global
 CCPARS_GLOBAL_EXT struct ccpars_global ccpars_global
 #ifdef GLOBALS
 = {//  Default value               Parameter
-    REF_OFF                ,    // GLOBAL REF_STATE
     { 0 }                  ,    // GLOBAL CYCLE_SELECTOR
     0                      ,    // GLOBAL TEST_CYC_SEL
     0                      ,    // GLOBAL TEST_REF_CYC_SEL
@@ -87,7 +85,6 @@ CCPARS_GLOBAL_EXT struct ccpars_global ccpars_global
 
 enum global_pars_index_enum
 {
-    GLOBAL_REF_STATE         ,
     GLOBAL_CYCLE_SELECTOR    ,
     GLOBAL_TEST_CYC_SEL      ,
     GLOBAL_TEST_REF_CYC_SEL  ,
@@ -99,7 +96,6 @@ enum global_pars_index_enum
 CCPARS_GLOBAL_EXT struct ccpars global_pars[]
 #ifdef GLOBALS
 = {// "Signal name"      type,         max_n_els, *enum,                         *value,            num_defaults,cyc_sel_step,flags
-    { "REF_STATE",       PAR_ENUM,     1,          enum_state_ref,        { .u = &ccpars_global.ref_state        }, 1, 0, PARS_RW|PARS_CFG          },
     { "CYCLE_SELECTOR",  PAR_UNSIGNED, MAX_CYCLES, NULL,                  { .u =  ccpars_global.cycle_selector   }, 1, 0, PARS_RW|PARS_CFG          },
     { "TEST_CYC_SEL",    PAR_UNSIGNED, 1,          NULL,                  { .u = &ccpars_global.test_cyc_sel     }, 1, 0, PARS_RW|PARS_CFG          },
     { "TEST_REF_CYC_SEL",PAR_UNSIGNED, 1,          NULL,                  { .u = &ccpars_global.test_ref_cyc_sel }, 1, 0, PARS_RW|PARS_CFG          },

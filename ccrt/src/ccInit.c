@@ -131,7 +131,7 @@ void ccInitPars(void)
 
     regMeasFilterInitBuffer(&reg_mgr.i.meas, calloc(CC_FILTER_BUF_LEN, sizeof(int32_t)), CC_FILTER_BUF_LEN);
 
-    // Initialise libreg parameter pointers to cctest variables
+    // Initialise libreg parameter pointers to ccrt variables
 
     regMgrParInitPointer(&reg_mgr,    reg_err_rate                  ,&ccpars_global.reg_err_rate);
 
@@ -236,6 +236,11 @@ void ccInitPars(void)
     regMgrParInitPointer(&reg_mgr,    pc_sim_den                    ,&ccpars_pc.sim_pc_pars.den);
     regMgrParInitPointer(&reg_mgr,    pc_sim_quantization           ,&ccpars_pc.sim_quantization);
     regMgrParInitPointer(&reg_mgr,    pc_sim_ripple                 ,&ccpars_pc.sim_ripple);
+
+    // Initialise libref parameter pointers to ccrt variables
+
+    refMgrParInitPointers(&reg_mgr,    pc_sim_ripple                 ,&ccpars_pc.sim_ripple);
+
 }
 
 

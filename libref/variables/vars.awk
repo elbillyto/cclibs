@@ -1,12 +1,12 @@
 #!/usr/bin/awk -f
 #
 # vars.awk
-# Converter Control Regulation library read-only variables header file generator
+# Converter Control Reference Manager library read-only variables header file generator
 #
-# All libreg variables that might be interesting to an application are
+# All libref variables that might be interesting to an application are
 # identified in vars.csv. This allows this script to create a
 # header file with a macro and constants that allow the application developer
-# to easily access the variables.
+# easy read-only access the variables.
 #
 # Contact
 #
@@ -19,9 +19,9 @@
 #
 # License
 #
-# This file is part of libreg.
+# This file is part of libref.
 #
-# libreg is free software: you can redistribute it and/or modify it under the
+# libref is free software: you can redistribute it and/or modify it under the
 # terms of the GNU Lesser General Public License as published by the Free
 # Software Foundation, either version 3 of the License, or (at your option)
 # any later version.
@@ -80,18 +80,18 @@ BEGIN {
         n_vars++
     }
 
-# Generate variable header file inc/libreg_vars.h
+# Generate variable header file inc/libref_vars.h
 
-    of = "inc/libreg_vars.h"   # Set output file (of)
+    of = "inc/libref_vars.h"   # Set output file (of)
 
     print "/*!"                                                                                                      > of
-    print " * @file  libreg_vars.h"                                                                                  > of
-    print " * @brief Converter Control Regulation library generated read-only variables header file"                 > of
+    print " * @file  " of                                                                                            > of
+    print " * @brief Converter Control Reference Manager library generated read-only variables header file"                 > of
     print " *"                                                                                                       > of
-    print " * IMPORTANT - DO NOT EDIT - This file is generated from libreg/parameters/read_only_vars.csv"            > of
+    print " * IMPORTANT - DO NOT EDIT - This file is generated from libref/variables/vars.csv"                       > of
     print " *"                                                                                                       > of
-    print " * All libreg read-only variables are defined in read_only_vars.csv and this is transformed into"         > of
-    print " * this header file by libreg/parameters/read_only_vars.awk."                                             > of
+    print " * All libref read-only variables are defined in vars.csv and this is transformed into"                   > of
+    print " * this header file by libref/variables/vars.awk."                                                        > of
     print " *"                                                                                                       > of
     print " * <h2>Contact</h2>"                                                                                      > of
     print " *"                                                                                                       > of
@@ -104,9 +104,9 @@ BEGIN {
     print " *"                                                                                                       > of
     print " * <h2>License</h2>"                                                                                      > of
     print " *"                                                                                                       > of
-    print " * This file is part of libreg."                                                                          > of
+    print " * This file is part of libref."                                                                          > of
     print " *"                                                                                                       > of
-    print " * libreg is free software: you can redistribute it and/or modify it under the"                           > of
+    print " * libref is free software: you can redistribute it and/or modify it under the"                           > of
     print " * terms of the GNU Lesser General Public License as published by the Free"                               > of
     print " * Software Foundation, either version 3 of the License, or (at your option)"                             > of
     print " * any later version."                                                                                    > of
@@ -120,34 +120,34 @@ BEGIN {
     print " * along with this program.  If not, see <http://www.gnu.org/licenses/>."                                 > of
     print " *"                                                                                                       > of
     print " */\n"                                                                                                    > of
-    print "#ifndef LIBREG_VARS_H"                                                                                    > of
-    print "#define LIBREG_VARS_H\n"                                                                                  > of
-    print "#include <stdint.h>"                                                                                > of
-    print "#include <stdbool.h>\n"                                                                                > of
-    print "#define regConvVar(conv, var_key)  (((struct reg_conv const *)&conv)->var_key)\n"                         > of
+    print "#ifndef LIBREF_VARS_H"                                                                                    > of
+    print "#define LIBREF_VARS_H\n"                                                                                  > of
+    print "#include <stdint.h>"                                                                                      > of
+    print "#include <stdbool.h>\n"                                                                                   > of
+    print "#define refMgrVar(ref_mgr, var_key)  (((struct ref_mgr const *)&ref_mgr)->var_key)\n"                     > of
 
     for(i=0 ; i < n_vars ; i++)
     {
         printf "#define %-30s %-40s // %-15s %s\n",var_id[i], var_name[i], var_type[i], var_comment[i]               > of
     }
 
-    print "\n#endif // LIBREG_VARS_H\n"                                                                              > of
+    print "\n#endif // LIBREF_VARS_H\n"                                                                              > of
     print "// EOF"                                                                                                   > of
 
     close(of)
 
-# Generate test file inc/libreg_vars_test.h
+# Generate test file inc/libref_vars_test.h
 
-    of = "inc/libreg_vars_test.h"   # Set output file (of)
+    of = "inc/libref_vars_test.h"   # Set output file (of)
 
     print "/*!"                                                                                                      > of
-    print " * @file  libreg_vars_test.h"                                                                             > of
-    print " * @brief Converter Control Regulation library generated read-only variables macros test file"            > of
+    print " * @file  " of                                                                                            > of
+    print " * @brief Converter Control Reference Manager library generated read-only variables macros test file"            > of
     print " *"                                                                                                       > of
-    print " * IMPORTANT - DO NOT EDIT - This file is generated from libreg/parameters/read_only_vars.csv"            > of
+    print " * IMPORTANT - DO NOT EDIT - This file is generated from libref/variables/vars.csv"                       > of
     print " *"                                                                                                       > of
-    print " * All libreg read-only variables are defined in read_only_vars.csv and this is transformed into"         > of
-    print " * the inc/libreg_vars.h header file and this test file by libreg/parameters/read_only_vars.awk."         > of
+    print " * All libref read-only variables are defined in vars.csv and this is transformed into"                   > of
+    print " * the inc/libref_vars.h header file and this test file by libref/variables/vars.awk."                    > of
     print " *"                                                                                                       > of
     print " * <h2>Contact</h2>"                                                                                      > of
     print " *"                                                                                                       > of
@@ -160,9 +160,9 @@ BEGIN {
     print " *"                                                                                                       > of
     print " * <h2>License</h2>"                                                                                      > of
     print " *"                                                                                                       > of
-    print " * This file is part of libreg."                                                                          > of
+    print " * This file is part of libref."                                                                          > of
     print " *"                                                                                                       > of
-    print " * libreg is free software: you can redistribute it and/or modify it under the"                           > of
+    print " * libref is free software: you can redistribute it and/or modify it under the"                           > of
     print " * terms of the GNU Lesser General Public License as published by the Free"                               > of
     print " * Software Foundation, either version 3 of the License, or (at your option)"                             > of
     print " * any later version."                                                                                    > of
@@ -176,15 +176,15 @@ BEGIN {
     print " * along with this program.  If not, see <http://www.gnu.org/licenses/>."                                 > of
     print " *"                                                                                                       > of
     print " */\n"                                                                                                    > of
-    print "#include <libreg_vars.h>\n"                                                                               > of
-    print "static void regConvTestVarMacros(void)"                                                                   > of
+    print "#include <libref_vars.h>\n"                                                                               > of
+    print "static void refMgrTestVarMacros(void)"                                                                    > of
     print "{"                                                                                                        > of
     print "    double accumulator = 0.0;     // This is used to suppress unused variable warnings"                   > of
-    print "    struct reg_conv conv;\n"                                                                              > of
+    print "    struct ref_mgr ref_mgr;\n"                                                                            > of
 
     for(i=0 ; i < n_vars ; i++)
     {
-        printf "    %-23s %-30s = regConvVar(conv,%s);\n", var_type[i], tolower(var_id[i]), var_id[i]                > of
+        printf "    %-23s %-30s = refMgrVar(ref_mgr,%s);\n", var_type[i], tolower(var_id[i]), var_id[i]              > of
         printf "    accumulator += %s;\n", tolower(var_id[i])                                                        > of
     }
 

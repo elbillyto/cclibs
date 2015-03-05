@@ -1,0 +1,64 @@
+# CCTEST global control file
+
+GLOBAL ITER_PERIOD_US       10
+GLOBAL RUN_DELAY            0.001
+GLOBAL STOP_DELAY           0.001
+GLOBAL FG_LIMITS            ENABLED
+GLOBAL SIM_LOAD             ENABLED
+GLOBAL GROUP                tests
+GLOBAL PROJECT              QSTRIP
+
+IREG PERIOD_ITERS           20
+IREG AUXPOLE1_HZ            700
+IREG AUXPOLES2_HZ           500
+IREG AUXPOLES2_Z            0.5
+
+LIMITS I_POS                25.0
+LIMITS I_MIN                0.0
+LIMITS I_NEG                -25.0
+LIMITS I_RATE               2E6
+LIMITS I_ACCELERATION       0.0
+LIMITS I_ERR_WARNING        0.0
+LIMITS I_ERR_FAULT          0.0
+LIMITS I_QUADRANTS41        0.0,0.0
+
+LIMITS V_POS                10
+LIMITS V_NEG                -10
+LIMITS V_RATE               0
+LIMITS V_ACCELERATION       0.0
+LIMITS V_ERR_WARNING        0.0
+LIMITS V_ERR_FAULT          0.0
+LIMITS V_QUADRANTS41        0.0,0.0
+
+LOAD OHMS_PAR               1E8
+LOAD OHMS_SER               0.3
+LOAD OHMS_MAG               0.007
+LOAD HENRYS                 40E-6
+
+LOAD SIM_TC_ERROR           0.0
+
+MEAS I_REG_SELECT           UNFILTERED
+MEAS I_FIR_LENGTHS          1 1
+MEAS I_SIM_NOISE_PP         0.05
+MEAS I_DELAY_ITERS          5
+MEAS V_DELAY_ITERS          5
+
+PC BANDWIDTH                3000
+PC ACT_DELAY_ITERS          12
+
+REF FUNCTION                TABLE
+REF REG_MODE                CURRENT
+
+# Sector 3
+
+READ function_sector3
+GLOBAL FILE                 qstrip-sector3
+RUN
+
+# Sector 14
+
+READ function_sector14
+GLOBAL FILE                 qstrip-sector14
+RUN
+
+# EOF
