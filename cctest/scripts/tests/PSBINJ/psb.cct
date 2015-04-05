@@ -8,15 +8,15 @@ GLOBAL SIM_LOAD             ENABLED
 GLOBAL GROUP                tests
 GLOBAL PROJECT              PSBINJ
 
-IREG PERIOD_ITERS           20
-IREG AUXPOLE1_HZ            700
-IREG AUXPOLES2_HZ           500
+IREG PERIOD_ITERS           10
+IREG AUXPOLE1_HZ            1000
+IREG AUXPOLES2_HZ           1000
 IREG AUXPOLES2_Z            0.5
 
 LIMITS I_POS                5500.0
 LIMITS I_MIN                0.0
 LIMITS I_NEG                0.0
-LIMITS I_RATE               2E6
+LIMITS I_RATE               5E6
 LIMITS I_ACCELERATION       0.0
 LIMITS I_ERR_WARNING        0.0
 LIMITS I_ERR_FAULT          0.0
@@ -37,13 +37,12 @@ LOAD SIM_TC_ERROR           0.0
 MEAS I_REG_SELECT           UNFILTERED
 MEAS I_FIR_LENGTHS          1 1
 MEAS I_SIM_NOISE_PP         0.05
-MEAS I_DELAY_ITERS          5
+MEAS I_DELAY_ITERS          2
 MEAS V_DELAY_ITERS          5
                             
-PC BANDWIDTH                3000
-PC ACT_DELAY_ITERS          12
+PC SIM_BANDWIDTH            3000
+PC ACT_DELAY_ITERS          11
 
-REF FUNCTION                PPPL
 REF REG_MODE                CURRENT
                             
 # BSW2,3,4                  
@@ -60,7 +59,13 @@ PPPL DURATION               0.002       0.001
 LOAD OHMS_SER               0.0555
 LOAD HENRYS                 16.666E-6
                             
+REF FUNCTION                PPPL
 GLOBAL FILE                 psb-inj-bsw234
+RUN                         
+
+READ func/func3.4K
+REF FUNCTION                TABLE
+GLOBAL FILE                 psb-inj-bsw234-table
 RUN                         
                             
 # BSW1                      
@@ -79,7 +84,13 @@ LOAD HENRYS                 3.095E-6
                             
 LIMITS I_POS                7000.0
                             
+REF FUNCTION                PPPL
 GLOBAL FILE                 psb-inj-bsw1
 RUN
+
+READ func/func6.7K
+REF FUNCTION                TABLE
+GLOBAL FILE                 psb-inj-bsw1-table
+RUN                         
 
 # EOF

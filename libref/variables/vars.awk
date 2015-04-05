@@ -124,7 +124,7 @@ BEGIN {
     print "#define LIBREF_VARS_H\n"                                                                                  > of
     print "#include <stdint.h>"                                                                                      > of
     print "#include <stdbool.h>\n"                                                                                   > of
-    print "#define refMgrVar(ref_mgr, var_key)  (((struct ref_mgr const *)&ref_mgr)->var_key)\n"                     > of
+    print "#define refMgrVar(ref_mgr, var_key)  (((struct REF_mgr const *)&ref_mgr)->var_key)\n"                     > of
 
     for(i=0 ; i < n_vars ; i++)
     {
@@ -180,7 +180,7 @@ BEGIN {
     print "static void refMgrTestVarMacros(void)"                                                                    > of
     print "{"                                                                                                        > of
     print "    double accumulator = 0.0;     // This is used to suppress unused variable warnings"                   > of
-    print "    struct ref_mgr ref_mgr;\n"                                                                            > of
+    print "    struct REF_mgr ref_mgr;\n"                                                                            > of
 
     for(i=0 ; i < n_vars ; i++)
     {

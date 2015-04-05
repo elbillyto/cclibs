@@ -72,36 +72,36 @@
 /*!
  * Load structure
  */
-struct reg_load_pars
+struct REG_load_pars
 {
-    float                       ohms_ser;                       //!< Load series resistance \f$R_s\f$
-    float                       ohms_par;                       //!< Load parallel resistance \f$R_p\f$
-    float                       ohms_mag;                       //!< Load magnet resistance \f$R_m\f$
-    float                       henrys;                         //!< Load inductance \f$L\f$
-    float                       inv_henrys;                     //!< 1.0 / henrys. Clipped to 1.0E+20 to avoid infinities.
-    float                       gauss_per_amp;                  //!< Field-to-current ratio for the magnet
-    float                       ohms;                           //!< Resistance corresponding to load pole
-    float                       tc;                             //!< Time constant for load pole
-    float                       ohms1;                          //!< \f$ 1 + \frac{R_s}{R_p}\f$
-    float                       ohms2;                          //!< \f$ 1 + \frac{R_m}{R_p}\f$
-    float                       gain0;                          //!< Load gain 0
-    float                       gain1;                          //!< Load gain 1
-    float                       gain2;                          //!< Load gain 2 (steady state gain)
-    float                       gain3;                          //!< Load gain 3 (magnet current / circuit current)
+    REG_float                   ohms_ser;                       //!< Load series resistance \f$R_s\f$
+    REG_float                   ohms_par;                       //!< Load parallel resistance \f$R_p\f$
+    REG_float                   ohms_mag;                       //!< Load magnet resistance \f$R_m\f$
+    REG_float                   henrys;                         //!< Load inductance \f$L\f$
+    REG_float                   inv_henrys;                     //!< 1.0 / henrys. Clipped to 1.0E+20 to avoid infinities.
+    REG_float                   gauss_per_amp;                  //!< Field-to-current ratio for the magnet
+    REG_float                   ohms;                           //!< Resistance corresponding to load pole
+    REG_float                   tc;                             //!< Time constant for load pole
+    REG_float                   ohms1;                          //!< \f$ 1 + \frac{R_s}{R_p}\f$
+    REG_float                   ohms2;                          //!< \f$ 1 + \frac{R_m}{R_p}\f$
+    REG_float                   gain0;                          //!< Load gain 0
+    REG_float                   gain1;                          //!< Load gain 1
+    REG_float                   gain2;                          //!< Load gain 2 (steady state gain)
+    REG_float                   gain3;                          //!< Load gain 3 (magnet current / circuit current)
                                                           
     /*!
      * Saturation structure
      */
     struct
     {
-        float                   henrys;                         //!< Inductance for i > i_sat_end
-        float                   i_start;                        //!< Current measurement at start of saturation
-        float                   i_end;                          //!< Current measurement at end of saturation
-        float                   i_delta;                        //!< i_sat_end - i_sat_start
-        float                   b_end;                          //!< Field at i_sat_end
-        float                   b_factor;                       //!< Parabolic factor for i_sat_start < i < i_sat_end
-        float                   l_rate;                         //!< Inductance droop rate factor (/A)
-        float                   l_clip;                         //!< Clip limit for saturation factor
+        REG_float               henrys;                         //!< Inductance for i > i_sat_end
+        REG_float               i_start;                        //!< Current measurement at start of saturation
+        REG_float               i_end;                          //!< Current measurement at end of saturation
+        REG_float               i_delta;                        //!< i_sat_end - i_sat_start
+        REG_float               b_end;                          //!< Field at i_sat_end
+        REG_float               b_factor;                       //!< Parabolic factor for i_sat_start < i < i_sat_end
+        REG_float               l_rate;                         //!< Inductance droop rate factor (/A)
+        REG_float               l_clip;                         //!< Clip limit for saturation factor
     } sat;
 };
 
@@ -123,7 +123,7 @@ extern "C" {
  * @param[in]     henrys           Load inductance
  * @param[in]     gauss_per_amp    Field-to-current ratio for the magnet
  */
-void regLoadInit(struct reg_load_pars *load, float ohms_ser, float ohms_par, float ohms_mag, float henrys, float gauss_per_amp);
+void regLoadInit(struct REG_load_pars *load, REG_float ohms_ser, REG_float ohms_par, REG_float ohms_mag, REG_float henrys, REG_float gauss_per_amp);
 
 /*!
  * Process the magnet saturation parameters and calculate the linear model slope.
@@ -135,7 +135,7 @@ void regLoadInit(struct reg_load_pars *load, float ohms_ser, float ohms_par, flo
  * @param[in]     i_sat_start      \f$i_{sat\_start}\f$ from the saturation model.
  * @param[in]     i_sat_end        \f$i_{sat\_end}\f$ from the saturation model. Must be greater than i_sat_start.
  */
-void regLoadInitSat(struct reg_load_pars *load, float henrys_sat, float i_sat_start, float i_sat_end);
+void regLoadInitSat(struct REG_load_pars *load, REG_float henrys_sat, REG_float i_sat_start, REG_float i_sat_end);
 
 /*!
  * Estimate the field based on current. The field follows a linear-parabola-linear
@@ -147,7 +147,7 @@ void regLoadInitSat(struct reg_load_pars *load, float henrys_sat, float i_sat_st
  * @param[in]     i_meas           Measured current value
  * @returns Estimated field value
  */
-float regLoadCurrentToFieldRT(struct reg_load_pars *load, float i_meas);
+REG_float regLoadCurrentToFieldRT(struct REG_load_pars *load, REG_float i_meas);
 
 /*!
  * Estimate the current based on the field according to the saturation model of the
@@ -163,7 +163,7 @@ float regLoadCurrentToFieldRT(struct reg_load_pars *load, float i_meas);
  * @param[in]     b_meas           Measured field value
  * @returns Estimated current value
  */
-float regLoadFieldToCurrentRT(struct reg_load_pars *load, float b_meas);
+REG_float regLoadFieldToCurrentRT(struct REG_load_pars *load, REG_float b_meas);
 
 /*!
  * This function helps to linearise the effects of magnet saturation when regulating
@@ -196,7 +196,7 @@ float regLoadFieldToCurrentRT(struct reg_load_pars *load, float b_meas);
  * @param[in]     v_ref             Voltage reference
  * @returns Voltage reference after compensation for magnet saturation
  */
-float regLoadVrefSatRT(struct reg_load_pars *load, float i_meas, float v_ref);
+REG_float regLoadVrefSatRT(struct REG_load_pars *load, REG_float i_meas, REG_float v_ref);
 
 /*!
  * This function is the inverse of regLoadVrefSatRT().
@@ -211,7 +211,7 @@ float regLoadVrefSatRT(struct reg_load_pars *load, float i_meas, float v_ref);
  * @param[in]     v_ref_sat         Voltage reference after compensation for magnet saturation
  * @returns Uncompensated voltage reference
  */
-float regLoadInverseVrefSatRT(struct reg_load_pars *load, float i_meas, float v_ref_sat);
+REG_float regLoadInverseVrefSatRT(struct REG_load_pars *load, REG_float i_meas, REG_float v_ref_sat);
 
 /*!
  * Calculate the saturation factor f for the load for the given measured current. This function uses
@@ -224,7 +224,7 @@ float regLoadInverseVrefSatRT(struct reg_load_pars *load, float i_meas, float v_
  * @param[in]     i_meas            Measured current value
  * @returns Saturation factor
  */
-float regLoadSatFactorRT(struct reg_load_pars *load, float i_meas);
+REG_float regLoadSatFactorRT(struct REG_load_pars *load, REG_float i_meas);
 
 #ifdef __cplusplus
 }

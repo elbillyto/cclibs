@@ -25,10 +25,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
 #include <string.h>
 #include <math.h>
-#include "libreg/sim.h"
+#include "libreg.h"
 
 // Define PI for older compilers which do not have PI in math.h
 
@@ -38,20 +37,20 @@
 
 // Background functions - do not call these from the real-time thread or interrupt
 
-void regSimPcInit(struct reg_sim_pc_pars *pars, float iter_period, float act_delay_iters, float bandwidth, float z, float tau_zero,
-                  float num[REG_NUM_PC_SIM_COEFFS], float den[REG_NUM_PC_SIM_COEFFS])
+void regSimPcInit(struct REG_sim_pc_pars *pars, REG_float iter_period, REG_float act_delay_iters, REG_float bandwidth, REG_float z, REG_float tau_zero,
+                  REG_float num[REG_NUM_PC_SIM_COEFFS], REG_float den[REG_NUM_PC_SIM_COEFFS])
 {
-    float       natural_freq;
-    float       f_pw;
-    float       z2;
-    float       w;
-    float       b;
-    float       d;
-    float       de;
-    float       y;
+    REG_float       natural_freq;
+    REG_float       f_pw;
+    REG_float       z2;
+    REG_float       w;
+    REG_float       b;
+    REG_float       d;
+    REG_float       de;
+    REG_float       y;
     uint32_t    i;
-    float       sum_num        = 0.0;
-    float       sum_den        = 0.0;
+    REG_float       sum_num        = 0.0;
+    REG_float       sum_den        = 0.0;
 
     // Save act_delay so that it can be used later
 
@@ -139,7 +138,7 @@ void regSimPcInit(struct reg_sim_pc_pars *pars, float iter_period, float act_del
             sum_num += pars->num[i];
             sum_den += pars->den[i];
 
-            pars->rsp_delay_iters += (float)i * (pars->num[i] - pars->den[i]);
+            pars->rsp_delay_iters += (REG_float)i * (pars->num[i] - pars->den[i]);
         }
 
         // Protect gain against Inf if the denominator is zero
@@ -174,10 +173,10 @@ void regSimPcInit(struct reg_sim_pc_pars *pars, float iter_period, float act_del
 
 
 
-float regSimPcInitHistory(struct reg_sim_pc_pars *pars, struct reg_sim_pc_vars *vars, float init_rsp)
+REG_float regSimPcInitHistory(struct REG_sim_pc_pars *pars, struct REG_sim_pc_vars *vars, REG_float init_rsp)
 {
     uint32_t        idx;
-    float           init_act;
+    REG_float           init_act;
 
     // Initialise history arrays for actuation and response
 
@@ -194,7 +193,7 @@ float regSimPcInitHistory(struct reg_sim_pc_pars *pars, struct reg_sim_pc_vars *
 
 
 
-void regSimLoadInit(struct reg_sim_load_pars *sim_load_pars, struct reg_load_pars *load_pars, float sim_load_tc_error, float sim_period)
+void regSimLoadInit(struct REG_sim_load_pars *sim_load_pars, struct REG_load_pars *load_pars, REG_float sim_load_tc_error, REG_float sim_period)
 {
     // If Tc error is zero, simply copy load parameters into sim load parameters structure.
 
@@ -207,7 +206,7 @@ void regSimLoadInit(struct reg_sim_load_pars *sim_load_pars, struct reg_load_par
 
     else
     {
-        float sim_load_tc_factor = sim_load_tc_error / (sim_load_tc_error + 2.0);
+        REG_float sim_load_tc_factor = sim_load_tc_error / (sim_load_tc_error + 2.0);
 
         regLoadInit(&sim_load_pars->load_pars,
                     load_pars->ohms_ser * (1.0 - sim_load_tc_factor),
@@ -229,14 +228,14 @@ void regSimLoadInit(struct reg_sim_load_pars *sim_load_pars, struct reg_load_par
 
 
 
-void regSimLoadSetField(struct reg_sim_load_pars *pars, struct reg_sim_load_vars *vars, float b_init)
+void regSimLoadSetField(struct REG_sim_load_pars *pars, struct REG_sim_load_vars *vars, REG_float b_init)
 {
     regSimLoadSetCurrent(pars, vars, regLoadFieldToCurrentRT(&pars->load_pars, b_init));
 }
 
 
 
-void regSimLoadSetCurrent(struct reg_sim_load_pars *pars, struct reg_sim_load_vars *vars, float i_init)
+void regSimLoadSetCurrent(struct REG_sim_load_pars *pars, struct REG_sim_load_vars *vars, REG_float i_init)
 {
     vars->circuit_voltage = i_init / pars->load_pars.gain2;
 
@@ -251,7 +250,7 @@ void regSimLoadSetCurrent(struct reg_sim_load_pars *pars, struct reg_sim_load_va
 
 
 
-void regSimLoadSetVoltage(struct reg_sim_load_pars *pars, struct reg_sim_load_vars *vars, float v_init)
+void regSimLoadSetVoltage(struct REG_sim_load_pars *pars, struct REG_sim_load_vars *vars, REG_float v_init)
 {
     if(pars->is_load_undersampled == false)
     {
@@ -267,11 +266,11 @@ void regSimLoadSetVoltage(struct reg_sim_load_pars *pars, struct reg_sim_load_va
 
 // Real-Time Functions
 
-float regSimPcRT(struct reg_sim_pc_pars *pars, struct reg_sim_pc_vars *vars, float act)
+REG_float regSimPcRT(struct REG_sim_pc_pars *pars, struct REG_sim_pc_vars *vars, REG_float act)
 {
     uint32_t    i;
     uint32_t    j;
-    float       rsp;
+    REG_float       rsp;
 
     // Shift history of model's input and output
 
@@ -302,11 +301,11 @@ float regSimPcRT(struct reg_sim_pc_pars *pars, struct reg_sim_pc_vars *vars, flo
 
 
 
-float regSimLoadRT(struct reg_sim_load_pars *pars, struct reg_sim_load_vars *vars, bool is_pc_undersampled, float v_circuit)
+REG_float regSimLoadRT(struct REG_sim_load_pars *pars, struct REG_sim_load_vars *vars, bool is_pc_undersampled, REG_float v_circuit)
 {
-    float int_gain;
-    float increment;
-    float prev_integrator;
+    REG_float int_gain;
+    REG_float increment;
+    REG_float prev_integrator;
 
     /*!
      *<h3>Implementation Notes</h3>

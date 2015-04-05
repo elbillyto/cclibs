@@ -26,7 +26,6 @@
 
 #include "ccTest.h"
 #include "ccPars.h"
-#include "libfg/trim.h"
 
 // GLOBALS is defined in source file where global variables should be defined
 
@@ -36,23 +35,19 @@
 #define CCPARS_TRIM_EXT extern
 #endif
 
-// Libfg TRIM parameter structures
-
-CCPARS_TRIM_EXT struct fg_trim fg_trim[CC_NUM_CYC_SELS];
-
 // Trim parameters structure
 
-struct ccpars_trim
+struct CCpars_trim
 {
     // cctest TRIM parameters
 
     float                       initial_ref;                    // Initial reference
-    enum fg_trim_type           type;                           // Type of trim
+    enum FG_trim_type           type;                           // Type of trim
     float                       duration;                       // Time duration
     float                       final_ref;                      // Final reference
 };
 
-CCPARS_TRIM_EXT struct ccpars_trim ccpars_trim[CC_NUM_CYC_SELS]
+CCPARS_TRIM_EXT struct CCpars_trim ccpars_trim[CC_NUM_CYC_SELS]
 #ifdef GLOBALS
 = {// Default value                Parameter
     {   0.0,                    // TRIM INITIAL_REF
@@ -65,12 +60,12 @@ CCPARS_TRIM_EXT struct ccpars_trim ccpars_trim[CC_NUM_CYC_SELS]
 
 // Trim data description structure
 
-CCPARS_TRIM_EXT struct ccpars   trim_pars[]
+CCPARS_TRIM_EXT struct CCpars   trim_pars[]
 #ifdef GLOBALS
 = {// "Signal name"  type,    max_n_els,*enum,        *value,                  num_defaults      cyc_sel_step     flags
-    { "INITIAL_REF", PAR_FLOAT,   1,     NULL, { .f = &ccpars_trim[0].initial_ref }, 1, sizeof(struct ccpars_trim), 0 },
-    { "FINAL_REF",   PAR_FLOAT,   1,     NULL, { .f = &ccpars_trim[0].final_ref   }, 1, sizeof(struct ccpars_trim), 0 },
-    { "DURATION",    PAR_FLOAT,   1,     NULL, { .f = &ccpars_trim[0].duration    }, 1, sizeof(struct ccpars_trim), 0 },
+    { "INITIAL_REF", PAR_FLOAT,   1,     NULL, { .f = &ccpars_trim[0].initial_ref }, 1, sizeof(struct CCpars_trim), 0 },
+    { "FINAL_REF",   PAR_FLOAT,   1,     NULL, { .f = &ccpars_trim[0].final_ref   }, 1, sizeof(struct CCpars_trim), 0 },
+    { "DURATION",    PAR_FLOAT,   1,     NULL, { .f = &ccpars_trim[0].duration    }, 1, sizeof(struct CCpars_trim), 0 },
     { NULL }
 }
 #endif

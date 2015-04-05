@@ -35,6 +35,8 @@
 #ifndef LIBREG_MGR_H
 #define LIBREG_MGR_H
 
+#include "libreg.h"
+
 // Global converter converter regulation library constants
 
 #define REG_NUM_LOADS                           4       //!< Number of loads addressed by LOAD SELECT
@@ -44,100 +46,103 @@
 /*!
  * Measurement simulation structure
  */
-struct reg_mgr_sim_meas
+struct REG_mgr_sim_meas
 {
-    struct reg_delay            meas_delay;             //!< Measurement delay parameters
-    struct reg_noise_and_tone   noise_and_tone;         //!< Simulated noise and tone parameters
-    float                       signal;                 //!< Simulated measured signal with noise and tone
+    struct REG_delay            meas_delay;             //!< Measurement delay parameters
+    struct REG_noise_and_tone   noise_and_tone;         //!< Simulated noise and tone parameters
+    REG_float                   signal;                 //!< Simulated measured signal with noise and tone
 };
 
 /*!
  * RST parameters structure
  */
-struct reg_mgr_rst_pars
+struct REG_mgr_rst_pars
 {
     bool                        is_next_ready;          //!< Flag to indicate if the next set of RST parameters are ready to use
-    struct reg_rst_pars        *active;                 //!< Pointer to active parameters in pars[]
-    struct reg_rst_pars        *next;                   //!< Pointer to next parameters in pars[]
-    struct reg_rst_pars         pars[2];                //!< Structures for active and next RST parameter
+    struct REG_rst_pars        *active;                 //!< Pointer to active parameters in pars[]
+    struct REG_rst_pars        *next;                   //!< Pointer to next parameters in pars[]
+    struct REG_rst_pars         pars[2];                //!< Structures for active and next RST parameter
 };
 
 /*!
- * Regulation signal (field or current) structure
+ * Field or Current regulation signal structure
  */
-struct reg_mgr_signal
+struct REG_mgr_signal
 {
-    enum reg_enabled_disabled   regulation;             //!< Option to regulate this signal is enabled or disabled
+    enum REG_enabled_disabled   regulation;             //!< Option to regulate this signal is enabled or disabled
     bool                        is_delayed_ref_available;//!< Flag to indicate if the delayed reference signal is available
     uint32_t                    iteration_counter;      //!< Iteration counter (within each regulation period)
     uint32_t                    reg_period_iters;       //!< Regulation period (in iterations) for Operational and Test parameters
-    float                       reg_period;             //!< Regulation period(s) for Operational and Test parameters
-    float                       inv_reg_period;         //!< Regulation frequency(Hz) for Operational and Test parameters
-    struct reg_meas_signal     *input_p;                //!< Pointer to input measurement signal structure
-    struct reg_meas_signal      input;                  //!< Input measurement and measurement status
+    REG_float                   reg_period;             //!< Regulation period(s) for Operational and Test parameters
+    REG_float                   inv_reg_period;         //!< Regulation frequency(Hz) for Operational and Test parameters
+    struct REG_meas_signal     *input_p;                //!< Pointer to input measurement signal structure
+    struct REG_meas_signal      input;                  //!< Input measurement and measurement status
     uint32_t                    invalid_input_counter;  //!< Counter for invalid input measurements
     uint32_t                    invalid_seq_counter;    //!< Counter for a sequence of consecutive invalid input measurements
-    struct reg_meas_filter      meas;                   //!< Unfiltered and filtered measurement (real or sim)
-    struct reg_meas_rate        rate;                   //!< Estimation of the rate of change of the measurement
-    struct reg_lim_meas         lim_meas;               //!< Measurement limits
-    struct reg_lim_ref          lim_ref;                //!< Reference limits
-    struct reg_rst_pars        *rst_pars;               //!< Active RST parameters (Active Operational or Test)
-    struct reg_rst_vars         rst_vars;               //!< RST regulation variables
-    struct reg_mgr_rst_pars     op_rst_pars;            //!< Operational regulation RST parameters
-    struct reg_rst_pars         last_op_rst_pars;       //!< Last initialised operational RST parameters for debugging
-    struct reg_mgr_rst_pars     test_rst_pars;          //!< Test regulation RST parameters
-    struct reg_rst_pars         last_test_rst_pars;     //!< Last initialised test RST parameters for debugging
-    struct reg_err              err;                    //!< Regulation error
-    struct reg_mgr_sim_meas     sim;                    //!< Simulated measurement with noise and tone
-    float                       ref;                    //!< Reference
-    float                       ref_limited;            //!< Reference after limits
-    float                       ref_rst;                //!< Reference after RST back-calculation
-    float                       ref_openloop;           //!< Reference after open loop back-calculation
-    float                       ref_delayed;            //!< Reference delayed by ref_delay_periods
-    float                       track_delay_periods;    //!< Measured track_delay in regulation periods
+    struct REG_meas_filter      meas;                   //!< Unfiltered and filtered measurement (real or sim)
+    struct REG_meas_rate        rate;                   //!< Estimation of the rate of change of the measurement
+    struct REG_lim_meas         lim_meas;               //!< Measurement limits
+    struct REG_lim_ref          lim_ref;                //!< Reference limits
+    struct REG_rst_pars        *rst_pars;               //!< Active RST parameters (Active Operational or Test)
+    struct REG_rst_vars         rst_vars;               //!< RST regulation variables
+    struct REG_mgr_rst_pars     op_rst_pars;            //!< Operational regulation RST parameters
+    struct REG_rst_pars         last_op_rst_pars;       //!< Last initialised operational RST parameters for debugging
+    struct REG_mgr_rst_pars     test_rst_pars;          //!< Test regulation RST parameters
+    struct REG_rst_pars         last_test_rst_pars;     //!< Last initialised test RST parameters for debugging
+    struct REG_err              err;                    //!< Regulation error
+    struct REG_mgr_sim_meas     sim;                    //!< Simulated measurement with noise and tone
+    REG_float                   ref;                    //!< Reference
+    REG_float                   ref_limited;            //!< Reference after limits
+    REG_float                   ref_rst;                //!< Reference after RST back-calculation
+    REG_float                   ref_openloop;           //!< Reference after open loop back-calculation
+    REG_float                   ref_delayed;            //!< Reference delayed by ref_delay_periods
+    REG_float                   track_delay_periods;    //!< Measured track_delay in regulation periods
 };
 
 /*!
- * Converter voltage structure
+ * Voltage regulation structure
  */
-struct reg_mgr_voltage
+struct REG_mgr_voltage
 {
-    struct reg_meas_signal     *input_p;                //!< Pointer to input measurement signal structure
-    struct reg_meas_signal      input;                  //!< Input measurement and measurement status
+    enum REG_enabled_disabled   regulation;             //!< Option to regulate this signal is enabled or disabled
+    struct REG_meas_signal     *input_p;                //!< Pointer to input measurement signal structure
+    struct REG_meas_signal      input;                  //!< Input measurement and measurement status
     uint32_t                    invalid_input_counter;  //!< Counter for invalid input measurements
     uint32_t                    invalid_seq_counter;    //!< Counter for a sequence of consecutive invalid input measurements
-    float                       meas;                   //!< Unfiltered voltage measurement (real or sim)
-    struct reg_lim_ref          lim_ref;                //!< Voltage reference limits
-    struct reg_err              err;                    //!< Voltage regulation error
-    struct reg_mgr_sim_meas     sim;                    //!< Simulated voltage measurement with noise and tone
-    float                       ref;                    //!< Voltage reference before saturation or limits
-    float                       ref_sat;                //!< Voltage reference after saturation compensation
-    float                       ref_limited;            //!< Voltage reference after saturation and limits
+    REG_float                   meas;                   //!< Unfiltered voltage measurement (real or sim)
+    struct REG_lim_ref          lim_ref;                //!< Voltage reference limits
+//  struct REG_pid_pars         pid_pars;               //!< Voltage regulation PID parameters
+//  struct REG_pid_vars         pid_vars;               //!< Voltage regulation PID variables
+    struct REG_err              err;                    //!< Voltage regulation error
+    struct REG_mgr_sim_meas     sim;                    //!< Simulated voltage measurement with noise and tone
+    REG_float                   ref;                    //!< Voltage reference before saturation or limits
+    REG_float                   ref_sat;                //!< Voltage reference after saturation compensation
+    REG_float                   ref_limited;            //!< Voltage reference after saturation and limits
 };
 
 /*!
  * Global regulation manager structure.
  */
-struct reg_mgr
+struct REG_mgr
 {
     uint32_t                    iter_period_us;         //!< Iteration (measurement) period in microseconds
-    float                       iter_period;            //!< Iteration (measurement) period in seconds
+    REG_float                   iter_period;            //!< Iteration (measurement) period in seconds
 
     // Libreg initialization parameter structures
 
-    struct reg_pars             pars;                   //!< Libreg parameter structures
-    struct reg_par_values       par_values;             //!< Private copy of all libreg parameter values
+    struct REG_pars             pars;                   //!< Libreg parameter structures
+    struct REG_par_values       par_values;             //!< Private copy of all libreg parameter values
 
     // Regulation reference and measurement variables and parameters
 
-    enum   reg_mode             reg_mode;               //!< Regulation mode. Can be #REG_NONE, #REG_VOLTAGE, #REG_CURRENT or #REG_FIELD.
-    enum   reg_rst_source       reg_rst_source;         //!< RST parameter source. Can be #REG_OPERATIONAL_RST_PARS or #REG_TEST_RST_PARS.
+    enum   REG_mode             reg_mode;               //!< Regulation mode. Can be #REG_NONE, #REG_VOLTAGE, #REG_CURRENT or #REG_FIELD.
+    enum   REG_rst_source       reg_rst_source;         //!< RST parameter source. Can be #REG_OPERATIONAL_RST_PARS or #REG_TEST_RST_PARS.
     bool                        is_openloop;            //!< Open loop when true, closed loop when false
     bool                        is_max_abs_err_enabled; //!< Calculate max_abs_err when true, reset to abs_err when false
-    struct reg_mgr_signal      *reg_signal;             //!< Pointer to currently regulated signal structure. Can be reg_mgr::b or reg_mgr::i.
-    struct reg_lim_ref         *lim_ref;                //!< Pointer to the currently active reference limit (b, i or v)
-    float                       reg_period;             //!< Regulation period
-    float                       ref_advance;            //!< Time to advance reference function
+    struct REG_mgr_signal      *reg_signal;             //!< Pointer to currently regulated signal structure. Can be reg_mgr::b or reg_mgr::i.
+    struct REG_lim_ref         *lim_ref;                //!< Pointer to the currently active reference limit (b, i or v)
+    REG_float                   reg_period;             //!< Regulation period
+    REG_float                   ref_advance;            //!< Time to advance reference function
 
     struct
     {
@@ -147,25 +152,29 @@ struct reg_mgr
 
     // Field, current and voltage regulation structures
 
-    struct reg_mgr_signal      b;                      //!< Field regulation parameters and variables
-    struct reg_mgr_signal      i;                      //!< Current regulation parameters and variables
-    struct reg_mgr_voltage     v;                      //!< Voltage regulation parameters and variables. Voltage is not regulated by libreg.
+    struct REG_mgr_signal       b;                      //!< Field regulation parameters and variables
+    struct REG_mgr_signal       i;                      //!< Current regulation parameters and variables
+    struct REG_mgr_voltage      v;                      //!< Voltage regulation parameters and variables
 
-    // Load parameters and variables structures
+    // Load parameters structures
 
-    struct reg_load_pars        load_pars;              //!< Circuit load model for regulation for LOAD SELECT
-    struct reg_load_pars        load_pars_test;         //!< Circuit load model for regulation for LOAD TEST_SELECT
+    struct REG_load_pars        load_pars;              //!< Circuit load model for regulation for LOAD SELECT
+    struct REG_load_pars        load_pars_test;         //!< Circuit load model for regulation for LOAD TEST_SELECT
 
-    struct reg_sim_pc_pars      sim_pc_pars;            //!< Power converter (voltage source or current source) simulation parameters
-    struct reg_sim_load_pars    sim_load_pars;          //!< Circuit load model for simulation
+    // Power converter simulation parameter and variable structures
 
-    struct reg_sim_pc_vars      sim_pc_vars;            //!< Power converter (voltage source or current source) simulation variables
-    struct reg_sim_load_vars    sim_load_vars;          //!< Load simulation variables
+    struct REG_sim_pc_pars      sim_pc_pars;            //!< Power converter (voltage source or current source) simulation parameters
+    struct REG_sim_load_pars    sim_load_pars;          //!< Circuit load model for simulation
+
+    struct REG_sim_pc_vars      sim_pc_vars;            //!< Power converter (voltage source or current source) simulation variables
+    struct REG_sim_load_vars    sim_load_vars;          //!< Load simulation variables
+
+    struct REG_noise_and_tone   sim_pc_noise_and_tone;  //!< Noise and tone simulation on power converter model
 
     // RMS current limits
 
-    struct reg_lim_rms          lim_i_rms;              //!< Converter RMS current limits
-    struct reg_lim_rms          lim_i_rms_load;         //!< Load RMS current limits
+    struct REG_lim_rms          lim_i_rms;              //!< Converter RMS current limits
+    struct REG_lim_rms          lim_i_rms_load;         //!< Load RMS current limits
 };
 
 // Converter control functions
@@ -178,18 +187,22 @@ extern "C" {
  * Initialise the global regulation manager structure.
  * Set up internal pointers within the reg_mgr struct and set the iteration period from the supplied parameter.
  * reg_mgr::reg_mode is initialised to #REG_NONE and reg_mgr::reg_rst_source is initialised to #REG_OPERATIONAL_RST_PARS.
- * The field_regulation and current_regulation parameters are used to enable or disable the option to regulate
- * current or field. Disabling an unused regulation mode reduces processing overhead.
+ * The field_regulation, current_regulation and voltage_regulation parameters are used to enable or disable the option
+ * to regulate field, current or voltage. Disabling a never used regulation mode reduces processing overhead.
  *
  * This is a background function: do not call from the real-time thread or interrupt.
  *
- * @param[out]    reg_mgr            Pointer to regulation manager structure.
- * @param[in]     iter_period_us     Iteration (measurement) period in microseconds.
- * @param[in]     field_regulation   Field regulation control (ENABLED/DISABLED).
- * @param[in]     current_regulation Current regulation control (ENABLED/DISABLED).
+ * @param[out]    reg_mgr                Pointer to regulation manager structure.
+ * @param[in]     iter_period_us         Iteration (measurement) period in microseconds.
+ * @param[in]     field_regulation       Field   regulation control (ENABLED/DISABLED).
+ * @param[in]     current_regulation     Current regulation control (ENABLED/DISABLED).
+ * @param[in]     voltage_regulation     Voltage regulation control (ENABLED/DISABLED).
  */
-void regMgrInit(struct reg_mgr *reg_mgr, uint32_t iter_period_us,
-                 enum reg_enabled_disabled field_regulation, enum reg_enabled_disabled current_regulation);
+void regMgrInit(struct REG_mgr *reg_mgr,
+                uint32_t iter_period_us,
+                enum REG_enabled_disabled field_regulation,
+                enum REG_enabled_disabled current_regulation,
+                enum REG_enabled_disabled voltage_regulation);
 
 
 
@@ -200,9 +213,9 @@ void regMgrInit(struct reg_mgr *reg_mgr, uint32_t iter_period_us,
  *
  * This is a background function: do not call from the real-time thread or interrupt.
  *
- * @param[in,out] reg_mgr       Pointer to regulation manager structure.
+ * @param[in,out]   reg_mgr    Pointer to regulation manager structure.
  */
-void regMgrPars(struct reg_mgr *reg_mgr);
+void regMgrPars(struct REG_mgr *reg_mgr);
 
 
 
@@ -212,11 +225,11 @@ void regMgrPars(struct reg_mgr *reg_mgr);
  *
  * This is a background function: do not call from the real-time thread or interrupt
  *
- * @param[in,out] reg_mgr             Pointer to regulation manager structure.
+ * @param[in,out] reg_mgr              Pointer to regulation manager structure.
  * @param[in]     reg_mode             Initial regulation mode.
  * @param[in]     init_meas            Initial value for signal identified by reg_mode.
  */
-void regMgrSimInit(struct reg_mgr *reg_mgr, enum reg_mode reg_mode, float init_meas);
+void regMgrSimInit(struct REG_mgr *reg_mgr, enum REG_mode reg_mode, REG_float init_meas);
 
 
 
@@ -233,7 +246,7 @@ void regMgrSimInit(struct reg_mgr *reg_mgr, enum reg_mode reg_mode, float init_m
  * @param[in]     i_meas_p    Pointer to current input measurement signal structure. NULL is allowed.
  * @param[in]     b_meas_p    Pointer to field input measurement signal structure. NULL is allowed.
  */
-void regMgrMeasInit(struct reg_mgr *reg_mgr, struct reg_meas_signal *v_meas_p, struct reg_meas_signal *i_meas_p, struct reg_meas_signal *b_meas_p);
+void regMgrMeasInit(struct REG_mgr *reg_mgr, struct REG_meas_signal *v_meas_p, struct REG_meas_signal *i_meas_p, struct REG_meas_signal *b_meas_p);
 
 
 
@@ -264,7 +277,7 @@ void regMgrMeasInit(struct reg_mgr *reg_mgr, struct reg_meas_signal *v_meas_p, s
  * @param[in,out] reg_mgr              Pointer to regulation manager structure.
  * @param[in]     reg_mode             Regulation mode to set (#REG_NONE, #REG_VOLTAGE, #REG_CURRENT or #REG_FIELD).
  */
-void regMgrModeSetRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mode);
+void regMgrModeSetRT(struct REG_mgr *reg_mgr, enum REG_mode reg_mode);
 
 
 
@@ -309,7 +322,7 @@ void regMgrModeSetRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mode);
  *
  * @returns Iteration number (0 indicates that the reference should be calculated on this iteration)
  */
-uint32_t regMgrMeasSetRT(struct reg_mgr *reg_mgr, enum reg_rst_source reg_rst_source,
+uint32_t regMgrMeasSetRT(struct REG_mgr *reg_mgr, enum REG_rst_source reg_rst_source,
                           uint32_t unix_time, uint32_t us_time, bool use_sim_meas, bool is_max_abs_err_enabled);
 
 
@@ -353,12 +366,17 @@ uint32_t regMgrMeasSetRT(struct reg_mgr *reg_mgr, enum reg_rst_source reg_rst_so
  * @param[in,out] reg_mgr              Pointer to regulation manager structure.
  * @param[in]     ref                  Pointer to reference (voltage, current or field according to mgr::reg_mode).
  */
-void regMgrRegulateRT(struct reg_mgr *reg_mgr, float *ref);
+void regMgrRegulateRT(struct REG_mgr *reg_mgr, REG_float *ref);
 
 
 
 /*!
  * Simulate the voltage source and load and the measurements of the voltage, current and field.
+ *
+ * If the actuation is #REG_FIRING_REF, the power converter output filter response to the firing reference is simulated with
+ * regSimVsRT(), without taking into account PC_REF_DELAY (see reg_sim_load_vars). The firing reference comes from
+ * REG_mgr_firing::ref_limited. The load current and field are simulated with regSimLoadRT() in response to the
+ * voltage source response plus the perturbation (specified as <em>v_perturbation</em>).
  *
  * If the actuation is #REG_VOLTAGE_REF, the voltage source response to the reference voltage is simulated with
  * regSimVsRT(), without taking into account PC_REF_DELAY (see reg_sim_load_vars). The voltage reference comes from
@@ -383,11 +401,9 @@ void regMgrRegulateRT(struct reg_mgr *reg_mgr, float *ref);
  * This is a Real-Time function.
  *
  * @param[in,out] reg_mgr              Pointer to regulation manager structure.
- * @param[in]     v_circuit            Pointer to simulated circuit voltage or NULL if regMgrSimulateRT() should
- *                                     perform the simulation using the power converter model.
  * @param[in]     v_perturbation       Voltage perturbation to add to the simulated circuit voltage.
  */
-void regMgrSimulateRT(struct reg_mgr *reg_mgr, float *v_circuit, float v_perturbation);
+void regMgrSimulateRT(struct REG_mgr *reg_mgr, REG_float v_perturbation);
 
 #ifdef __cplusplus
 }

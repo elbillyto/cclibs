@@ -26,41 +26,41 @@
  */
 
 #include <string.h>
-#include "libfg/test.h"
+#include "libfg.h"
 
 
 
-enum fg_error fgTestInit(struct fg_limits *limits, 
-                         bool   pol_switch_auto,
-                         bool   pol_switch_neg,
-                         double delay, 
-                         enum   fg_test_type type,
-                         float  initial_ref,
-                         float  amplitude_pp,
-                         float  num_cycles,
-                         float  period,
-                         bool   window_enabled,
-                         bool   exp_decay_enabled,
-                         struct fg_test *pars, 
-                         struct fg_meta *meta)
+enum FG_errno fgTestInit(struct FG_limits *limits,
+                         bool              pol_switch_auto,
+                         bool              pol_switch_neg,
+                         enum FG_test_type type,
+                         FG_float          initial_ref,
+                         FG_float          amplitude_pp,
+                         FG_float          num_cycles,
+                         FG_float          period,
+                         bool              window_enabled,
+                         bool              exp_decay_enabled,
+                         union  FG_pars   *pars,
+                         struct FG_error  *error)
 {
-    enum fg_error  fg_error;       // Error code
-    struct fg_meta local_meta;     // Local meta data in case user meta is NULL
-    struct fg_test p;              // Local TEST pars - copied to user *pars only if there are no errors
-    float          window[2];      // Max/min window scaling for sine or cosine
+    enum   FG_errno fg_errno;       // Error number
+    struct FG_error local_error;    // Local error data in case user error is NULL
+    struct FG_test  p;              // Local TEST pars - copied to user *pars only if there are no errors
+    FG_float        duration;       // Function duration
+    FG_float        window[2];      // Max/min window scaling for sine or cosine
 
-    // Reset meta structure - uses local_meta if meta is NULL
+    // Reset meta & error structures - uses local_error if error is NULL
 
-    meta = fgResetMeta(meta, &local_meta, delay, initial_ref);
+    error = fgResetMeta(initial_ref, &p.meta, &local_error, error);
 
     // Check if number of cycles is less than 1
 
     if(num_cycles < 0.6)
     {
-        meta->error.index   = 1;
-        meta->error.data[0] = num_cycles;
+        error->index   = 1;
+        error->data[0] = num_cycles;
 
-        fg_error = FG_INVALID_TIME;
+        fg_errno = FG_INVALID_TIME;
         goto error;
     }
 
@@ -68,51 +68,48 @@ enum fg_error fgTestInit(struct fg_limits *limits,
 
     if(period <= 0.0)
     {
-        meta->error.index   = 1;
-        meta->error.data[0] = period;
+        error->index   = 1;
+        error->data[0] = period;
 
-        fg_error = FG_BAD_PARAMETER;
+        fg_errno = FG_BAD_PARAMETER;
         goto error;
     }
 
     // Prepare parameter structure
 
-    p.delay          = delay;
     p.num_cycles     = (uint32_t)(num_cycles + 0.4999);
-    p.duration       = (float)p.num_cycles * period;
     p.half_period    = 0.5 * period;
     p.frequency      = 1.0 / period;
     p.amplitude      = amplitude_pp;
     p.type           = type;
     p.window_enabled = false;
-    p.initial_ref    = initial_ref;
-    p.final_ref      = initial_ref;
     p.exp_decay      = 0.0;
+    duration         = (FG_float)p.num_cycles * period;
 
     // Check if total duration is too long
 
-    if(p.duration > 1.0E6)
+    if(duration > 1.0E6)
     {
-        meta->error.index   = 2;
-        meta->error.data[0] = p.duration;
-        meta->error.data[1] = 1.0E6;
+        error->index   = 2;
+        error->data[0] = duration;
+        error->data[1] = 1.0E6;
 
-        fg_error = FG_INVALID_TIME;
+        fg_errno = FG_INVALID_TIME;
         goto error;
     }
 
     // Calculate amplitude related parameters
 
-    fg_error = FG_OK;
+    fg_errno = FG_OK;
 
     switch(type)
     {
         case FG_TEST_STEPS:
 
-            p.final_ref += p.amplitude;
-            p.amplitude /= (float)p.num_cycles;
+            p.meta.range.final_ref = p.meta.range.initial_ref + p.amplitude;
+            p.amplitude /= (FG_float)p.num_cycles;
 
-            fgSetMinMax(meta, p.final_ref);
+            fgSetMinMax(p.meta.range.final_ref, &p.meta);
             break;
 
         case FG_TEST_SQUARE:
@@ -121,7 +118,7 @@ enum fg_error fgTestInit(struct fg_limits *limits,
 
             p.num_cycles *= 2;
 
-            fgSetMinMax(meta, p.initial_ref + p.amplitude);
+            fgSetMinMax(initial_ref + p.amplitude, &p.meta);
             break;
 
         case FG_TEST_SINE:
@@ -141,7 +138,7 @@ enum fg_error fgTestInit(struct fg_limits *limits,
 
                 if(exp_decay_enabled)
                 {
-                    p.exp_decay = -5.0 / p.duration;
+                    p.exp_decay = -5.0 / duration;
                 }
 
                 // Adjust range scaling if number of cycles is 1
@@ -163,25 +160,22 @@ enum fg_error fgTestInit(struct fg_limits *limits,
                 }
             }
 
-            fgSetMinMax(meta, initial_ref + p.amplitude * window[0]);
-            fgSetMinMax(meta, initial_ref + p.amplitude * window[1]);
+            fgSetMinMax(initial_ref + p.amplitude * window[0], &p.meta);
+            fgSetMinMax(initial_ref + p.amplitude * window[1], &p.meta);
             break;
 
         default: // Invalid function type requested
 
-            meta->error.index   = 2;
-            meta->error.data[0] = (float)type;
+            error->index   = 2;
+            error->data[0] = (FG_float)type;
 
-            fg_error = FG_BAD_PARAMETER;
+            fg_errno = FG_BAD_PARAMETER;
             goto error;
     }
 
     // Complete meta data
 
-    meta->duration  = p.duration;
-    meta->range.end = p.final_ref;;
-
-    fgSetFuncPolarity(meta, pol_switch_auto, pol_switch_neg);
+    fgSetMeta(pol_switch_auto, pol_switch_neg, duration, limits, &p.meta);
 
     // Copy valid set of parameters to user's pars structure
 
@@ -193,118 +187,112 @@ enum fg_error fgTestInit(struct fg_limits *limits,
 
     error:
 
-        meta->fg_error = fg_error;
-        return(fg_error);
+        error->fg_errno = fg_errno;
+        return(fg_errno);
 }
 
 
 
-enum fg_gen_status fgTestGen(struct fg_test *pars, const double *time, float *ref)
+enum FG_func_status fgTestRT(union FG_pars *pars, FG_float func_time, FG_float *ref)
 {
-    float       radians;
-    float       cos_rads  = 0.0;
-    float       exp_decay = 1.0;
-    float       delta_ref;
-    float       func_time;                     // Time within function
+    uint32_t    period_idx;
+    FG_float    radians;
+    FG_float    cos_rads  = 0.0;
+    FG_float    exp_decay = 1.0;
+    FG_float    delta_ref;
 
-    // Both *time and delay must be 64-bit doubles if time is UNIX time
-
-    func_time = (float)(*time - pars->delay);
-
-    // Pre-acceleration coast
+    // Pre-function - test functions always start at time 0.0
 
     if(func_time < 0.0)
     {
-        *ref = pars->initial_ref;
+        *ref = pars->meta.range.initial_ref;
 
         return(FG_GEN_PRE_FUNC);
     }
 
-    // Operate N cycles following delay
+    // Post-function
 
-    else if(func_time < pars->duration)
+    if(func_time >= pars->meta.time.end)
     {
-        uint32_t    period_idx;
+        *ref = pars->meta.range.final_ref;
 
-        switch(pars->type)
-        {
-            case FG_TEST_STEPS:
-
-                // Calculate period index and clip to number of cycles in case of floating point errors
-
-                period_idx = 1 + (uint32_t)(func_time * pars->frequency);
-
-                if(period_idx > pars->num_cycles)
-                {
-                    period_idx = pars->num_cycles;
-                }
-
-                *ref = pars->initial_ref + pars->amplitude * (float)period_idx;
-
-                return(FG_GEN_DURING_FUNC);
-
-            case FG_TEST_SQUARE:
-
-                // Calculate period index and clip to number of cycles in case of floating point errors
-
-                period_idx = 1 + (uint32_t)(2.0 * func_time * pars->frequency);
-
-                if(period_idx > pars->num_cycles)
-                {
-                    period_idx = pars->num_cycles;
-                }
-
-                *ref = pars->initial_ref + (period_idx & 0x1 ? pars->amplitude : 0.0);
-
-                return(FG_GEN_DURING_FUNC);
-
-            case FG_TEST_SINE:
-
-                radians   = (2.0 * 3.1415926535897932) * pars->frequency * func_time;
-                delta_ref = pars->amplitude * sinf(radians);
-                break;
-
-            case FG_TEST_COSINE:
-
-                radians   = (2.0 * 3.1415926535897932) * pars->frequency * func_time;
-                cos_rads  = cosf(radians);
-                delta_ref = pars->amplitude * cos_rads;
-                break;
-
-            default: // Invalid function type requested
-
-                return(FG_GEN_POST_FUNC);
-        }
-
-        // For SINE and COSINE: Apply cosine window and exp decay if enabled
-
-        if(pars->window_enabled)
-        {
-            if(pars->exp_decay != 0.0)
-            {
-                // Calc exponential decay of amplitude
-
-                exp_decay = expf(func_time * pars->exp_decay);
-            }
-
-            if(func_time < pars->half_period || pars->duration - func_time < pars->half_period)
-            {
-                // Calc Cosine window
-
-               delta_ref *= 0.5 * (1 - (pars->type == FG_TEST_SINE ? cosf(radians) : cos_rads));
-            }
-        }
-
-        *ref = pars->initial_ref + delta_ref * exp_decay;
-
-        return(FG_GEN_DURING_FUNC);
+        return(FG_GEN_POST_FUNC);
     }
 
-    // Coast after function
+    // Function
 
-    *ref = pars->final_ref;
+    switch(pars->test.type)
+    {
+        case FG_TEST_STEPS:
 
-    return(FG_GEN_POST_FUNC);
+            // Calculate period index and clip to number of cycles in case of floating point errors
+
+            period_idx = 1 + (uint32_t)(func_time * pars->test.frequency);
+
+            if(period_idx > pars->test.num_cycles)
+            {
+                period_idx = pars->test.num_cycles;
+            }
+
+            *ref = pars->test.meta.range.initial_ref + pars->test.amplitude * (FG_float)period_idx;
+
+            return(FG_GEN_DURING_FUNC);
+
+        case FG_TEST_SQUARE:
+
+            // Calculate period index and clip to number of cycles in case of floating point errors
+
+            period_idx = 1 + (uint32_t)(2.0 * func_time * pars->test.frequency);
+
+            if(period_idx > pars->test.num_cycles)
+            {
+                period_idx = pars->test.num_cycles;
+            }
+
+            *ref = pars->test.meta.range.initial_ref + (period_idx & 0x1 ? pars->test.amplitude : 0.0);
+
+            return(FG_GEN_DURING_FUNC);
+
+        case FG_TEST_SINE:
+
+            radians   = (2.0 * 3.1415926535897932) * pars->test.frequency * func_time;
+            delta_ref = pars->test.amplitude * sinf(radians);
+            break;
+
+        case FG_TEST_COSINE:
+
+            radians   = (2.0 * 3.1415926535897932) * pars->test.frequency * func_time;
+            cos_rads  = cosf(radians);
+            delta_ref = pars->test.amplitude * cos_rads;
+            break;
+
+        default: // Invalid function type requested
+
+            return(FG_GEN_POST_FUNC);
+    }
+
+    // For SINE and COSINE: Apply cosine window and exp decay if enabled
+
+    if(pars->test.window_enabled)
+    {
+        if(pars->test.exp_decay != 0.0)
+        {
+            // Calc exponential decay of amplitude
+
+            exp_decay = expf(func_time * pars->test.exp_decay);
+        }
+
+        if(func_time < pars->test.half_period || pars->test.meta.time.duration - func_time < pars->test.half_period)
+        {
+            // Calc Cosine window
+
+           delta_ref *= 0.5 * (1 - (pars->test.type == FG_TEST_SINE ? cosf(radians) : cos_rads));
+        }
+    }
+
+    *ref = pars->test.meta.range.initial_ref + delta_ref * exp_decay;
+
+    return(FG_GEN_DURING_FUNC);
 }
 
 // EOF

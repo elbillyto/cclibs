@@ -37,7 +37,8 @@ RAMP LINEAR_RATE(5)         0
 
 TABLE REF()                 2 2.5 2.5 3.0
 
-PULSE TIME(7)               0
+PULSE LINEAR_RATE(7)        0.1
+PULSE ACCELERATION(7)       1
 PULSE DURATION(7)           1
 PULSE REF(7)                4
 

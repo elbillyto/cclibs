@@ -26,7 +26,7 @@
 
 // Constants
 
-#define CC_VERSION                  7.03
+#define CC_VERSION                  8.01
 #define CC_MAX_CYC_SEL              10
 #define CC_NUM_CYC_SELS             (CC_MAX_CYC_SEL+1)
 

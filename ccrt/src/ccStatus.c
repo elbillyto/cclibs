@@ -51,7 +51,7 @@
 
 
 
-static void ccStatusEnumPointer(struct ccpars_enum *enum_p, char *fmt, char *format)
+static void ccStatusEnumPointer(struct CCpars_enum *enum_p, char *fmt, char *format)
 {
     if(enum_p->flags & CC_ENUM_RED)
     {
@@ -81,10 +81,10 @@ static void ccStatusEnumPointer(struct ccpars_enum *enum_p, char *fmt, char *for
 
 
 
-static void ccStatusEnumValue(struct ccpars *par, char *fmt)
+static void ccStatusEnumValue(struct CCpars *par, char *fmt)
 {
     int32_t  enum_idx = ccParsEnumIndex(par->ccpars_enum, *par->value_p.u);
-    struct ccpars_enum *enum_p = par->ccpars_enum + enum_idx;
+    struct CCpars_enum *enum_p = par->ccpars_enum + enum_idx;
 
     if(enum_idx < 0)
     {
@@ -97,7 +97,7 @@ static void ccStatusEnumValue(struct ccpars *par, char *fmt)
 }
 
 
-static void ccStatusMeas(char *label, enum reg_mode reg_mode, float meas)
+static void ccStatusMeas(char *label, enum REG_mode reg_mode, float meas)
 {
     printf("  " TERM_CSI TERM_BOLD TERM_SGR "%s" TERM_NORMAL ":", label);
 
@@ -120,7 +120,7 @@ static void ccStatusMeas(char *label, enum reg_mode reg_mode, float meas)
 
 static void ccStatusFlags(struct cccmds *cmd, char *active_fg, char *active_bg)
 {
-    struct ccpars *par = cmd->pars;
+    struct CCpars *par = cmd->pars;
 
     printf("  " TERM_CSI TERM_BOLD TERM_SGR "%s" TERM_NORMAL ":", cmd->name);
 

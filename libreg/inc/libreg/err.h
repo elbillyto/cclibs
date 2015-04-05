@@ -38,23 +38,23 @@
 /*!
  * Regulation error limit structure
  */
-struct reg_err_limit
+struct REG_err_limit
 {
-    float                       threshold;                      //!< Limit threshold
-    float                       filter;                         //!< Threshold exceeded flag filter (counter)
+    REG_float                   threshold;                      //!< Limit threshold
+    REG_float                   filter;                         //!< Threshold exceeded flag filter (counter)
     bool                        flag;                           //!< Limit exceeded flag
 };
 
 /*!
  * Regulation error structure
  */
-struct reg_err
+struct REG_err
 {
-    float                       delayed_ref;                    //!< Delayed reference
-    float                       err;                            //!< Regulation error
-    float                       max_abs_err;                    //!< Max absolute error
-    struct reg_err_limit        warning;                        //!< Warning limit structure
-    struct reg_err_limit        fault;                          //!< Fault limit structure
+    REG_float                   delayed_ref;                    //!< Delayed reference
+    REG_float                   err;                            //!< Regulation error
+    REG_float                   max_abs_err;                    //!< Max absolute error
+    struct REG_err_limit        warning;                        //!< Warning limit structure
+    struct REG_err_limit        fault;                          //!< Fault limit structure
 };
 
 #ifdef __cplusplus
@@ -72,7 +72,7 @@ extern "C" {
  * @param[in]    fault_threshold      New fault threshold. If set to zero, reset
  *                                    reg_err_limit::flag and reg_err_limit::filter in reg_err::fault.
  */
-void regErrInitLimits(struct reg_err *err, float warning_threshold, float fault_threshold);
+void regErrInitLimits(struct REG_err *err, REG_float warning_threshold, REG_float fault_threshold);
 
 
 
@@ -83,7 +83,7 @@ void regErrInitLimits(struct reg_err *err, float warning_threshold, float fault_
  *
  * @param[out]   err                        Pointer to regulation error structure.
  */
-void regErrResetLimitsVarsRT(struct reg_err *err);
+void regErrResetLimitsVarsRT(struct REG_err *err);
 
 
 
@@ -97,7 +97,7 @@ void regErrResetLimitsVarsRT(struct reg_err *err);
  * @param[in]     delayed_ref               Value to store in reg_err::delayed_ref, so it can be logged if required
  * @param[in]     meas                      reg_err::err is set to <em>delayed_ref - meas</em>.
  */
-void regErrCheckLimitsRT(struct reg_err *err, bool is_max_abs_err_enabled, float delayed_ref, float meas);
+void regErrCheckLimitsRT(struct REG_err *err, bool is_max_abs_err_enabled, REG_float delayed_ref, REG_float meas);
 
 #ifdef __cplusplus
 }

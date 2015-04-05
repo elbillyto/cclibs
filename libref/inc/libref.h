@@ -35,50 +35,48 @@
 // Libref enum constants
 
 #define REF_PULSE_LEN       5
-#define MAX_MAX_CYC_SELS    33
+#define MAX_MAX_CYC_SELS    32
 
 /*!
  * Reference state
  */
-enum ref_state
+enum REF_state
 {
-    REF_OFF,
+    REF_OFF          ,
     REF_POL_SWITCHING,
-    REF_TO_OFF,
-    REF_TO_STANDBY,
-    REF_TO_CYCLING,
-    REF_TO_IDLE,
-    REF_DIRECT,
-    REF_ON_STANDBY,
-    REF_CYCLING,
-    REF_ECONOMY,
-    REF_IDLE,
-    REF_ARMED,
-    REF_RUNNING,
-    REF_PAUSED,
+    REF_TO_OFF       ,
+    REF_TO_STANDBY   ,
+    REF_TO_CYCLING   ,
+    REF_TO_IDLE      ,
+    REF_DIRECT       ,
+    REF_ON_STANDBY   ,
+    REF_CYCLING      ,
+    REF_ECONOMY      ,
+    REF_IDLE         ,
+    REF_ARMED        ,
+    REF_RUNNING      ,
+    REF_PAUSED       ,
 };
 
-enum ref_fg_types
+enum REF_fg_types
 {
-    REF_FG_NONE,
-    REF_FG_PLEP,
-    REF_FG_RAMP,
-    REF_FG_PPPL,
-    REF_FG_TABLE,
-    REF_FG_STEPS,
+    REF_FG_NONE  ,
+    REF_FG_PLEP  ,
+    REF_FG_RAMP  ,
+    REF_FG_PPPL  ,
+    REF_FG_TABLE ,
+    REF_FG_STEPS ,
     REF_FG_SQUARE,
-    REF_FG_SINE,
+    REF_FG_SINE  ,
     REF_FG_COSINE,
-    REF_FG_LTRIM,
-    REF_FG_CTRIM,
-    REF_FG_PULSE,
+    REF_FG_LTRIM ,
+    REF_FG_CTRIM ,
+    REF_FG_PULSE ,
 };
 
 /*!
- * Include header files needed for struct ref_mgr
+ * Include header files needed for struct REF_mgr
  */
-#include <stdint.h>
-#include <stdbool.h>
 #include <libref_vars.h>
 #include <libref_pars.h>
 #include <libfg.h>
@@ -87,42 +85,36 @@ enum ref_fg_types
 /*!
  * Declare libref structures
  */
- union ref_fg_union
- {
-    struct fg_plep          plep;
-    struct fg_pppl          pppl;
-    struct fg_pulse         pulse[REF_PULSE_LEN];
-    struct fg_ramp          ramp;
-    struct fg_table         table;
-    struct fg_test          test;
-    struct fg_trim          trim;
- };
-
- struct ref_fg_armed
- {
-     enum reg_mode           reg_mode;                                          //!< Regulation mode
-     enum ref_fg_types       fg_type;                                           //!< Function type
-     struct fg_meta          fg_meta;                                           //!< Fg meta data for all possible cyc_sels and ref_pulse indexes
- };
-
-struct ref_mgr
+struct REF_fg_armed
 {
-    enum ref_state              ref_state;                                      //!< Reference state
+    uint32_t                    cyc_sel;                                             //!< Cycle selector
+    uint32_t                    ref_idx;                                             //!< Reference index
+    enum REG_mode               reg_mode;                                            //!< Regulation mode
+    enum REF_fg_types           fg_type;                                             //!< Function type
+    struct FG_meta              fg_meta;                                             //!< Fg meta data for all possible cyc_sels and ref_pulse indexes
+    union  REF_fg_union         fg_union;                                            //!< Union of fg structs with function parameters
+};
 
-    uint32_t                    max_cyc_sel;                                    //!< Maximum cycle selector
-    uint32_t                    max_table_points;                               //!< Maximum number of points in a table
+struct REF_mgr
+{
+    enum REF_state              ref_state;                                       //!< Reference state
+
+    uint32_t                    max_cyc_sel;                                     //!< Maximum cycle selector
+    uint32_t                    max_ref_idx;                                     //!< Maximum reference index
+
+    uint32_t                    max_table_points;                                //!< Maximum number of points in a table
 
 
-    struct ref_mgr_ref_fg
+    struct REF_mgr_ref_fg
     {
-        struct ref_fg_armed     armed[MAX_MAX_CYC_SELS][REF_PULSE_LEN];         //!< Armed function meta data
-        union ref_fg_union      fg_union[MAX_MAX_CYC_SELS];                     //!< Array of pointers to fg unions
-        struct ref_fg_armed     next_and_active[2];                              //!< Array of active and next functions
-        struct ref_fg_armed    *next;                                            //!< Pointer to next ref_fg in ref_fg_next_and_active
-        struct ref_fg_armed    *active;                                          //!< Pointer to next ref_fg in ref_fg_next_and_active
+        struct REF_fg_armed   **armed;                                          //!< Armed function meta data
+        struct REF_fg_armed     not_armed;                                       //!< Array of active and next functions
+        struct REF_fg_armed     next_and_active[2];                              //!< Array of active and next functions
+        struct REF_fg_armed    *next;                                            //!< Pointer to next ref_fg in ref_fg_next_and_active
+        struct REF_fg_armed    *active;                                          //!< Pointer to next ref_fg in ref_fg_next_and_active
     } ref_fg;
 
-    struct ref_pars         pars;                                           //!< Pointers to libref parameters at the application level
+    struct REF_pars             pars;                                    //!< Pointers to libref parameters at the application level
 };
 
 /*!

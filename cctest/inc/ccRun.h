@@ -47,25 +47,26 @@ struct ccrun_vars
     uint32_t                        cycle_idx;                          // Active reference function index
     uint32_t                        cyc_sel;                            // Cycle selector for current cycle
 
-    struct fg_meta                  fg_meta[CC_NUM_CYC_SELS];           // Reference function meta data for all functions
+    struct FG_error                 fg_error[CC_NUM_CYC_SELS];          // Reference function meta data for all functions
+    union  FG_pars                  fg_pars [CC_NUM_CYC_SELS];          // libfg parameter structs
 
     bool                            is_used[CC_NUM_CYC_SELS];           // Cycle selector is used by GLOBAL CYCLE_SELECTOR
     bool                            is_ireg_enabled;                    // Run includes current regulation
     bool                            is_breg_enabled;                    // Run includes field regulation
     bool                            is_pc_tripped;                      // Voltage source is tripped by measurement limit
 
-    double                          cycle_start_time;                   // Start time (iter_time) for current cycle
-    double                          cycle_duration;                     // Cycle duration including run delay
-    enum fg_gen_status            (*fgen_func)();                       // Function to generate the active reference
-    void                           *fgen_pars;                          // Parameter structure for active reference
-    struct fg_limits               *fg_limits;                          // Pointer to NULL or ccrun.fgen_limits
-    struct fg_limits                fgen_limits;                        // Pointer to fg_limits (b/i/v)
-    struct reg_lim_ref              fg_lim_v_ref;                       // Libreg voltage measurement limits structure for fg converter limits
+    float                           cycle_time_origin;                  // Start time (iter_time) for current cycle
+    float                           cycle_end_time;                     // Cycle duration including run delay
+    FG_FuncRT                       fg_func;                            // Function to generate the active reference
+    union  FG_pars                 *fg_func_pars;                       // Parameter structure for active reference
+    struct FG_limits               *fg_func_limits;                     // Pointer to NULL or ccrun.fgen_limits
+    struct FG_limits                fg_limits;                          // Pointer to fg_limits (b/i/v)
+    struct REG_lim_ref              fg_lim_v_ref;                       // Libreg voltage measurement limits structure for fg converter limits
 
     struct ccrun_cycle
     {
         uint32_t                    cyc_sel;                            // Cycle selector
-        enum reg_rst_source         reg_rst_source;                     // RST parameter source
+        enum REG_rst_source         reg_rst_source;                     // RST parameter source
         double                      start_time;                         // Time of the start of the cycle
         float                       ref_advance;                        // Ref advance used with each function
         float                       max_abs_err;                        // Max absolute regulation error
@@ -82,14 +83,15 @@ struct ccrun_vars
         uint32_t                    idx;                                // Pre-function stage index (0,1,2,3)
         uint32_t                    num_ramps;                          // Number of pre-function ramps
         float                       final_ref[MAX_PREFUNCS];            // Final ref for each pre-function ramp
-        struct fg_ramp              pars;                               // Libfg parameters for pre-function ramps
+        struct FG_ramp              pars;                               // Libfg parameters for pre-function ramps
     } prefunc;
 
     struct ccrun_dyn_eco
     {
-        struct fg_plep              pars;                               // Dynamic economy plep parameters
-        enum fg_gen_status         (*fgen_func)();                      // Storage of pointer to function that was active (NULL when dyn_eco not active)
-        void                       *fgen_pars;                          // Storage of pointer to parameters for function that was active
+        struct FG_plep              pars;                               // Dynamic economy plep parameters
+        FG_FuncRT                   fg_func;                            // Storage of pointer to function that was active (NULL when dyn_eco not active)
+        union  FG_pars             *fg_func_pars;                       // Storage of pointer to parameters for function that was active
+        double                  time_offset;                            // Time offset for PLEP
 
         struct ccrun_dyn_eco_log
         {

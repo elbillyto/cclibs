@@ -10,8 +10,8 @@ GLOBAL PROJECT              POPS
 
 # Voltage source parameters
 
-PC BANDWIDTH                180
-PC Z                        0.9
+PC SIM_BANDWIDTH            180
+PC SIM_Z                    0.9
 PC ACT_DELAY_ITERS          4.989
 
 # Measurement parameters
@@ -26,8 +26,8 @@ MEAS I_FIR_LENGTHS          0
 MEAS B_SIM_NOISE_PP         0.0
 MEAS I_SIM_NOISE_PP         0.03
 MEAS V_SIM_NOISE_PP         0.05
-MEAS TONE_HALF_PERIOD_ITERS 100
-MEAS I_SIM_TONE_AMP         0.0
+MEAS SIM_TONE_PERIOD_ITERS  200
+MEAS I_SIM_TONE_PP          0.0
 
 # Limits
 

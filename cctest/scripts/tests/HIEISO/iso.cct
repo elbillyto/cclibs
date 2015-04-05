@@ -10,10 +10,10 @@ GLOBAL PROJECT              HIEISO
 
 # Voltage source parameters
 
-PC BANDWIDTH                2000
+PC SIM_BANDWIDTH            2000
 PC ACT_DELAY_ITERS          1
-PC TAU_ZERO                 0.0
-PC Z                        0.9
+PC SIM_TAU_ZERO             0.0
+PC SIM_Z                    0.9
 
 # Measurement parameters
 
@@ -25,8 +25,8 @@ MEAS B_FIR_LENGTHS          10,7
 MEAS I_FIR_LENGTHS          10,7
 MEAS I_SIM_NOISE_PP         0.0
 MEAS V_SIM_NOISE_PP         0.0
-MEAS TONE_HALF_PERIOD_ITERS 100
-MEAS I_SIM_TONE_AMP         0.0
+MEAS SIM_TONE_PERIOD_ITERS  200
+MEAS I_SIM_TONE_PP          0.0
 
 # Current regulation        COMET
 
@@ -68,7 +68,7 @@ LOAD SIM_TC_ERROR           0.0
 
 # Reference
 
-PULSE TIME()                0.0
+PULSE LINEAR_RATE()         0.0
 PULSE DURATION()            0.2
 PULSE REF(1)                1000       11000
 

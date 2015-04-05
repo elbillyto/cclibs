@@ -41,7 +41,7 @@
 
 // Reg status enum for ccDebug only
 
-CCPARS_REG_EXT struct ccpars_enum enum_reg_status[]
+CCPARS_REG_EXT struct CCpars_enum enum_reg_status[]
 #ifdef GLOBALS
 = {
     { REG_OK,                                "OK"                       },
@@ -54,7 +54,7 @@ CCPARS_REG_EXT struct ccpars_enum enum_reg_status[]
 
 // Reg Jury's test result  enum for ccDebug only
 
-CCPARS_REG_EXT struct ccpars_enum enum_reg_jurys_result[]
+CCPARS_REG_EXT struct CCpars_enum enum_reg_jurys_result[]
 #ifdef GLOBALS
 = {
     { REG_JR_OK,                             "OK"                       },
@@ -71,7 +71,7 @@ CCPARS_REG_EXT struct ccpars_enum enum_reg_jurys_result[]
 
 // Reg RST source enum for ccDebug only
 
-CCPARS_REG_EXT struct ccpars_enum enum_reg_rst_source[]
+CCPARS_REG_EXT struct CCpars_enum enum_reg_rst_source[]
 #ifdef GLOBALS
 = {
     { REG_OPERATIONAL_RST_PARS,              "OPERATIONAL"              },
@@ -93,8 +93,8 @@ struct ccpars_reg_pars
     float               auxpoles2_z        [REG_NUM_LOADS];     // Damping of (conjugate) auxiliary poles 2 & 3
     float               auxpole4_hz        [REG_NUM_LOADS];     // Frequency of (real) auxiliary pole 4
     float               auxpole5_hz        [REG_NUM_LOADS];     // Frequency of (real) auxiliary pole 5
-    struct reg_rst      rst;                                    // RST coefficients
-    struct reg_rst      test_rst;                               // Test RST coefficients
+    struct REG_rst      rst;                                    // RST coefficients
+    struct REG_rst      test_rst;                               // Test RST coefficients
 };
 
 CCPARS_REG_EXT struct ccpars_reg_pars ccpars_breg
@@ -141,11 +141,11 @@ CCPARS_REG_EXT struct ccpars_reg_pars ccpars_ireg
 
 // Libreg structures
 
-CCPARS_REG_EXT struct reg_mgr reg_mgr;            // Libreg regulation structure
+CCPARS_REG_EXT struct REG_mgr reg_mgr;            // Libreg regulation structure
 
 // Define Field and Current regulation parameters description structures
 
-CCPARS_REG_EXT struct ccpars breg_pars[]
+CCPARS_REG_EXT struct CCpars breg_pars[]
 #ifdef GLOBALS
 = {// "Signal name"          type,         max_n_els,         *enum,       *value,                             num_defaults, cyc_sel_step, flags
     { "PERIOD_ITERS",        PAR_UNSIGNED, REG_NUM_LOADS,      NULL, { .u = ccpars_breg.period_iters        }, REG_NUM_LOADS,      0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
@@ -167,7 +167,7 @@ CCPARS_REG_EXT struct ccpars breg_pars[]
 #endif
 ;
 
-CCPARS_REG_EXT struct ccpars ireg_pars[]
+CCPARS_REG_EXT struct CCpars ireg_pars[]
 #ifdef GLOBALS
 = {// "Signal name"          type,         max_n_els,         *enum,       *value,                             num_defaults, cyc_sel_step, flags
     { "PERIOD_ITERS",        PAR_UNSIGNED, REG_NUM_LOADS,      NULL, { .u = ccpars_ireg.period_iters        }, REG_NUM_LOADS,      0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },

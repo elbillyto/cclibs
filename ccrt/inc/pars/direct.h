@@ -60,7 +60,7 @@ CCPARS_DIRECT_EXT struct ccpars_direct ccpars_direct
 
 // Direct parameters description structure
 
-CCPARS_DIRECT_EXT struct ccpars direct_pars[]
+CCPARS_DIRECT_EXT struct CCpars direct_pars[]
 #ifdef GLOBALS
 = {// "Signal name" type,  max_n_els, *enum,        *value,       num_directs,cyc_sel_step,flags
     { "B_REF",      PAR_FLOAT, 1,      NULL, { .f = &ccpars_direct.b_ref }, 1,      0,     PARS_RW|PARS_CFG },

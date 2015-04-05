@@ -41,7 +41,7 @@
 // Function declarations
 
 uint32_t ccParseLine            (char *line);
-uint32_t ccParseParName         (uint32_t cmd_idx, char **remaining_line, struct ccpars **par_matched);
+uint32_t ccParseParName         (uint32_t cmd_idx, char **remaining_line, struct CCpars **par_matched);
 char    *ccParseNextArg         (char **remaining_line);
 char    *ccParseAbbreviateArg   (char *arg);
 uint32_t ccParseNoMoreArgs      (char **remaining_line);

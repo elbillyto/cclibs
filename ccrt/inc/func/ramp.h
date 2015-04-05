@@ -31,7 +31,6 @@
 
 #include "ccRt.h"
 #include "ccPars.h"
-#include "libfg/ramp.h"
 
 // GLOBALS is defined in source file where global variables should be defined
 
@@ -41,15 +40,11 @@
 #define CCPARS_RAMP_EXT extern
 #endif
 
-// Libfg RAMP parameter structures
-
-CCPARS_RAMP_EXT struct fg_ramp fg_ramp[CC_NUM_CYC_SELS];
-
 // RAMP data structure
 
 struct ccpars_ramp
 {
-    // cctest RAMP parameters
+    // ccrt RAMP parameters
 
     float                       initial_ref;                    // Initial reference
     float                       final_ref;                      // Final reference
@@ -72,7 +67,7 @@ CCPARS_RAMP_EXT struct ccpars_ramp ccpars_ramp[CC_NUM_CYC_SELS]
 
 // RAMP data description structure
 
-CCPARS_RAMP_EXT struct ccpars   ramp_pars[]
+CCPARS_RAMP_EXT struct CCpars   ramp_pars[]
 #ifdef GLOBALS
 = {// "Signal name"   type,     max_n_els,*enum,        *value,                   num_defaults      cyc_sel_step     flags
     { "INITIAL_REF",  PAR_FLOAT,    1,     NULL, { .f = &ccpars_ramp[0].initial_ref  }, 1, sizeof(struct ccpars_ramp), PARS_RW|PARS_REF },

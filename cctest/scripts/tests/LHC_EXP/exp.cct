@@ -32,9 +32,9 @@ LIMITS V_QUADRANTS41        0.0,0.0
 # CMS Voltage source parameters
 
 PC ACT_DELAY_ITERS          10.0
-PC BANDWIDTH                100.0
-PC TAU_ZERO                 0.0
-PC Z                        0.9
+PC SIM_BANDWIDTH            100.0
+PC SIM_TAU_ZERO             0.0
+PC SIM_Z                    0.9
 
 # CMS Load parameters
 
@@ -53,8 +53,8 @@ MEAS V_DELAY_ITERS          13
 MEAS I_FIR_LENGTHS          200,1
 MEAS I_SIM_NOISE_PP         0.00
 MEAS V_SIM_NOISE_PP         0.00
-MEAS TONE_HALF_PERIOD_ITERS 100
-MEAS I_SIM_TONE_AMP         0.000
+MEAS SIM_TONE_PERIOD_ITERS  200
+MEAS I_SIM_TONE_PP          0.000
 
 # Current regulation
 
@@ -100,9 +100,9 @@ LIMITS V_QUADRANTS41        0.0,0.0
 # CMS Voltage source parameters
 
 PC ACT_DELAY_ITERS          10.0
-PC BANDWIDTH                1000.0
-PC TAU_ZERO                 0.0
-PC Z                        0.9
+PC SIM_BANDWIDTH            1000.0
+PC SIM_TAU_ZERO             0.0
+PC SIM_Z                    0.9
 
 # CMS Load parameters
 
@@ -120,8 +120,8 @@ MEAS V_DELAY_ITERS          13
 MEAS I_FIR_LENGTHS          200,1
 MEAS I_SIM_NOISE_PP         0.00
 MEAS V_SIM_NOISE_PP         0.00
-MEAS TONE_HALF_PERIOD_ITERS 100
-MEAS I_SIM_TONE_AMP         0.000
+MEAS SIM_TONE_PERIOD_ITERS  200
+MEAS I_SIM_TONE_PP          0.000
 
 # Current regulation
 

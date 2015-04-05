@@ -132,8 +132,8 @@
 
 // Constants
 
-#define REG_NUM_RST_COEFFS         10                           //!< RST order + 1 (must be \f$\leq\f$ #REG_RST_HISTORY_MASK)
-#define REG_RST_HISTORY_MASK       31                           //!< History buffer index mask (must be \f$2^{N}-1\f$)
+#define REG_NUM_RST_COEFFS         16                           //!< RST order + 1 (must be \f$\leq\f$ #REG_RST_HISTORY_MASK)
+#define REG_RST_HISTORY_MASK       15                           //!< History buffer index mask (must be \f$2^{N}-1\f$)
 #define REG_MM_WARNING_THRESHOLD   0.4                          //!< #REG_WARNING level for Modulus Margin
 
 #include <stdint.h>
@@ -145,34 +145,13 @@
 // Regulation RST algorithm structures
 
 /*!
- * Regulation status
- */
-enum reg_status
-{
-    REG_OK,
-    REG_WARNING,
-    REG_FAULT
-};
-
-/*!
- * Converter regulation mode
- */
-enum reg_mode
-{
-    REG_VOLTAGE,                                                //!< Open loop (voltage reference)
-    REG_CURRENT,                                                //!< Closed loop on current
-    REG_FIELD,                                                  //!< Closed loop on field
-    REG_NONE                                                    //!< No regulation mode set
-};
-
-/*!
  * RST polynomial arrays and track delay
  */
-struct reg_rst
+struct REG_rst
 {
-    float                       r[REG_NUM_RST_COEFFS];          //!< R polynomial coefficients (measurement). See also #REG_NUM_RST_COEFFS.
-    float                       s[REG_NUM_RST_COEFFS];          //!< S polynomial coefficients (actuation). See also #REG_NUM_RST_COEFFS.
-    float                       t[REG_NUM_RST_COEFFS];          //!< T polynomial coefficients (reference). See also #REG_NUM_RST_COEFFS.
+    REG_float                   r[REG_NUM_RST_COEFFS];          //!< R polynomial coefficients (measurement). See also #REG_NUM_RST_COEFFS.
+    REG_float                   s[REG_NUM_RST_COEFFS];          //!< S polynomial coefficients (actuation). See also #REG_NUM_RST_COEFFS.
+    REG_float                   t[REG_NUM_RST_COEFFS];          //!< T polynomial coefficients (reference). See also #REG_NUM_RST_COEFFS.
 };
 
 /*!
@@ -188,61 +167,63 @@ struct reg_rst
  *
  * These coefficients are calculated in regRstInit()
  */
-struct reg_openloop
+struct REG_openloop
 {
-    float                       ref[2];                         //!< Difference equation coefficients for I(t) and I(t-1) terms.
-    float                       act[2];                         //!< Difference equation coefficients for V(t) term (used only in the reverse
+    REG_float                   ref[2];                         //!< Difference equation coefficients for I(t) and I(t-1) terms.
+    REG_float                   act[2];                         //!< Difference equation coefficients for V(t) term (used only in the reverse
 };                                                              //!< direction) and V(t-1) terms (used only in the forward direction).
 
 /*!
  * RST algorithm parameters
  */
-struct reg_rst_pars
+struct REG_rst_pars
 {
-    enum reg_mode               reg_mode;                       //!< Regulation mode (#REG_CURRENT | #REG_FIELD)
-    float                       reg_period;                     //!< Regulation period
-    float                       inv_reg_period_iters;           //!< \f$\frac{1}{reg\_period\_iters}\f$
-    float                       min_auxpole_hz;                 //!< Minimum of RST auxpole*_hz parameters. Used to limit the scan frequency range.
+    enum REG_mode               reg_mode;                       //!< Regulation mode (#REG_CURRENT | #REG_FIELD)
+    REG_float                   reg_period;                     //!< Regulation period
+    REG_float                   inv_reg_period_iters;           //!< \f$\frac{1}{reg\_period\_iters}\f$
+    REG_float                   min_auxpole_hz;                 //!< Minimum of RST auxpole*_hz parameters. Used to limit the scan frequency range.
 
-    struct reg_openloop         openloop_forward;               //!< Coefficients for openloop difference equation in forward direction.
-    struct reg_openloop         openloop_reverse;               //!< Coefficients for openloop difference equation in reverse direction.
-    struct reg_rst              rst;                            //!< RST polynomials
+    struct REG_openloop         openloop_forward;               //!< Coefficients for openloop difference equation in forward direction.
+    struct REG_openloop         openloop_reverse;               //!< Coefficients for openloop difference equation in reverse direction.
+    struct REG_rst              rst;                            //!< RST polynomials
     uint32_t                    rst_order;                      //!< Highest order of RST polynomials
-    float                       inv_s0;                         //!< \f$\frac{1}{S[0]}\f$
-    float                       t0_correction;                  //!< Correction to t[0] for rounding errors
-    float                       inv_corrected_t0;               //!< \f$\frac{1}{T[0]+ t0\_correction}\f$
+    REG_float                   inv_s0;                         //!< \f$\frac{1}{S[0]}\f$
+    REG_float                   t0_correction;                  //!< Correction to t[0] for rounding errors
+    REG_float                   inv_corrected_t0;               //!< \f$\frac{1}{T[0]+ t0\_correction}\f$
+    REG_float                   sum_even_s;                     //!< Sum of even S polynomial coefficients
+    REG_float                   sum_odd_s;                      //!< Sum of odd S polynomial coefficients
 
-    enum reg_status             status;                         //!< Regulation parameters status
-    enum reg_jurys_result       jurys_result;                   //!< Jury's test result 
+    enum REG_status             status;                         //!< Regulation parameters status
+    enum REG_jurys_result       jurys_result;                   //!< Jury's test result 
     uint32_t                    alg_index;                      //!< Algorithm index (1-5). Based on pure delay
     uint32_t                    dead_beat;                      //!< 0 = not dead-beat, 1-3 = dead-beat (1-3)
-    float                       ref_advance;                    //!< Reference advance time
-    float                       pure_delay_periods;             //!< Pure delay in regulation periods
-    float                       track_delay_periods;            //!< Track delay in regulation periods
-    float                       ref_delay_periods;              //!< Reference delay in regulation periods used for regulation error calculation
-    enum reg_meas_select        reg_err_meas_select;            //!< Measurement to use for regulation error calculation (FILTERED or UNFILTERED)
+    REG_float                   ref_advance;                    //!< Reference advance time
+    REG_float                   pure_delay_periods;             //!< Pure delay in regulation periods
+    REG_float                   track_delay_periods;            //!< Track delay in regulation periods
+    REG_float                   ref_delay_periods;              //!< Reference delay in regulation periods used for regulation error calculation
+    enum REG_meas_select        reg_err_meas_select;            //!< Measurement to use for regulation error calculation (FILTERED or UNFILTERED)
 
-    float                       modulus_margin;                 //!< Modulus margin. Equal to the minimum value of the sensitivity function (abs_S_p_y)
-    float                       modulus_margin_freq;            //!< Frequency for modulus margin.
-    float                       a   [REG_NUM_RST_COEFFS];       //!< Plant numerator A. See also #REG_NUM_RST_COEFFS.
-    float                       b   [REG_NUM_RST_COEFFS];       //!< Plant denominator B. See also #REG_NUM_RST_COEFFS.
-    float                       as  [REG_NUM_RST_COEFFS];       //!< \f$A \cdot S\f$. See also #REG_NUM_RST_COEFFS.
-    float                       asbr[REG_NUM_RST_COEFFS];       //!< \f$A \cdot S + B \cdot R\f$. See also #REG_NUM_RST_COEFFS.
+    REG_float                   modulus_margin;                 //!< Modulus margin. Equal to the minimum value of the sensitivity function (abs_S_p_y)
+    REG_float                   modulus_margin_freq;            //!< Frequency for modulus margin.
+    REG_float                   a   [REG_NUM_RST_COEFFS];       //!< Plant numerator A. See also #REG_NUM_RST_COEFFS.
+    REG_float                   b   [REG_NUM_RST_COEFFS];       //!< Plant denominator B. See also #REG_NUM_RST_COEFFS.
+    REG_float                   as  [REG_NUM_RST_COEFFS];       //!< \f$A \cdot S\f$. See also #REG_NUM_RST_COEFFS.
+    REG_float                   asbr[REG_NUM_RST_COEFFS];       //!< \f$A \cdot S + B \cdot R\f$. See also #REG_NUM_RST_COEFFS.
 };
 
 /*!
  * RST algorithm variables
  */
-struct reg_rst_vars
+struct REG_rst_vars
 {
     uint32_t                    history_index;                  //!< Index to latest entry in the history
-    float                       prev_ref_rate;                  //!< Reference rate from previous iteration
+    REG_float                   prev_ref_rate;                  //!< Reference rate from previous iteration
 
-    float                       openloop_ref[REG_RST_HISTORY_MASK+1]; //!< Openloop calculated reference history. Only the two most
+    REG_float                   openloop_ref[REG_RST_HISTORY_MASK+1]; //!< Openloop calculated reference history. Only the two most
                                                                       //!< recent values are used. See also #REG_RST_HISTORY_MASK.
-    float                       ref         [REG_RST_HISTORY_MASK+1]; //!< RST calculated reference history. See also #REG_RST_HISTORY_MASK.
-    float                       meas        [REG_RST_HISTORY_MASK+1]; //!< RST measurement history. See also #REG_RST_HISTORY_MASK.
-    float                       act         [REG_RST_HISTORY_MASK+1]; //!< RST actuation history. See also #REG_RST_HISTORY_MASK.
+    REG_float                   ref         [REG_RST_HISTORY_MASK+1]; //!< RST calculated reference history. See also #REG_RST_HISTORY_MASK.
+    REG_float                   meas        [REG_RST_HISTORY_MASK+1]; //!< RST measurement history. See also #REG_RST_HISTORY_MASK.
+    REG_float                   act         [REG_RST_HISTORY_MASK+1]; //!< RST actuation history. See also #REG_RST_HISTORY_MASK.
 };
 
 // RST macro "functions"
@@ -312,11 +293,11 @@ extern "C" {
  * @retval     REG_WARNING if reg_rst_pars::modulus_margin < #REG_MM_WARNING_THRESHOLD
  * @retval     REG_FAULT if s[0] is too small (\f$<1\times 10^{-10}\f$) or is unstable (has poles outside the unit circle)
  */
-enum reg_status regRstInit(struct reg_rst_pars *pars, uint32_t reg_period_iters, float  reg_period,
-                           struct reg_load_pars *load, float auxpole1_hz, float auxpoles2_hz,
-                           float auxpoles2_z, float auxpole4_hz, float auxpole5_hz,
-                           float pure_delay_periods, float track_delay_periods,
-                           enum reg_mode reg_mode, struct reg_rst *manual);
+enum REG_status regRstInit(struct REG_rst_pars *pars, uint32_t reg_period_iters, REG_float  reg_period,
+                           struct REG_load_pars *load, REG_float auxpole1_hz, REG_float auxpoles2_hz,
+                           REG_float auxpoles2_z, REG_float auxpole4_hz, REG_float auxpole5_hz,
+                           REG_float pure_delay_periods, REG_float track_delay_periods,
+                           enum REG_mode reg_mode, struct REG_rst *manual);
 
 
 
@@ -335,7 +316,7 @@ enum reg_status regRstInit(struct reg_rst_pars *pars, uint32_t reg_period_iters,
  * @param[in]     openloop_ref  Initial openloop reference value
  * @param[in]     act           Estimated measurement rate
  */
-void regRstInitHistory(struct reg_rst_vars *vars, float ref, float openloop_ref, float act);
+void regRstInitHistory(struct REG_rst_vars *vars, REG_float ref, REG_float openloop_ref, REG_float act);
 
 
 
@@ -353,7 +334,7 @@ void regRstInitHistory(struct reg_rst_vars *vars, float ref, float openloop_ref,
  * @param[in,out] vars    Pointer to history of actuation, measurement and reference values.
  * @param[in]     rate    Estimated measurement rate
  */
-void regRstInitRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, float rate);
+void regRstInitRefRT(struct REG_rst_pars *pars, struct REG_rst_vars *vars, REG_float rate);
 
 
 
@@ -373,7 +354,7 @@ void regRstInitRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, float
  *
  * @returns       New actuation value
  */
-float regRstCalcActRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, float ref, bool is_openloop);
+REG_float regRstCalcActRT(struct REG_rst_pars *pars, struct REG_rst_vars *vars, REG_float ref, bool is_openloop);
 
 
 
@@ -397,7 +378,7 @@ float regRstCalcActRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, floa
  *
  * @returns       Back-calculated reference value
  */
-void regRstCalcRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, float act, bool is_limited, bool is_openloop);
+void regRstCalcRefRT(struct REG_rst_pars *pars, struct REG_rst_vars *vars, REG_float act, bool is_limited, bool is_openloop);
 
 
 
@@ -411,7 +392,7 @@ void regRstCalcRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, float
  *
  * @returns       Measured track delay in regulation period (clipped between 0.5 and 3.5)
  */
-float regRstTrackDelayRT(struct reg_rst_vars *vars);
+REG_float regRstTrackDelayRT(struct REG_rst_vars *vars);
 
 
 
@@ -432,7 +413,7 @@ float regRstTrackDelayRT(struct reg_rst_vars *vars);
  *
  * @returns       Delayed reference value.
  */
-float regRstDelayedRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, uint32_t iteration_index);
+REG_float regRstDelayedRefRT(struct REG_rst_pars *pars, struct REG_rst_vars *vars, uint32_t iteration_index);
 
 
 
@@ -445,7 +426,7 @@ float regRstDelayedRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, u
  *
  * @returns       Average actuation value
  */
-float regRstAverageVrefRT(struct reg_rst_vars *vars);
+REG_float regRstAverageVrefRT(struct REG_rst_vars *vars);
 
 #ifdef __cplusplus
 }

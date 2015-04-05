@@ -122,13 +122,22 @@ BEGIN {
     print " */\n"                                                                                                    > of
     print "#ifndef LIBREG_VARS_H"                                                                                    > of
     print "#define LIBREG_VARS_H\n"                                                                                  > of
-    print "#include <stdint.h>"                                                                                      > of
-    print "#include <stdbool.h>\n"                                                                                   > of
-    print "#define regMgrVar(reg_mgr, var_key)  (((struct reg_mgr const *)&reg_mgr)->var_key)\n"                     > of
+
+    print "/*!"                                                                                                      > of
+    print " * Use regMgrVar() with the reg_mgr structure. It is possible to take the address of regMgrVar() when"    > of
+    print " * initialising a pointer - i.e. the linker can resolve the address."                                     > of
+    print " *"                                                                                                       > of
+    print " * Use regMgrVarP() with a pointer to the reg_mgr structure. It is NOT possible to take the address of"   > of
+    print " * regMgrVarP() when initialising a pointer - i.e. the linker CANNOT resolve the address."                > of
+    print " *"                                                                                                       > of
+    print " */\n"                                                                                                    > of
+
+    print "#define regMgrVar(REG_MGR, VAR_KEY)  (((struct REG_mgr const *)&REG_MGR)->REG_VAR_ ## VAR_KEY)"           > of
+    print "#define regMgrVarP(REG_MGR_P, VAR_KEY)  (REG_MGR_P->REG_VAR_ ## VAR_KEY)\n"                               > of
 
     for(i=0 ; i < n_vars ; i++)
     {
-        printf "#define %-30s %-40s // %-15s %s\n",var_id[i], var_name[i], var_type[i], var_comment[i]               > of
+        printf "#define REG_VAR_%-30s %-40s // %-15s %s\n",var_id[i], var_name[i], var_type[i], var_comment[i]               > of
     }
 
     print "\n#endif // LIBREG_VARS_H\n"                                                                              > of
@@ -180,7 +189,7 @@ BEGIN {
     print "static void regMgrTestVarMacros(void)"                                                                    > of
     print "{"                                                                                                        > of
     print "    double accumulator = 0.0;     // This is used to suppress unused variable warnings"                   > of
-    print "    struct reg_mgr reg_mgr;\n"                                                                            > of
+    print "    struct REG_mgr reg_mgr;\n"                                                                            > of
 
     for(i=0 ; i < n_vars ; i++)
     {
@@ -193,8 +202,5 @@ BEGIN {
     close(of)
 
     exit 0
-
-
-
 }
 # EOF

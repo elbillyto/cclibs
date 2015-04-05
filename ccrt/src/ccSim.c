@@ -63,7 +63,7 @@ void ccSimPcState(void)
 
         if(ccpars_pc.state != ccpars_state.pc)
         {
-            ccsim.pcstate.timer += regMgrVar(reg_mgr,ITER_PERIOD);
+            ccsim.pcstate.timer += regMgrVar(REG_mgr,ITER_PERIOD);
 
             if(ccpars_pc.state == PC_OFF || ccsim.pcstate.timer > 1.5)
             {
@@ -86,7 +86,7 @@ void ccSimPolSwitch(void)
 
             ccsim.polswitch.timer = 0.0;
 
-            if(regMgrVar(reg_mgr,REG_MODE) == REG_NONE &&
+            if(regMgrVar(REG_mgr,REG_MODE) == REG_NONE &&
                ccpars_polswitch.timeout > 0.0)
             {
                 switch(ccpars_polswitch.command)
@@ -111,7 +111,7 @@ void ccSimPolSwitch(void)
             {
                 ccpars_state.polswitch = POLSWITCH_NONE;
             }
-            else if(regMgrVar(reg_mgr,REG_MODE) == REG_NONE &&
+            else if(regMgrVar(REG_mgr,REG_MODE) == REG_NONE &&
               (ccpars_polswitch.command == POLSWITCH_CMD_NEGATIVE || ccsim.polswitch.target_state == POLSWITCH_NEGATIVE))
             {
                 ccsim.polswitch.target_state = POLSWITCH_NEGATIVE;
@@ -125,7 +125,7 @@ void ccSimPolSwitch(void)
             {
                 ccpars_state.polswitch = POLSWITCH_NONE;
             }
-            else if(regMgrVar(reg_mgr,REG_MODE) == REG_NONE &&
+            else if(regMgrVar(REG_mgr,REG_MODE) == REG_NONE &&
               (ccpars_polswitch.command == POLSWITCH_CMD_POSITIVE || ccsim.polswitch.target_state == POLSWITCH_POSITIVE))
             {
                 ccsim.polswitch.target_state = POLSWITCH_POSITIVE;
@@ -135,7 +135,7 @@ void ccSimPolSwitch(void)
 
         case POLSWITCH_MOVING:
 
-            ccsim.polswitch.timer += regMgrVar(reg_mgr,ITER_PERIOD);
+            ccsim.polswitch.timer += regMgrVar(REG_mgr,ITER_PERIOD);
 
             if(ccsim.polswitch.timer > ccpars_polswitch.timeout)
             {
@@ -154,7 +154,7 @@ void ccSimPolSwitch(void)
 
             // Simulate pol switch fault being active for 5s to make it visible when the converter is off
 
-            ccsim.polswitch.timer += regMgrVar(reg_mgr,ITER_PERIOD);
+            ccsim.polswitch.timer += regMgrVar(REG_mgr,ITER_PERIOD);
 
             if(ccsim.polswitch.timer > 5.0)
             {

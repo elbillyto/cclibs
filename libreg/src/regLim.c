@@ -32,7 +32,7 @@
 
 // Background functions - do not call these from the real-time thread or interrupt
 
-void regLimMeasInit(struct reg_lim_meas *lim_meas, float pos_lim, float neg_lim, float low_lim, float zero_lim)
+void regLimMeasInit(struct REG_lim_meas *lim_meas, REG_float pos_lim, REG_float neg_lim, REG_float low_lim, REG_float zero_lim)
 {
     lim_meas->pos_trip        = pos_lim  * (1.0 + REG_LIM_TRIP);
     lim_meas->neg_trip        = neg_lim  * (1.0 + REG_LIM_TRIP);
@@ -48,7 +48,7 @@ void regLimMeasInit(struct reg_lim_meas *lim_meas, float pos_lim, float neg_lim,
 
 
 
-void regLimRmsInit(struct reg_lim_rms *lim_rms, float rms_warning, float rms_fault, float rms_tc, float iter_period)
+void regLimRmsInit(struct REG_lim_rms *lim_rms, REG_float rms_warning, REG_float rms_fault, REG_float rms_tc, REG_float iter_period)
 {
     if(rms_tc > 0.0)
     {
@@ -68,8 +68,8 @@ void regLimRmsInit(struct reg_lim_rms *lim_rms, float rms_warning, float rms_fau
 
 
 
-void regLimRefInit(struct reg_lim_ref *lim_ref, float pos_lim, float min_lim, float neg_lim,
-                  float rate_lim, float acceleration_lim, float closeloop)
+void regLimRefInit(struct REG_lim_ref *lim_ref, REG_float pos_lim, REG_float min_lim, REG_float neg_lim,
+                  REG_float rate_lim, REG_float acceleration_lim, REG_float closeloop)
 {
     // Keep raw limits as they are used by libcc
 
@@ -102,10 +102,10 @@ void regLimRefInit(struct reg_lim_ref *lim_ref, float pos_lim, float min_lim, fl
 
 
 
-void regLimVrefInit(struct reg_lim_ref *lim_v_ref, float pos_lim, float neg_lim, float rate_lim,
-                    float acceleration_lim, float i_quadrants41[2], float v_quadrants41[2])
+void regLimVrefInit(struct REG_lim_ref *lim_v_ref, REG_float pos_lim, REG_float neg_lim, REG_float rate_lim,
+                    REG_float acceleration_lim, REG_float i_quadrants41[2], REG_float v_quadrants41[2])
 {
-    float delta_i_quadrants41;
+    REG_float delta_i_quadrants41;
 
     // Keep pos limit as it is used by libcc for pre-function ramps
 
@@ -159,9 +159,9 @@ void regLimVrefInit(struct reg_lim_ref *lim_v_ref, float pos_lim, float neg_lim,
 
 // Real-Time Functions
 
-void regLimMeasRT(struct reg_lim_meas *lim_meas, float meas)
+void regLimMeasRT(struct REG_lim_meas *lim_meas, REG_float meas)
 {
-    float abs_meas = fabs(meas);
+    REG_float abs_meas = fabs(meas);
 
     // Invert measurement if limits are inverted
 
@@ -224,7 +224,7 @@ void regLimMeasRT(struct reg_lim_meas *lim_meas, float meas)
 
 
 
-void regLimMeasRmsRT(struct reg_lim_rms *lim_rms, float meas)
+void regLimMeasRmsRT(struct REG_lim_rms *lim_rms, REG_float meas)
 {
     if(lim_rms->meas2_filter_factor > 0.0)
     {
@@ -267,9 +267,9 @@ void regLimMeasRmsRT(struct reg_lim_rms *lim_rms, float meas)
 
 
 
-void regLimVrefCalcRT(struct reg_lim_ref *lim_v_ref, float i_meas)
+void regLimVrefCalcRT(struct REG_lim_ref *lim_v_ref, REG_float i_meas)
 {
-    float   v_lim;
+    REG_float   v_lim;
 
     // Invert i_meas when limits are inverted
 
@@ -319,7 +319,7 @@ void regLimVrefCalcRT(struct reg_lim_ref *lim_v_ref, float i_meas)
 
 
 
-float regLimRefRT(struct reg_lim_ref *lim_ref, float period, float ref, float prev_ref)
+REG_float regLimRefRT(struct REG_lim_ref *lim_ref, REG_float period, REG_float ref, REG_float prev_ref)
 /*! 
  * <h3>Implementation Notes</h3>
  *
@@ -337,8 +337,8 @@ float regLimRefRT(struct reg_lim_ref *lim_ref, float period, float ref, float pr
  * but it will prevent the false positive in the rare cases mentioned above.
  */
 {
-    float   delta_ref;
-    float   rate_lim_ref;
+    REG_float   delta_ref;
+    REG_float   rate_lim_ref;
     bool    rate_lim_flag = false;
 
     // Clip reference to absolute limits taking into account the invert flag

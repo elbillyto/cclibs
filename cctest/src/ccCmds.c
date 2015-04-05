@@ -111,6 +111,7 @@ uint32_t ccCmdsCd(uint32_t cmd_idx, char *remaining_line)
         if(wd == NULL)
         {
             ccParsPrintError("getting current directory : %s (%d)", strerror(errno), errno);
+            fclose(f);
             return(EXIT_FAILURE);
         }
 
@@ -189,7 +190,6 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char *remaining_line)
 {
     uint32_t       exit_status = EXIT_SUCCESS;
     char           line[CC_MAX_FILE_LINE_LEN];
-    char           input_ch;
     FILE          *f;
     char          *arg;
     static char *  default_file_name = "cctest";
@@ -268,6 +268,8 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char *remaining_line)
 
     while(fgets(line, CC_MAX_FILE_LINE_LEN, f) != NULL)
     {
+        int input_ch;
+
         // Check if line was too long (2 chars are needed for newline and terminating nul)
 
         if(strlen(line) >= (CC_MAX_FILE_LINE_LEN-1) && line[CC_MAX_FILE_LINE_LEN-2] != '\n')
@@ -552,7 +554,7 @@ uint32_t ccCmdsPar(uint32_t cmd_idx, char *remaining_line)
     }
     else // else parameter name argument provided
     {
-        struct ccpars *par_matched;
+        struct CCpars *par_matched;
 
         if(ccParseParName(cmd_idx, &remaining_line, &par_matched) == EXIT_FAILURE)
         {

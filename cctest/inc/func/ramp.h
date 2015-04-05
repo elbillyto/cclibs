@@ -26,7 +26,6 @@
 
 #include "ccTest.h"
 #include "ccPars.h"
-#include "libfg/ramp.h"
 
 // GLOBALS is defined in source file where global variables should be defined
 
@@ -36,16 +35,13 @@
 #define CCPARS_RAMP_EXT extern
 #endif
 
-// Libfg RAMP parameter structures
-
-CCPARS_RAMP_EXT struct fg_ramp fg_ramp[CC_NUM_CYC_SELS];
-
 // RAMP data structure
 
 struct ccpars_ramp
 {
     // cctest RAMP parameters
 
+    float                       start_time;                     // Start time
     float                       initial_ref;                    // Initial reference
     float                       final_ref;                      // Final reference
     float                       acceleration;                   // Acceleration of the 1st parabolic segment. Absolute value is used.
@@ -56,7 +52,8 @@ struct ccpars_ramp
 CCPARS_RAMP_EXT struct ccpars_ramp ccpars_ramp[CC_NUM_CYC_SELS]
 #ifdef GLOBALS
 = {// Default value             Parameter
-    {   0.0,                 // RAMP INITIAL_REF
+    {   0.0,                 // RAMP START_TIME
+        0.0,                 // RAMP INITIAL_REF
         1.0,                 // RAMP FINAL_REF
         4.0,                 // RAMP ACCELERATION
         1.0,                 // RAMP LINEAR_RATE
@@ -67,9 +64,10 @@ CCPARS_RAMP_EXT struct ccpars_ramp ccpars_ramp[CC_NUM_CYC_SELS]
 
 // RAMP data description structure
 
-CCPARS_RAMP_EXT struct ccpars   ramp_pars[]
+CCPARS_RAMP_EXT struct CCpars   ramp_pars[]
 #ifdef GLOBALS
 = {// "Signal name"   type,     max_n_els,*enum,        *value,                   num_defaults      cyc_sel_step     flags
+    { "START_TIME",   PAR_FLOAT,    1,     NULL, { .f = &ccpars_ramp[0].start_time   }, 1, sizeof(struct ccpars_ramp), 0 },
     { "INITIAL_REF",  PAR_FLOAT,    1,     NULL, { .f = &ccpars_ramp[0].initial_ref  }, 1, sizeof(struct ccpars_ramp), 0 },
     { "FINAL_REF",    PAR_FLOAT,    1,     NULL, { .f = &ccpars_ramp[0].final_ref    }, 1, sizeof(struct ccpars_ramp), 0 },
     { "ACCELERATION", PAR_FLOAT,    1,     NULL, { .f = &ccpars_ramp[0].acceleration }, 1, sizeof(struct ccpars_ramp), 0 },

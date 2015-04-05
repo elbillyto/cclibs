@@ -26,13 +26,13 @@
  */
 
 #include <math.h>
-#include "libreg/err.h"
+#include "libreg.h"
 
 
 
 // Background functions - do not call these from the real-time thread or interrupt
 
-void regErrInitLimits(struct reg_err *err, float warning_threshold, float fault_threshold)
+void regErrInitLimits(struct REG_err *err, REG_float warning_threshold, REG_float fault_threshold)
 {
     // Set the new fault and warning limits
 
@@ -58,7 +58,7 @@ void regErrInitLimits(struct reg_err *err, float warning_threshold, float fault_
 
 // Real-Time Functions
 
-void regErrResetLimitsVarsRT(struct reg_err *err)
+void regErrResetLimitsVarsRT(struct REG_err *err)
 {
     err->err            = 0.0;
     err->max_abs_err    = 0.0;
@@ -77,9 +77,9 @@ void regErrResetLimitsVarsRT(struct reg_err *err)
  * @param[in,out] err_limit    Pointer to regulation error limit threshold and flags structure
  * @param[in]     abs_err      Absolute error
  */
-static void regErrLimitRT(struct reg_err_limit *err_limit, float abs_err)
+static void regErrLimitRT(struct REG_err_limit *err_limit, REG_float abs_err)
 {
-    float threshold = err_limit->threshold;
+    REG_float threshold = err_limit->threshold;
 
     // Apply hysteresis to the limit by dividing by 2 when the flag is set
 
@@ -104,9 +104,9 @@ static void regErrLimitRT(struct reg_err_limit *err_limit, float abs_err)
 
 
 
-void regErrCheckLimitsRT(struct reg_err *err, bool is_max_abs_err_enabled, float delayed_ref, float meas)
+void regErrCheckLimitsRT(struct REG_err *err, bool is_max_abs_err_enabled, REG_float delayed_ref, REG_float meas)
 {
-    float       abs_error;
+    REG_float       abs_error;
 
     // Store delayed_ref so it can be logged if required
 

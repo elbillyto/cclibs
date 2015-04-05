@@ -63,9 +63,9 @@
 
 void ccInitPars(void)
 {
-    struct ccpars  *par;
+    struct CCpars  *par;
     struct cccmds  *cmd;
-    static struct   reg_meas_signal invalid_meas = { 0.0, false };
+    static struct   REG_meas_signal invalid_meas = { 0.0, false };
 
     // Allocate space for the number of elements arrays for all the parameters
 
@@ -262,36 +262,36 @@ uint32_t ccInitFunction(uint32_t cyc_sel)
 
     // Initialise pointer to function generation limits
 
-    load_select = regMgrVar(reg_mgr, LOAD_SELECT);
+    load_select = regMgrVar(REG_mgr, LOAD_SELECT);
 
     switch(ccpars_ref[cyc_sel].reg_mode)
     {
         case REG_NONE: break;
         case REG_FIELD:
 
-            ccrun.fg_limits.pos          = ccpars_limits.b_pos         [load_select];
-            ccrun.fg_limits.min          = ccpars_limits.b_min         [load_select];
-            ccrun.fg_limits.neg          = ccpars_limits.b_neg         [load_select];
-            ccrun.fg_limits.rate         = ccpars_limits.b_rate        [load_select];
-            ccrun.fg_limits.acceleration = ccpars_limits.b_acceleration[load_select];
+            ccrun.fg_func_limits.pos          = ccpars_limits.b_pos         [load_select];
+            ccrun.fg_func_limits.min          = ccpars_limits.b_min         [load_select];
+            ccrun.fg_func_limits.neg          = ccpars_limits.b_neg         [load_select];
+            ccrun.fg_func_limits.rate         = ccpars_limits.b_rate        [load_select];
+            ccrun.fg_func_limits.acceleration = ccpars_limits.b_acceleration[load_select];
             break;
 
         case REG_CURRENT:
 
-            ccrun.fg_limits.pos          = ccpars_limits.i_pos         [load_select];
-            ccrun.fg_limits.min          = ccpars_limits.i_min         [load_select];
-            ccrun.fg_limits.neg          = ccpars_limits.i_neg         [load_select];
-            ccrun.fg_limits.rate         = ccpars_limits.i_rate        [load_select];
-            ccrun.fg_limits.acceleration = ccpars_limits.i_acceleration[load_select];
+            ccrun.fg_func_limits.pos          = ccpars_limits.i_pos         [load_select];
+            ccrun.fg_func_limits.min          = ccpars_limits.i_min         [load_select];
+            ccrun.fg_func_limits.neg          = ccpars_limits.i_neg         [load_select];
+            ccrun.fg_func_limits.rate         = ccpars_limits.i_rate        [load_select];
+            ccrun.fg_func_limits.acceleration = ccpars_limits.i_acceleration[load_select];
             break;
 
         case REG_VOLTAGE:
 
-            ccrun.fg_limits.pos          = ccpars_limits.v_pos         [load_select];
-            ccrun.fg_limits.min          = 0.0;
-            ccrun.fg_limits.neg          = ccpars_limits.v_neg         [load_select];
-            ccrun.fg_limits.rate         = ccpars_limits.v_rate;
-            ccrun.fg_limits.acceleration = ccpars_limits.v_acceleration;
+            ccrun.fg_func_limits.pos          = ccpars_limits.v_pos         [load_select];
+            ccrun.fg_func_limits.min          = 0.0;
+            ccrun.fg_func_limits.neg          = ccpars_limits.v_neg         [load_select];
+            ccrun.fg_func_limits.rate         = ccpars_limits.v_rate;
+            ccrun.fg_func_limits.acceleration = ccpars_limits.v_acceleration;
             break;
     }
 
@@ -302,7 +302,7 @@ uint32_t ccInitFunction(uint32_t cyc_sel)
         ccParsPrintError("failed to initialise %s(%u) : %s",
                 ccParsEnumString(enum_function_type, ccpars_ref[cyc_sel].function),
                 cyc_sel,
-                ccParsEnumString(enum_fg_error, ccpars_ref[cyc_sel].fg_meta.fg_error));
+                ccParsEnumString(enum_fg_error, ccpars_ref[cyc_sel].fg_meta.fg_errno));
 
         return(EXIT_FAILURE);
     }

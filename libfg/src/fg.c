@@ -29,72 +29,95 @@
 
 
 
-struct fg_meta * fgResetMeta(struct fg_meta *meta, struct fg_meta *local_meta, double delay, float initial_ref)
+struct FG_error *fgResetMeta(FG_float         initial_ref,
+                             struct FG_meta  *meta,
+                             struct FG_error *local_error,
+                             struct FG_error *error)
 {
-    uint32_t idx;
+    // Reset all field in meta structure
 
-    // If user supplied meta pointer is NULL then use local_meta from libreg Init function
+    meta->polarity            = FG_FUNC_POL_ZERO;
+    meta->limits_inverted     = false;
 
-    if(meta == NULL)
+    meta->time.start          = 0.0;
+    meta->time.end            = 0.0;
+    meta->time.duration       = 0.0;
+
+    meta->range.initial_ref   = initial_ref;
+    meta->range.final_ref     = initial_ref;
+    meta->range.min_ref       = initial_ref;
+    meta->range.max_ref       = initial_ref;
+    meta->range.final_rate    = 0.0;
+
+    meta->limits.min          = 0.0;
+    meta->limits.max          = 0.0;
+    meta->limits.rate         = 0.0;
+    meta->limits.acceleration = 0.0;
+
+    // Use local_error if error is NULL
+
+    if(error == NULL)
     {
-        meta = local_meta;
+        error = local_error;
     }
 
-    // Reset all field in meta structure if pointer is valid
+    // Reset all field in error structure if error pointer is valid
 
-    if(meta != NULL)
+    if(error != NULL)
     {
+        uint32_t idx;
+
+        error->index    = 0;
+        error->fg_errno = FG_OK;
+
         // Explicitly set floats to zero because early TI DSPs do not use IEEE758
         // floating point format. For example, for the TMS320C32, 0.0 is 0x80000000 
         // while 0x00000000 has the value 1.0.
 
         for(idx = 0 ; idx < FG_ERR_DATA_LEN ; idx++)
         {
-            meta->error.data[idx] = 0.0;
+            error->data[idx] = 0.0;
         }
-
-        meta->error.index      = 0;
-        meta->polarity         = FG_FUNC_POL_ZERO;
-        meta->limits_inverted  = false;
-        meta->delay            = delay;
-        meta->duration         = 0.0;
-        meta->range.end        = 0.0;
-        meta->range.start      = initial_ref;
-        meta->range.min        = initial_ref;
-        meta->range.max        = initial_ref;
-        meta->range.final_rate = 0.0;
     }
 
-    return(meta);
+    return(error);
 }
 
 
 
-void fgSetMinMax(struct fg_meta *meta, float ref)
+void fgSetMinMax(FG_float ref, struct FG_meta *meta)
 {
-    if(ref > meta->range.max)
+    if(ref > meta->range.max_ref)
     {
-        meta->range.max = ref;
-
+        meta->range.max_ref = ref;
     }
-    else if(ref < meta->range.min)
+    else if(ref < meta->range.min_ref)
     {
-        meta->range.min = ref;
+        meta->range.min_ref = ref;
     }
 }
 
 
 
-void fgSetFuncPolarity(struct fg_meta *meta,
-                       bool   pol_switch_auto,
-                       bool   pol_switch_neg)
+void fgSetMeta(bool              pol_switch_auto,
+               bool              pol_switch_neg,
+               FG_float          end_time,
+               struct FG_limits *limits,
+               struct FG_meta   *meta)
 {
-    if(meta->range.max > 0.0)
+    // Calculate function duration from start and end times
+
+    meta->time.end      = end_time;
+    meta->time.duration = end_time - meta->time.start;
+
+    // Set meta polarity flag
+
+    if(meta->range.max_ref > 0.0)
     {
         meta->polarity |= FG_FUNC_POL_POSITIVE;
     }
 
-    if(meta->range.min < 0.0)
+    if(meta->range.min_ref < 0.0)
     {
         meta->polarity |= FG_FUNC_POL_NEGATIVE;
     }
@@ -103,74 +126,69 @@ void fgSetFuncPolarity(struct fg_meta *meta,
 
     meta->limits_inverted = (pol_switch_auto == false && pol_switch_neg == true) ||
                             (pol_switch_auto == true  && meta->polarity == FG_FUNC_POL_NEGATIVE);
+
+    // Initialise limits if provided, adjusting by a small clip limit factor to avoid rounding errors
+
+    if(limits != NULL)
+    {
+        // Set min/max limits based on limits inversion control
+
+        if(meta->limits_inverted)
+        {
+            // Invert limits - only ever required for unipolar converters so limits->neg will be zero
+
+            meta->limits.max = -(1.0 - FG_CLIP_LIMIT_FACTOR) * limits->min;
+            meta->limits.min = -(1.0 + FG_CLIP_LIMIT_FACTOR) * limits->pos;
+        }
+        else // Limits do not need to be inverted
+        {
+            meta->limits.max = (1.0 + FG_CLIP_LIMIT_FACTOR) * limits->pos;
+            meta->limits.min = (limits->neg < 0.0 ? (1.0 + FG_CLIP_LIMIT_FACTOR) * limits->neg :
+                                                    (1.0 - FG_CLIP_LIMIT_FACTOR) * limits->min);
+        }
+
+        // Set rate/acceleration limits
+
+        meta->limits.rate         = (1.0 + FG_CLIP_LIMIT_FACTOR) * limits->rate;
+        meta->limits.acceleration = (1.0 + FG_CLIP_LIMIT_FACTOR) * limits->acceleration;
+    }
 }
 
 
 
-enum fg_error fgCheckRef(struct fg_limits *limits, 
-                         float  ref, 
-                         float  rate, 
-                         float  acceleration, 
-                         struct fg_meta *meta)
+enum FG_errno fgCheckRef(FG_float         ref,
+                         FG_float         rate,
+                         FG_float         acceleration,
+                         struct FG_meta  *meta,
+                         struct FG_error *error)
 {
-    float    max;
-    float    min;
-    float    limit;
+    // Check reference against min/max limits
 
-    // Do nothing if limits are NULL
-
-    if(limits == NULL)
+    if(ref > meta->limits.max || ref < meta->limits.min)
     {
-        return(FG_OK);
-    }
-
-    // Invert limits if necessary
-
-    if(meta->limits_inverted)
-    {
-        // Invert limits - only ever required for unipolar converters so limits->neg will be zero
-
-        max = -(1.0 - FG_CLIP_LIMIT_FACTOR) * limits->min;
-        min = -(1.0 + FG_CLIP_LIMIT_FACTOR) * limits->pos;
-    }
-    else // Limits do not need to be inverted
-    {
-        max = (1.0 + FG_CLIP_LIMIT_FACTOR) * limits->pos;
-        min = (limits->neg < 0.0 ? (1.0 + FG_CLIP_LIMIT_FACTOR) * limits->neg :
-                                   (1.0 - FG_CLIP_LIMIT_FACTOR) * limits->min);
-    }
-
-    // Check reference level
-
-    if(ref > max || ref < min)
-    {
-        meta->error.data[0] = ref;
-        meta->error.data[1] = min;
-        meta->error.data[2] = max;
+        error->data[0] = ref;
+        error->data[1] = meta->limits.min;
+        error->data[2] = meta->limits.max;
 
         return(FG_OUT_OF_LIMITS);
     }
 
-    // Check rate of change if limit is positive
+    // Check rate of change of reference if limit is positive
 
-    if(limits->rate >  0.0 &&
-       fabs(rate)   > (limit = ((1.0 + FG_CLIP_LIMIT_FACTOR) * limits->rate)))
+    if(meta->limits.rate > 0.0 && fabs(rate) > meta->limits.rate)
     {
-        meta->error.data[0] = rate;
-        meta->error.data[1] = limit;
-        meta->error.data[2] = limits->rate;
+        error->data[0] = rate;
+        error->data[1] = meta->limits.rate;
 
         return(FG_OUT_OF_RATE_LIMITS);
     }
 
-    // Check acceleration
+    // Check acceleration if limit is positive
 
-    if(limits->acceleration >  0.0 &&
-       fabs(acceleration)   > (limit = ((1.0 + FG_CLIP_LIMIT_FACTOR) * limits->acceleration)))
+    if(meta->limits.acceleration > 0.0 && fabs(acceleration) > meta->limits.acceleration)
     {
-        meta->error.data[0] = acceleration;
-        meta->error.data[1] = limit;
-        meta->error.data[2] = limits->acceleration;
+        error->data[0] = acceleration;
+        error->data[1] = meta->limits.acceleration;
 
         return(FG_OUT_OF_ACCELERATION_LIMITS);
     }

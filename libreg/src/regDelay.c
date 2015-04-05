@@ -26,13 +26,13 @@
  */
 
 #include <math.h>
-#include "libreg/delay.h"
+#include "libreg.h"
 
 // Background functions: do not call these from the real-time thread or interrupt
 
-void regDelayInitDelay(struct reg_delay *delay, float delay_iters)
+void regDelayInitDelay(struct REG_delay *delay, REG_float delay_iters)
 {
-    float delay_int;
+    REG_float delay_int;
 
     // Clip delay
 
@@ -53,7 +53,7 @@ void regDelayInitDelay(struct reg_delay *delay, float delay_iters)
 
 
 
-void regDelayInitVars(struct reg_delay *delay, float initial_signal)
+void regDelayInitVars(struct REG_delay *delay, REG_float initial_signal)
 {
     uint32_t    i;
 
@@ -67,10 +67,10 @@ void regDelayInitVars(struct reg_delay *delay, float initial_signal)
 
 // Real-Time Functions
 
-float regDelaySignalRT(struct reg_delay *delay, float signal, uint32_t under_sampled_flag)
+REG_float regDelaySignalRT(struct REG_delay *delay, REG_float signal, uint32_t under_sampled_flag)
 {
-    float s0;
-    float s1;
+    REG_float s0;
+    REG_float s1;
 
     delay->buf[++delay->buf_index & REG_DELAY_BUF_INDEX_MASK] = signal;
 

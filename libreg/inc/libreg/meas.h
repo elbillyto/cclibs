@@ -44,31 +44,18 @@
 
 #define REG_MEAS_RATE_BUF_MASK      3                            //!< Rate will use linear regression through 4 points
 
-// Enum constants
-
-/*!
- * Parameter value to select field measurement for regulation
- */
-enum reg_meas_select
-{
-    REG_MEAS_UNFILTERED,                                         //!< Use hardware delay only
-    REG_MEAS_FILTERED,                                           //!< Include FIR filter delay
-    REG_MEAS_EXTRAPOLATED,                                       //!< Extrapolate delay
-    REG_MEAS_NUM_SIGNALS                                         //!< Number of options in reg_meas_select
-};
-
 // Measurement structures
 
-struct reg_meas_signal
+struct REG_meas_signal
 {
-    float                 signal;                                //!< Measurement signal
+    REG_float             signal;                                //!< Measurement signal
     bool                  is_valid;                              //!< Measurement signal is valid flag
 };
 
 /*!
  * Measurement filter parameters and variables
  */
-struct reg_meas_filter
+struct REG_meas_filter
 {
     bool                  is_running;                            //!< Filter is running control flag
     int32_t               buf_len;                               //!< Total length of buffer in elements
@@ -81,40 +68,41 @@ struct reg_meas_filter
     int32_t               fir_accumulator[2];                    //!< FIR filter accumulator for two cascaded stages
 
     int32_t              *fir_buf[2];                            //!< Pointers to buffers for two cascaded FIR stages
-    float                *extrapolation_buf;                     //!< Pointer to buffer for extrapolation stage
+    REG_float            *extrapolation_buf;                     //!< Pointer to buffer for extrapolation stage
 
-    float                 max_meas_value;                        //!< Maximum value that can be filtered
-    float                 float_to_integer;                      //!< Factor to convert unfiltered measurement to integer
-    float                 integer_to_float;                      //!< Factor to converter integer to filtered measurement
-    float                 extrapolation_factor;                  //!< Extrapolation factor
+    REG_float             max_meas_value;                        //!< Maximum value that can be filtered
+    REG_float             float_to_integer;                      //!< Factor to convert unfiltered measurement to integer
+    REG_float             integer_to_float;                      //!< Factor to converter integer to filtered measurement
+    REG_float             extrapolation_factor;                  //!< Extrapolation factor
 
-    enum reg_meas_select  reg_select;                            //!< Regulation measurement selector
-    float                 delay_iters[REG_MEAS_NUM_SIGNALS];     //!< Delay for each signal in iterations. See also #REG_MEAS_NUM_SIGNALS
-    float                 signal[REG_MEAS_NUM_SIGNALS];          //!< Array of measurement with different filtering. See also #REG_MEAS_NUM_SIGNALS
-    float                 reg;                                   //!< Measurement used for regulation (selected by reg_select)
+    enum REG_meas_select  reg_select;                            //!< Regulation measurement selector
+    REG_float             delay_iters[REG_MEAS_NUM_SIGNALS];     //!< Delay for each signal in iterations. See also #REG_MEAS_NUM_SIGNALS
+    REG_float             signal[REG_MEAS_NUM_SIGNALS];          //!< Array of measurement with different filtering. See also #REG_MEAS_NUM_SIGNALS
+    REG_float             reg;                                   //!< Measurement used for regulation (selected by reg_select)
 };
 
 /*!
  * Measurement rate estimate structure
  */
-struct reg_meas_rate
+struct REG_meas_rate
 {
     uint32_t              iter_counter;                          //!< Iteration counter
     uint32_t              history_index;                         //!< Index of most recent sample in history buffer
-    float                 history_buf[REG_MEAS_RATE_BUF_MASK+1]; //!< History buffer. See also #REG_MEAS_RATE_BUF_MASK
-    float                 estimate;                              //!< Estimated rate using linear regression through 4 samples
+    REG_float             history_buf[REG_MEAS_RATE_BUF_MASK+1]; //!< History buffer. See also #REG_MEAS_RATE_BUF_MASK
+    REG_float             estimate;                              //!< Estimated rate using linear regression through 4 samples
 };
 
 /*!
  * Noise and tone generator structure
  */
-struct reg_noise_and_tone
+struct REG_noise_and_tone
 {
-    uint32_t              iter_counter;                           //!< Iteration counter for simulated tone
-    uint32_t              tone_half_period_iters;                 //!< Tone half period in iterations
-    uint32_t              tone_toggle;                            //!< Tone toggle (0,1,0,1,...)
-    float                 tone_amp;                               //!< Tone amplitude
-    float                 noise_pp;                               //!< Simulated measurement peak-peak noise level
+    int32_t               iter_counter;                           //!< Down counter at iteration rate to generate square tone
+    int32_t               iter_counter_start;                     //!< Iteration counter start value
+    int32_t               iter_counter_end;                       //!< Iteration counter start value
+    REG_float             tone_positive;                          //!< Tone positive offset
+    REG_float             tone_negative;                          //!< Tone negative offset
+    REG_float             noise_pp;                               //!< Simulated measurement peak-peak noise level
 };
 
 #ifdef __cplusplus
@@ -133,7 +121,7 @@ extern "C" {
  * @param[in]     buf                        Pointer to buffer
  * @param[in]     buf_len                    Length of buffer in elements
  */
-void regMeasFilterInitBuffer(struct reg_meas_filter *filter, int32_t *buf, uint32_t buf_len);
+void regMeasFilterInitBuffer(struct REG_meas_filter *filter, int32_t *buf, uint32_t buf_len);
 
 
 
@@ -158,12 +146,14 @@ void regMeasFilterInitBuffer(struct reg_meas_filter *filter, int32_t *buf, uint3
  * @param[in,out] filter                     Measurement filter object to initialise
  * @param[in]     fir_length                 Two-dimensional array containing the lengths of the FIR filter stages
  * @param[in]     extrapolation_len_iters    Extrapolation buffer length (number of iterations). Normally equal to the regulation period.
+ *                                           This can be set to zero if the extrapolated signal is not required. In
+ *                                           this case it will be set to the filtered signal.
  * @param[in]     pos                        Positive limit
  * @param[in]     neg                        Negative limit
  * @param[in]     meas_delay_iters           Delay in "unfiltered" measurement, i.e. the hardware filtering delay
  */
-void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
-                       uint32_t extrapolation_len_iters, float pos, float neg, float meas_delay_iters);
+void regMeasFilterInit(struct REG_meas_filter *filter, uint32_t fir_length[2],
+                       uint32_t extrapolation_len_iters, REG_float pos, REG_float neg, REG_float meas_delay_iters);
 
 
 
@@ -174,11 +164,11 @@ void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
  *
  * @param[out]    noise_and_tone             Noise and tone object to update
  * @param[in]     noise_pp                   Simulated measurement peak-peak noise level
- * @param[in]     tone_amp                   Tone amplitude
- * @param[in]     tone_half_period_iters     Tone half period (in iterations)
+ * @param[in]     tone_pp                    Tone peak-peak amplitude
+ * @param[in]     tone_period_iters          Tone period (in iterations)
  */
-void regMeasSetNoiseAndTone(struct reg_noise_and_tone *noise_and_tone, float noise_pp,
-                            float tone_amp, uint32_t tone_half_period_iters);
+void regMeasSetNoiseAndTone(struct REG_noise_and_tone *noise_and_tone, REG_float noise_pp,
+                            REG_float tone_pp, uint32_t tone_period_iters);
 
 
 
@@ -191,7 +181,7 @@ void regMeasSetNoiseAndTone(struct reg_noise_and_tone *noise_and_tone, float noi
  *
  * @param[in,out] filter                     Measurement filter object to update
  */
-void regMeasFilterRT(struct reg_meas_filter *filter);
+void regMeasFilterRT(struct REG_meas_filter *filter);
 
 
 
@@ -203,7 +193,7 @@ void regMeasFilterRT(struct reg_meas_filter *filter);
  * @param[in] noise_pp                      Peak-peak amplitude of noise
  * @returns Pseudo white noise with peak-peak amplitude given by noise_pp, centred on zero
  */
-float regMeasWhiteNoiseRT(float noise_pp);
+REG_float regMeasWhiteNoiseRT(REG_float noise_pp);
 
 
 
@@ -217,7 +207,7 @@ float regMeasWhiteNoiseRT(float noise_pp);
  * @param[in] noise_and_tone                Pointer to noise and tone structure
  * @returns Sum of noise and tone values
  */
-float regMeasNoiseAndToneRT(struct reg_noise_and_tone *noise_and_tone);
+REG_float regMeasNoiseAndToneRT(struct REG_noise_and_tone *noise_and_tone);
 
 
 
@@ -251,7 +241,7 @@ float regMeasNoiseAndToneRT(struct reg_noise_and_tone *noise_and_tone);
  * @param[in]     period                     Regulation period 
  * @param[in]     period_iters               Regulation period in iterations
  */
-void regMeasRateRT(struct reg_meas_rate *meas_rate, float filtered_meas, float period, int32_t period_iters);
+void regMeasRateRT(struct REG_meas_rate *meas_rate, REG_float filtered_meas, REG_float period, int32_t period_iters);
 
 #ifdef __cplusplus
 }

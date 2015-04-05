@@ -41,19 +41,19 @@
 
 // Default parameters structure
 
-struct ccpars_default_pars
+struct CCpars_default_pars
 {
     float                       acceleration;         // Default acceleration
     float                       deceleration;         // Default deceleration
     float                       linear_rate ;         // Default linear_rate
 };
 
-struct ccpars_default
+struct CCpars_default
 {
-    struct ccpars_default_pars  pars[REG_NONE];       // Default parameters for REG_VOLTAGE, REG_CURRENT, REG_FIELD
+    struct CCpars_default_pars  pars[REG_NONE];       // Default parameters for REG_VOLTAGE, REG_CURRENT, REG_FIELD
 };
 
-CCPARS_DEFAULT_EXT struct ccpars_default ccpars_default
+CCPARS_DEFAULT_EXT struct CCpars_default ccpars_default
 #ifdef GLOBALS
 = {// Default value       Parameter
     {
@@ -79,18 +79,18 @@ CCPARS_DEFAULT_EXT struct ccpars_default ccpars_default
 
 // Default parameters description structure
 
-CCPARS_DEFAULT_EXT struct ccpars default_pars[]
+CCPARS_DEFAULT_EXT struct CCpars default_pars[]
 #ifdef GLOBALS
 = {// "Signal name"       type,  max_n_els, *enum,        *value,                                  num_defaults,cyc_sel_step,flags
-    { "V_ACCELERATION",   PAR_FLOAT, 1,      NULL, { .f = &ccpars_default.pars[REG_VOLTAGE].acceleration   }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
-    { "V_DECELERATION",   PAR_FLOAT, 1,      NULL, { .f = &ccpars_default.pars[REG_VOLTAGE].deceleration   }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
-    { "V_LINEAR_RATE",    PAR_FLOAT, 1,      NULL, { .f = &ccpars_default.pars[REG_VOLTAGE].linear_rate    }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
-    { "I_ACCELERATION",   PAR_FLOAT, 1,      NULL, { .f = &ccpars_default.pars[REG_CURRENT].acceleration   }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
-    { "I_DECELERATION",   PAR_FLOAT, 1,      NULL, { .f = &ccpars_default.pars[REG_CURRENT].deceleration   }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
-    { "I_LINEAR_RATE",    PAR_FLOAT, 1,      NULL, { .f = &ccpars_default.pars[REG_CURRENT].linear_rate    }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
-    { "B_ACCELERATION",   PAR_FLOAT, 1,      NULL, { .f = &ccpars_default.pars[REG_FIELD].acceleration     }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
-    { "B_DECELERATION",   PAR_FLOAT, 1,      NULL, { .f = &ccpars_default.pars[REG_FIELD].deceleration     }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
-    { "B_LINEAR_RATE",    PAR_FLOAT, 1,      NULL, { .f = &ccpars_default.pars[REG_FIELD].linear_rate      }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
+    { "V_ACCELERATION",   PAR_FLOAT, 1,      NULL, { .f = &CCpars_default.pars[REG_VOLTAGE].acceleration   }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
+    { "V_DECELERATION",   PAR_FLOAT, 1,      NULL, { .f = &CCpars_default.pars[REG_VOLTAGE].deceleration   }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
+    { "V_LINEAR_RATE",    PAR_FLOAT, 1,      NULL, { .f = &CCpars_default.pars[REG_VOLTAGE].linear_rate    }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
+    { "I_ACCELERATION",   PAR_FLOAT, 1,      NULL, { .f = &CCpars_default.pars[REG_CURRENT].acceleration   }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
+    { "I_DECELERATION",   PAR_FLOAT, 1,      NULL, { .f = &CCpars_default.pars[REG_CURRENT].deceleration   }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
+    { "I_LINEAR_RATE",    PAR_FLOAT, 1,      NULL, { .f = &CCpars_default.pars[REG_CURRENT].linear_rate    }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
+    { "B_ACCELERATION",   PAR_FLOAT, 1,      NULL, { .f = &CCpars_default.pars[REG_FIELD].acceleration     }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
+    { "B_DECELERATION",   PAR_FLOAT, 1,      NULL, { .f = &CCpars_default.pars[REG_FIELD].deceleration     }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
+    { "B_LINEAR_RATE",    PAR_FLOAT, 1,      NULL, { .f = &CCpars_default.pars[REG_FIELD].linear_rate      }, 1,      0,     PARS_RW|PARS_REG|PARS_CFG },
     { NULL }
 }
 #endif

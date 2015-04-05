@@ -34,9 +34,9 @@ LIMITS V_ERR_FAULT          0.0
 LIMITS V_QUADRANTS41        0.0,0.0
 
 PC ACT_DELAY_ITERS          5.0
-PC BANDWIDTH                1000.0
-PC TAU_ZERO                 0.0
-PC Z                        0.9
+PC SIM_BANDWIDTH            1000.0
+PC SIM_TAU_ZERO             0.0
+PC SIM_Z                    0.9
 
 LOAD OHMS_SER               0.0
 LOAD OHMS_PAR               1.0E8
@@ -57,8 +57,8 @@ MEAS I_FIR_LENGTHS          10,7
 MEAS B_SIM_NOISE_PP         0.2
 MEAS I_SIM_NOISE_PP         0.0006
 MEAS V_SIM_NOISE_PP         0.00
-MEAS TONE_HALF_PERIOD_ITERS 100
-MEAS I_SIM_TONE_AMP         0.000
+MEAS SIM_TONE_PERIOD_ITERS  200
+MEAS I_SIM_TONE_PP          0.000
 
 IREG PERIOD_ITERS           1000
 IREG AUXPOLE1_HZ            2

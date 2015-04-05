@@ -41,7 +41,7 @@
 
 // Limit parameters structure
 
-struct ccpars_limits
+struct CCpars_limits
 {
     float   b_pos              [REG_NUM_LOADS];    // Field positive trip limit
     float   b_min              [REG_NUM_LOADS];    // Field minimum regulation limit
@@ -83,7 +83,7 @@ struct ccpars_limits
     float   v_quadrants41      [2];                // Voltage exclusion zone limits for quadrants 4 and 1
 };
 
-CCPARS_LIMITS_EXT struct ccpars_limits ccpars_limits
+CCPARS_LIMITS_EXT struct CCpars_limits ccpars_limits
 #ifdef GLOBALS
 = {// Default values                          Parameter
     {   10.0,   10.0,   10.0,   10.0 },  // LIMITS B_POS
@@ -126,43 +126,43 @@ CCPARS_LIMITS_EXT struct ccpars_limits ccpars_limits
 
 // Global parameters description structure
 
-CCPARS_LIMITS_EXT struct ccpars limits_pars[]
+CCPARS_LIMITS_EXT struct CCpars limits_pars[]
 #ifdef GLOBALS
 = {// "Signal name"         type,      max_n_els,  *enum,               *value,                             num_defaults,cyc_sel_step,flags
-    { "B_POS",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_pos              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "B_MIN",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_min              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "B_NEG",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_neg              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "B_RATE",             PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_rate             }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "B_ACCELERATION",     PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_acceleration     }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "B_CLOSELOOP",        PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_closeloop        }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "B_LOW",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_low              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "B_ZERO",             PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_zero             }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "B_ERR_WARNING",      PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_err_warning      }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "B_ERR_FAULT",        PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_err_fault        }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_POS",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_pos              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_MIN",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_min              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_NEG",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_neg              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_RATE",             PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_rate             }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_ACCELERATION",     PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_acceleration     }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_CLOSELOOP",        PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_closeloop        }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_LOW",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_low              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_ZERO",             PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_zero             }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_ERR_WARNING",      PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_err_warning      }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_ERR_FAULT",        PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_err_fault        }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_QUADRANTS41",      PAR_FLOAT, 2,             NULL,        { .f =  ccpars_limits.i_quadrants41      }, 2,             0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_RMS_TC",           PAR_FLOAT, 1,             NULL,        { .f = &ccpars_limits.i_rms_tc           }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "I_RMS_WARNING",      PAR_FLOAT, 1,             NULL,        { .f = &ccpars_limits.i_rms_warning      }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "I_RMS_FAULT",        PAR_FLOAT, 1,             NULL,        { .f = &ccpars_limits.i_rms_fault        }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "I_RMS_LOAD_TC",      PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_rms_load_tc      }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_RMS_LOAD_WARNING", PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_rms_load_warning }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "I_RMS_LOAD_FAULT",   PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.i_rms_load_fault   }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "V_POS",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.v_pos              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "V_NEG",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.v_neg              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
-    { "V_RATE",             PAR_FLOAT, 1,             NULL,        { .f = &ccpars_limits.v_rate             }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "V_ACCELERATION",     PAR_FLOAT, 1,             NULL,        { .f = &ccpars_limits.v_acceleration     }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "V_ERR_WARNING",      PAR_FLOAT, 1,             NULL,        { .f = &ccpars_limits.v_err_warning      }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "V_ERR_FAULT",        PAR_FLOAT, 1,             NULL,        { .f = &ccpars_limits.v_err_fault        }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
-    { "V_QUADRANTS41",      PAR_FLOAT, 2,             NULL,        { .f =  ccpars_limits.v_quadrants41      }, 2,             0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "B_POS",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.b_pos              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "B_MIN",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.b_min              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "B_NEG",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.b_neg              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "B_RATE",             PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.b_rate             }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "B_ACCELERATION",     PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.b_acceleration     }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "B_CLOSELOOP",        PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.b_closeloop        }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "B_LOW",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.b_low              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "B_ZERO",             PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.b_zero             }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "B_ERR_WARNING",      PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.b_err_warning      }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "B_ERR_FAULT",        PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.b_err_fault        }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_POS",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_pos              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_MIN",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_min              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_NEG",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_neg              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_RATE",             PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_rate             }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_ACCELERATION",     PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_acceleration     }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_CLOSELOOP",        PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_closeloop        }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_LOW",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_low              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_ZERO",             PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_zero             }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_ERR_WARNING",      PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_err_warning      }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_ERR_FAULT",        PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_err_fault        }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_QUADRANTS41",      PAR_FLOAT, 2,             NULL,        { .f =  CCpars_limits.i_quadrants41      }, 2,             0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_RMS_TC",           PAR_FLOAT, 1,             NULL,        { .f = &CCpars_limits.i_rms_tc           }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "I_RMS_WARNING",      PAR_FLOAT, 1,             NULL,        { .f = &CCpars_limits.i_rms_warning      }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "I_RMS_FAULT",        PAR_FLOAT, 1,             NULL,        { .f = &CCpars_limits.i_rms_fault        }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "I_RMS_LOAD_TC",      PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_rms_load_tc      }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_RMS_LOAD_WARNING", PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_rms_load_warning }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "I_RMS_LOAD_FAULT",   PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.i_rms_load_fault   }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "V_POS",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.v_pos              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "V_NEG",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  CCpars_limits.v_neg              }, REG_NUM_LOADS, 0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
+    { "V_RATE",             PAR_FLOAT, 1,             NULL,        { .f = &CCpars_limits.v_rate             }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "V_ACCELERATION",     PAR_FLOAT, 1,             NULL,        { .f = &CCpars_limits.v_acceleration     }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "V_ERR_WARNING",      PAR_FLOAT, 1,             NULL,        { .f = &CCpars_limits.v_err_warning      }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "V_ERR_FAULT",        PAR_FLOAT, 1,             NULL,        { .f = &CCpars_limits.v_err_fault        }, 1,             0, PARS_RW|PARS_REG|PARS_CFG             },
+    { "V_QUADRANTS41",      PAR_FLOAT, 2,             NULL,        { .f =  CCpars_limits.v_quadrants41      }, 2,             0, PARS_RW|PARS_REG|PARS_CFG|PARS_FIXLEN },
     { NULL }
 }
 #endif

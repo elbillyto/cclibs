@@ -31,7 +31,6 @@
 
 #include "ccRt.h"
 #include "ccPars.h"
-#include "libfg/table.h"
 
 // GLOBALS is defined in source file where global variables should be defined
 
@@ -41,17 +40,13 @@
 #define CCPARS_TABLE_EXT extern
 #endif
 
-// Libfg TABLE parameter structures
-
-CCPARS_TABLE_EXT struct fg_table fg_table[CC_NUM_CYC_SELS];
-
 // Table data structure
 
 #define TABLE_LEN       10000
 
 struct ccpars_table
 {
-    // cctest TABLE parameters
+    // ccrt TABLE parameters
 
     float                       ref [TABLE_LEN];                // Reference array
     float                       time[TABLE_LEN];                // Time array
@@ -67,7 +62,7 @@ CCPARS_TABLE_EXT struct ccpars_table ccpars_table[CC_NUM_CYC_SELS]
 ;
 // Table data description structure
 
-CCPARS_TABLE_EXT struct ccpars   table_pars[]
+CCPARS_TABLE_EXT struct CCpars   table_pars[]
 #ifdef GLOBALS
 = {// "Signal name", type,      max_n_els, *enum,       *value,            num_defaults      cyc_sel_step      flags
     { "REF",         PAR_FLOAT, TABLE_LEN,  NULL, { .f = ccpars_table[0].ref  }, 4, sizeof(struct ccpars_table), PARS_RW|PARS_REF },

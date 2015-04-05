@@ -26,13 +26,13 @@
  */
 
 #include <math.h>
-#include "libreg/load.h"
+#include "libreg.h"
 
 
 
 // Background functions - do not call these from the real-time thread or interrupt
 
-void regLoadInit(struct reg_load_pars *load, float ohms_ser, float ohms_par, float ohms_mag, float henrys, float gauss_per_amp)
+void regLoadInit(struct REG_load_pars *load, REG_float ohms_ser, REG_float ohms_par, REG_float ohms_mag, REG_float henrys, REG_float gauss_per_amp)
 {
    // Save the load parameters
 
@@ -91,7 +91,7 @@ void regLoadInit(struct reg_load_pars *load, float ohms_ser, float ohms_par, flo
 
 
 
-void regLoadInitSat(struct reg_load_pars *load, float henrys_sat, float i_sat_start, float i_sat_end)
+void regLoadInitSat(struct REG_load_pars *load, REG_float henrys_sat, REG_float i_sat_start, REG_float i_sat_end)
 {
     if(load->henrys > 0.0 && henrys_sat > 0.0 && henrys_sat < load->henrys &&
        i_sat_end > 0.0 && i_sat_end > i_sat_start)
@@ -117,12 +117,12 @@ void regLoadInitSat(struct reg_load_pars *load, float henrys_sat, float i_sat_st
 
 // Real-Time Functions
 
-float regLoadCurrentToFieldRT(struct reg_load_pars *load, float i_meas)
+REG_float regLoadCurrentToFieldRT(struct REG_load_pars *load, REG_float i_meas)
 {
-    float b_meas;
-    float abs_i_meas;
-    float di_start;
-    float di_end;
+    REG_float b_meas;
+    REG_float abs_i_meas;
+    REG_float di_start;
+    REG_float di_end;
 
     // Field follows a linear - parabola - linear relationship with current due to magnet saturation
 
@@ -154,15 +154,15 @@ float regLoadCurrentToFieldRT(struct reg_load_pars *load, float i_meas)
 
 
 
-float regLoadFieldToCurrentRT(struct reg_load_pars *load, float b_meas)
+REG_float regLoadFieldToCurrentRT(struct REG_load_pars *load, REG_float b_meas)
 {
-    float i_meas;
-    float abs_b_meas;
-    float b_sat_start;
-    float db_end;
-    float quad_a;
-    float quad_b;
-    float quad_c;
+    REG_float i_meas;
+    REG_float abs_b_meas;
+    REG_float b_sat_start;
+    REG_float db_end;
+    REG_float quad_a;
+    REG_float quad_b;
+    REG_float quad_c;
 
     // Field follows a linear - parabola - linear relationship with curent so this function inverts this
     // relationship to given current as a function of field.
@@ -201,28 +201,28 @@ float regLoadFieldToCurrentRT(struct reg_load_pars *load, float b_meas)
 
 
 
-float regLoadVrefSatRT(struct reg_load_pars *load, float i_meas, float v_ref)
+REG_float regLoadVrefSatRT(struct REG_load_pars *load, REG_float i_meas, REG_float v_ref)
 {
-    float f = regLoadSatFactorRT(load, i_meas);
+    REG_float f = regLoadSatFactorRT(load, i_meas);
 
     return(f * v_ref + (1.0 - f) * i_meas * load->ohms);
 }
 
 
 
-float regLoadInverseVrefSatRT(struct reg_load_pars *load, float i_meas, float v_ref_sat)
+REG_float regLoadInverseVrefSatRT(struct REG_load_pars *load, REG_float i_meas, REG_float v_ref_sat)
 {
-    float f = regLoadSatFactorRT(load, i_meas);
+    REG_float f = regLoadSatFactorRT(load, i_meas);
 
     return((v_ref_sat - (1.0 - f) * i_meas * load->ohms) / f);
 }
 
 
 
-float regLoadSatFactorRT(struct reg_load_pars *load, float i_meas)
+REG_float regLoadSatFactorRT(struct REG_load_pars *load, REG_float i_meas)
 {
-    float sat_factor   = 1.0;
-    float delta_i_meas = fabs(i_meas) - load->sat.i_start;
+    REG_float sat_factor   = 1.0;
+    REG_float delta_i_meas = fabs(i_meas) - load->sat.i_start;
 
     if(delta_i_meas > 0.0)
     {

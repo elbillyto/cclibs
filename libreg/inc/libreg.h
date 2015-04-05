@@ -42,30 +42,55 @@
 #ifndef LIBREG_H
 #define LIBREG_H
 
+// Libreg float typedef - Change to double if extra precision is needed
+
+typedef float   REG_float;
+
 // Libreg enum constants
 
 /*!
  * DISABLED/ENABLED constants
  */
-enum reg_enabled_disabled
+enum REG_enabled_disabled
 {
     REG_DISABLED,                                       //!< Disabled
     REG_ENABLED                                         //!< Enabled
 };
 
 /*!
- * Power converter actuation (voltage or current reference)
+ * Power converter actuation
  */
-enum reg_actuation
+enum REG_actuation
 {
     REG_VOLTAGE_REF,                                    //!< Actuation is a voltage reference
     REG_CURRENT_REF                                     //!< Actuation is a current reference
 };
 
 /*!
+ * Regulation status
+ */
+enum REG_status
+{
+    REG_OK,                                             //!< Regulation parameters are okay
+    REG_WARNING,                                        //!< Regulation parameters may be unstable
+    REG_FAULT                                           //!< Regulation parameters are unstable
+};
+
+/*!
+ * Converter regulation mode
+ */
+enum REG_mode
+{
+    REG_VOLTAGE,                                        //!< Open loop (voltage reference)
+    REG_CURRENT,                                        //!< Closed loop on current
+    REG_FIELD,                                          //!< Regulation of field using voltage
+    REG_NONE                                            //!< No regulation mode set
+};
+
+/*!
  * Regulation parameters source (operational or test)
  */
-enum reg_rst_source
+enum REG_rst_source
 {
     REG_OPERATIONAL_RST_PARS,                           //!< Use operational RST parameters
     REG_TEST_RST_PARS                                   //!< Use test RST parameters
@@ -74,7 +99,7 @@ enum reg_rst_source
 /*!
  * Regulation error rate control
  */
-enum reg_err_rate
+enum REG_err_rate
 {
     REG_ERR_RATE_REGULATION,                            //!< Calculate regulation error at regulation rate
     REG_ERR_RATE_MEASUREMENT                            //!< Calculate regulation error at measurement rate
@@ -83,7 +108,7 @@ enum reg_err_rate
 /*!
  * RST Jury's test result
  */
-enum reg_jurys_result
+enum REG_jurys_result
 {
     REG_JR_OK,                                          //!< Jury's Test Result: Okay
     REG_JR_OHMS_PAR_TOO_SMALL,                          //!< Jury's Test Result: Parallel resistance is too small
@@ -93,6 +118,17 @@ enum reg_jurys_result
     REG_JR_SUM_EVEN_S_LESS_THAN_SUM_ODD_S,              //!< Jury's Test Result: Sum(Even S) < Sum(Odd S)
     REG_JR_S_HAS_UNSTABLE_POLE,                         //!< Jury's Test Result: Unstable pole in S
     REG_JR_NUM_VALUES                                   //!< Number of Jury's result constants
+};
+
+/*!
+ * Array index to select measurements to use with current or field regulation
+ */
+enum REG_meas_select
+{
+    REG_MEAS_UNFILTERED,                                //!< Signal unfiltered by the DSP
+    REG_MEAS_FILTERED,                                  //!< Signal after FIR filtering by DSP
+    REG_MEAS_EXTRAPOLATED,                              //!< Signal after FIR filtering and extrapolation by DSP
+    REG_MEAS_NUM_SIGNALS                                //!< Number of options in reg_meas_select
 };
 
 // Include all libreg header files

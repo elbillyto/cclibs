@@ -57,7 +57,7 @@ struct ccsim_vars
         bool                        enabled;                            // Pol switch is enabled if POLSWITCH TIMEOUT is not zero
         bool                        automatic;                          // Pol switch is automatically controlled (for Libfg init functions)
         bool                        negative;                           // Pol switch is currently negative (for Libfg init functions)
-        enum reg_enabled_disabled   limits_invert;                      // Real-time limites should be inverted (for Libreg)
+        enum REG_enabled_disabled   limits_invert;                      // Real-time limites should be inverted (for Libreg)
     } polswitch;
 };
 

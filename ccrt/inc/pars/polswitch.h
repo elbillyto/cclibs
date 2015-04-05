@@ -48,7 +48,7 @@ enum polswitch_cmd
     POLSWITCH_CMD_NEGATIVE,
 };
 
-CCPARS_POLSWITCH_EXT struct ccpars_enum enum_polswitch_cmd[]
+CCPARS_POLSWITCH_EXT struct CCpars_enum enum_polswitch_cmd[]
 #ifdef GLOBALS
 = { //                                            flags
     { POLSWITCH_CMD_AUTOMATIC,   "AUTOMATIC",     CC_ENUM_CYAN    },
@@ -90,7 +90,7 @@ enum polswitch_pars_index_enum
 
 // PolSwitch parameters description structure
 
-CCPARS_POLSWITCH_EXT struct ccpars polswitch_pars[]
+CCPARS_POLSWITCH_EXT struct CCpars polswitch_pars[]
 #ifdef GLOBALS
 = {// "Signal name"       type,  max_n_els, *enum,                       *value,             num_polswitchs,cyc_sel_step,flags
     { "TIMEOUT",          PAR_FLOAT, 1,      NULL,                  { .f = &ccpars_polswitch.timeout   }, 1,      0,     PARS_RW|PARS_CFG },

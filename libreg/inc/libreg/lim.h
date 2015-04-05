@@ -64,16 +64,16 @@
 /*!
  * Measurement limits
  */
-struct reg_lim_meas
+struct REG_lim_meas
 {
-    enum reg_enabled_disabled   invert_limits;                  //!< Flag to invert limits before use.
+    enum REG_enabled_disabled   invert_limits;                  //!< Flag to invert limits before use.
                                                                 //!< (<em>e.g.</em>, polarity switch is negative)
-    float                       pos_trip;                       //!< Positive measurement trip limit
-    float                       neg_trip;                       //!< Negative measurement trip limit
-    float                       low;                            //!< Low measurement threshold
-    float                       zero;                           //!< Zero measurement threshold
-    float                       low_hysteresis;                 //!< Low measurement threshold with hysteresis
-    float                       zero_hysteresis;                //!< Zero measurement threshold with hysteresis
+    REG_float                   pos_trip;                       //!< Positive measurement trip limit
+    REG_float                   neg_trip;                       //!< Negative measurement trip limit
+    REG_float                   low;                            //!< Low measurement threshold
+    REG_float                   zero;                           //!< Zero measurement threshold
+    REG_float                   low_hysteresis;                 //!< Low measurement threshold with hysteresis
+    REG_float                   zero_hysteresis;                //!< Zero measurement threshold with hysteresis
 
     struct
     {
@@ -86,29 +86,29 @@ struct reg_lim_meas
 /*!
  * Reference limits
  */
-struct reg_lim_ref
+struct REG_lim_ref
 {
-    enum reg_enabled_disabled   invert_limits;                  //!< Flag to invert limits before use.
+    enum REG_enabled_disabled   invert_limits;                  //!< Flag to invert limits before use.
                                                                 //!< (<em>e.g.</em>, polarity switch is negative)
-    float                       pos;                            //!< User's positive limit
-    float                       min;                            //!< User's min limit
-    float                       neg;                            //!< User's negative limit
-    float                       rate;                           //!< User's rate limit
-    float                       acceleration;                   //!< User's acceleration limit
+    REG_float                   pos;                            //!< User's positive limit
+    REG_float                   min;                            //!< User's min limit
+    REG_float                   neg;                            //!< User's negative limit
+    REG_float                   rate;                           //!< User's rate limit
+    REG_float                   acceleration;                   //!< User's acceleration limit
 
-    float                       max_clip;                       //!< Maximum reference clip limit from reg_lim_ref::max_clip_user or Q41 limit
-    float                       min_clip;                       //!< Minimum reference clip limit from reg_lim_ref::min_clip_user or Q41 limit
-    float                       rate_clip;                      //!< Absolute reference rate clip limit
+    REG_float                   max_clip;                       //!< Maximum reference clip limit from reg_lim_ref::max_clip_user or Q41 limit
+    REG_float                   min_clip;                       //!< Minimum reference clip limit from reg_lim_ref::min_clip_user or Q41 limit
+    REG_float                   rate_clip;                      //!< Absolute reference rate clip limit
 
-    float                       max_clip_user;                  //!< Maximum reference clip limit from user
-    float                       min_clip_user;                  //!< Minimum reference clip limit from user
+    REG_float                   max_clip_user;                  //!< Maximum reference clip limit from user
+    REG_float                   min_clip_user;                  //!< Minimum reference clip limit from user
 
-    float                       closeloop;                      //!< Closeloop threshold (0 for bipolar reference)
+    REG_float                   closeloop;                      //!< Closeloop threshold (0 for bipolar reference)
 
-    float                       i_quadrants41_max;              //!< Quadrants 41 exclusion zone. At least a 1A spread is needed to
+    REG_float                   i_quadrants41_max;              //!< Quadrants 41 exclusion zone. At least a 1A spread is needed to
                                                                 //!< activate the Q41 limiter. Disable by setting to -1.0E10.
-    float                       v0;                             //!< Voltage limit for zero measured current
-    float                       dvdi;                           //!< Voltage limit slope with measured current
+    REG_float                   v0;                             //!< Voltage limit for zero measured current
+    REG_float                   dvdi;                           //!< Voltage limit slope with measured current
 
     struct
     {
@@ -123,13 +123,13 @@ struct reg_lim_ref
 /*!
  * RMS limits
  */
-struct reg_lim_rms
+struct REG_lim_rms
 {
-    float                       rms2_fault;                     //!< Squared RMS fault threshold
-    float                       rms2_warning;                   //!< Squared RMS warning threshold
-    float                       rms2_warning_hysteresis;        //!< Squared RMS warning threshold with hysteresis
-    float                       meas2_filter;                   //!< Filtered square of the measurement
-    float                       meas2_filter_factor;            //!< First-order filter factor for square of measurement
+    REG_float                   rms2_fault;                     //!< Squared RMS fault threshold
+    REG_float                   rms2_warning;                   //!< Squared RMS warning threshold
+    REG_float                   rms2_warning_hysteresis;        //!< Squared RMS warning threshold with hysteresis
+    REG_float                   meas2_filter;                   //!< Filtered square of the measurement
+    REG_float                   meas2_filter_factor;            //!< First-order filter factor for square of measurement
 
     struct
     {
@@ -153,7 +153,7 @@ extern "C" {
  * @param[in]     low_lim          Low measurement threshold
  * @param[in]     zero_lim         Zero measurement threshold
  */
-void regLimMeasInit(struct reg_lim_meas *lim_meas, float pos_lim, float neg_lim, float low_lim, float zero_lim);
+void regLimMeasInit(struct REG_lim_meas *lim_meas, REG_float pos_lim, REG_float neg_lim, REG_float low_lim, REG_float zero_lim);
 
 /*!
  * Initialise measurement limits structure RMS squared trip and warning thresholds.
@@ -168,7 +168,7 @@ void regLimMeasInit(struct reg_lim_meas *lim_meas, float pos_lim, float neg_lim,
  *                                 value for reg_lim_meas::meas2_filter_factor.
  * @param[in]     iter_period      Iteration period, used to calculate the value for reg_lim_meas::meas2_filter_factor.
  */
-void regLimRmsInit(struct reg_lim_rms *lim_rms, float rms_warning, float rms_fault, float rms_tc, float iter_period);
+void regLimRmsInit(struct REG_lim_rms *lim_rms, REG_float rms_warning, REG_float rms_fault, REG_float rms_tc, REG_float iter_period);
 
 /*!
  * Initialise field/current reference limits. Field/current limits use the same
@@ -184,8 +184,8 @@ void regLimRmsInit(struct reg_lim_rms *lim_rms, float rms_warning, float rms_fau
  * @param[in]     acceleration_lim Stored in structure for use by application
  * @param[in]     closeloop        Closeloop threshold. Must be positive (zero in the case of 4-quadrant converters).
  */
-void regLimRefInit(struct reg_lim_ref *lim_ref, float pos_lim, float min_lim, float neg_lim,
-                   float rate_lim, float acceleration_lim, float closeloop);
+void regLimRefInit(struct REG_lim_ref *lim_ref, REG_float pos_lim, REG_float min_lim, REG_float neg_lim,
+                   REG_float rate_lim, REG_float acceleration_lim, REG_float closeloop);
 
 /*!
  * Initialise voltage reference limits. Voltage reference limits use the same
@@ -201,8 +201,8 @@ void regLimRefInit(struct reg_lim_ref *lim_ref, float pos_lim, float min_lim, fl
  * @param[in]     i_quadrants41    Define exclusion zone in quadrants 4 and 1 (I dimension).
  * @param[in]     v_quadrants41    Define exclusion zone in quadrants 4 and 1 (V dimension).
  */
-void regLimVrefInit(struct reg_lim_ref *lim_v_ref, float pos_lim, float neg_lim, float rate_lim,
-                    float acceleration_lim, float i_quadrants41[2], float v_quadrants41[2]);
+void regLimVrefInit(struct REG_lim_ref *lim_v_ref, REG_float pos_lim, REG_float neg_lim, REG_float rate_lim,
+                    REG_float acceleration_lim, REG_float i_quadrants41[2], REG_float v_quadrants41[2]);
 
 /*!
  * Check the measurement against the trip levels and the absolute measurement against
@@ -214,7 +214,7 @@ void regLimVrefInit(struct reg_lim_ref *lim_v_ref, float pos_lim, float neg_lim,
  * @param[in,out] lim_meas         Measurement limits object to check against
  * @param[in]     meas             Measurement value
  */
-void regLimMeasRT(struct reg_lim_meas *lim_meas, float meas);
+void regLimMeasRT(struct REG_lim_meas *lim_meas, REG_float meas);
 
 /*!
  * Check filtered squared measurement against limits.
@@ -224,7 +224,7 @@ void regLimMeasRT(struct reg_lim_meas *lim_meas, float meas);
  * @param[in,out] lim_rms          Pointer to RMS current limits structure
  * @param[in]     meas             Measurement value
  */
-void regLimMeasRmsRT(struct reg_lim_rms *lim_rms, float meas);
+void regLimMeasRmsRT(struct REG_lim_rms *lim_rms, REG_float meas);
 
 /*!
  * Use the measured current to work out the voltage limits based on the operating
@@ -237,7 +237,7 @@ void regLimMeasRmsRT(struct reg_lim_rms *lim_rms, float meas);
  * @param[in,out] lim_v_ref        Voltage reference limits object
  * @param[in]     i_meas           Measured current
  */
-void regLimVrefCalcRT(struct reg_lim_ref *lim_v_ref, float i_meas);
+void regLimVrefCalcRT(struct REG_lim_ref *lim_v_ref, REG_float i_meas);
 
 /*!
  * Apply clip and rate limits to the field, current or voltage reference. The appropriate
@@ -250,7 +250,7 @@ void regLimVrefCalcRT(struct reg_lim_ref *lim_v_ref, float i_meas);
  * @param[in]     ref              Reference value to check
  * @param[in]     prev_ref         Previous reference, used to calculate change of reference value
  */
-float regLimRefRT(struct reg_lim_ref *lim_ref, float period, float ref, float prev_ref);
+REG_float regLimRefRT(struct REG_lim_ref *lim_ref, REG_float period, REG_float ref, REG_float prev_ref);
 
 #ifdef __cplusplus
 }
@@ -258,12 +258,12 @@ float regLimRefRT(struct reg_lim_ref *lim_ref, float period, float ref, float pr
 
 // inline function definitions
 
-static inline void regLimMeasInvert(struct reg_lim_meas *lim_meas, enum reg_enabled_disabled invert_limits)
+static inline void regLimMeasInvert(struct REG_lim_meas *lim_meas, enum REG_enabled_disabled invert_limits)
 {
     lim_meas->invert_limits = invert_limits;
 }
 
-static inline void regLimRefInvert(struct reg_lim_ref *lim_ref, enum reg_enabled_disabled invert_limits)
+static inline void regLimRefInvert(struct REG_lim_ref *lim_ref, enum REG_enabled_disabled invert_limits)
 {
     lim_ref->invert_limits = invert_limits;
 }

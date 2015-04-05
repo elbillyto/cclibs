@@ -59,7 +59,7 @@ uint32_t ccCmdsPar(uint32_t cmd_idx, char *remaining_line)
     }
     else // else parameter name argument provided or '+' or '-'
     {
-        struct ccpars *par_matched;
+        struct CCpars *par_matched;
 
         // '+' for read/write parameters only, '-' for read-only parameters only
 
@@ -129,7 +129,6 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char *remaining_line)
 {
     uint32_t       exit_status = EXIT_SUCCESS;
     char           line[CC_MAX_FILE_LINE_LEN];
-    char           input_ch;
     FILE          *f;
     char          *arg;
     static char *  default_file_name = "ccrt";
@@ -207,6 +206,8 @@ uint32_t ccCmdsRead(uint32_t cmd_idx, char *remaining_line)
 
         if(strlen(line) >= (CC_MAX_FILE_LINE_LEN-1) && line[CC_MAX_FILE_LINE_LEN-2] != '\n')
         {
+            int   input_ch;
+
             ccParsPrintError("line exceeds maximum length (%u)", CC_MAX_FILE_LINE_LEN-2);
             exit_status = EXIT_FAILURE;
 

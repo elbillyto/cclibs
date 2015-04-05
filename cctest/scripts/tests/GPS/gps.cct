@@ -11,8 +11,8 @@ GLOBAL PROJECT              GPS
 # Voltage source parameters
 
 PC ACT_DELAY_ITERS          1
-PC TAU_ZERO                 0.0
-PC Z                        0.9
+PC SIM_TAU_ZERO             0.0
+PC SIM_Z                    0.9
 
 # Measurement parameters
 
@@ -26,8 +26,8 @@ MEAS B_FIR_LENGTHS          100,70
 MEAS I_FIR_LENGTHS          10,7
 MEAS I_SIM_NOISE_PP         0.0
 MEAS V_SIM_NOISE_PP         0.0
-MEAS TONE_HALF_PERIOD_ITERS 100
-MEAS I_SIM_TONE_AMP         0.0
+MEAS SIM_TONE_PERIOD_ITERS  200
+MEAS I_SIM_TONE_PP          0.0
 
 # Current regulation        Bruker      Cobalt
 
@@ -72,7 +72,7 @@ LOAD SIM_TC_ERROR           0.0
 
 # Reference
 
-PULSE TIME()                0.0
+PULSE LINEAR_RATE()         0.0
 PULSE DURATION()            0.2
 PULSE REF(1)                470        3630      1000      2000
 
@@ -94,8 +94,8 @@ GLOBAL CYCLE_SELECTOR       1 2
 
 # Simulations with Bruker
 
-PC BANDWIDTH                1000
-PC SIM_RIPPLE               1.0E-3
+PC SIM_BANDWIDTH            1000
+PC SIM_NOISE_PP             1.0E-3
 PC SIM_QUANTIZATION         0.0
 GLOBAL FILE                 gps-bruker-nn
 LOAD SELECT                 0
@@ -103,8 +103,8 @@ RUN
 
 # Simulations with COBALT
 
-PC BANDWIDTH                2000
-PC SIM_RIPPLE               20.0E-3
+PC SIM_BANDWIDTH            2000
+PC SIM_NOISE_PP             20.0E-3
 PC SIM_QUANTIZATION         1.0E-03
 GLOBAL FILE                 gps-cobalt-nn
 LOAD SELECT                 1
@@ -116,8 +116,8 @@ RUN
 
 MEAS B_SIM_NOISE_PP         0.05
 
-PC BANDWIDTH                1000
-PC SIM_RIPPLE               1.0E-3
+PC SIM_BANDWIDTH            1000
+PC SIM_NOISE_PP             1.0E-3
 PC SIM_QUANTIZATION         0.0
 GLOBAL FILE                 gps-bruker
 LOAD SELECT                 0
@@ -125,8 +125,8 @@ RUN
 
 # Simulations with COBALT
 
-PC BANDWIDTH                2000
-PC SIM_RIPPLE               6.0E-3
+PC SIM_BANDWIDTH            2000
+PC SIM_NOISE_PP             6.0E-3
 PC SIM_QUANTIZATION         1.0E-03
 GLOBAL FILE                 gps-cobalt
 LOAD SELECT                 1

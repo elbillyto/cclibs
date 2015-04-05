@@ -58,14 +58,14 @@ struct ccrun_vars
     uint32_t                        cyc_sel;                            // Cycle selector for current cycle
     bool                            fault;                              // Fault active flag
 
-    double                          cycle_start_time;                   // Start time (iter_time) for current cycle
-    double                          cycle_duration;                     // Cycle duration including run delay
-    enum fg_types                   function;                           // Function type
+    double                          cycle_time_origin;                   // Start time (iter_time) for current cycle
+    double                          cycle_end_time;                     // Cycle duration including run delay
+    enum FG_types                   function;                           // Function type
     bool                            play;                               // Function is to be played
-    enum fg_gen_status            (*fgen_func)();                       // Function to generate the active reference
-    void                           *fgen_pars;                          // Parameter structure for active reference
-    struct fg_limits                fg_limits;                          // fg_limits for arming references (b/i/v)
-    struct reg_lim_ref              fg_lim_v_ref;                       // Libreg voltage measurement limits structure for fg converter limits
+    enum FG_func_status            (*fgen_func)();                       // Function to generate the active reference
+    void                           *fg_func_pars;                          // Parameter structure for active reference
+    struct FG_limits                fg_func_limits;                          // fg_limits for arming references (b/i/v)
+    struct REG_lim_ref              fg_lim_v_ref;                       // Libreg voltage measurement limits structure for fg converter limits
 
     struct ccrun_supercycle
     {
@@ -79,7 +79,7 @@ struct ccrun_vars
     struct ccrun_cycle
     {
         uint32_t                    cyc_sel;                            // Cycle selector
-        enum reg_rst_source         reg_rst_source;                     // RST parameter source
+        enum REG_rst_source         reg_rst_source;                     // RST parameter source
         double                      start_time;                         // Time of the start of the cycle
         float                       ref_advance;                        // Ref advance used with each function
     } cycle[MAX_CYCLES];
@@ -89,7 +89,7 @@ struct ccrun_vars
         uint32_t                    idx;                                // Pre-function stage index (0,1,2,3)
         uint32_t                    num_ramps;                          // Number of pre-function ramps
         float                       final_ref[MAX_PREFUNCS];            // Final ref for each pre-function ramp
-        struct fg_ramp              pars;                               // Libfg parameters for pre-function ramps
+        struct FG_ramp              pars;                               // Libfg parameters for pre-function ramps
     } prefunc;
 };
 

@@ -46,7 +46,7 @@
 
 
 
-uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char *remaining_line)
+uint32_t ccParsGet(char *cmd_name, struct CCpars *par, char *remaining_line)
 /*
  * This function will try to interpret arguments remaining on the input line as values belonging to
  * a command parameter. It supports different interpretations of multiple arguments, e.g.:
@@ -71,9 +71,9 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char *remaining_line)
     char                *remaining_arg;
     char                *arg;
     size_t               arg_len;
-    struct ccpars_enum  *par_enum;
-    struct ccpars_enum  *par_enum_matched;
-    union value_p        value_p;
+    struct CCpars_enum  *par_enum;
+    struct CCpars_enum  *par_enum_matched;
+    union CCvalue_p        value_p;
 
     // Prepare array index
 
@@ -315,7 +315,7 @@ uint32_t ccParsGet(char *cmd_name, struct ccpars *par, char *remaining_line)
 
 
 
-int32_t ccParsEnumIndex(struct ccpars_enum *par_enum, uint32_t value)
+int32_t ccParsEnumIndex(struct CCpars_enum *par_enum, uint32_t value)
 {
     int32_t idx;
 
@@ -330,7 +330,7 @@ int32_t ccParsEnumIndex(struct ccpars_enum *par_enum, uint32_t value)
 
 
 
-char * ccParsEnumString(struct ccpars_enum *par_enum, uint32_t value)
+char * ccParsEnumString(struct CCpars_enum *par_enum, uint32_t value)
 {
     // Search enum for a matching value
 
@@ -346,11 +346,11 @@ char * ccParsEnumString(struct ccpars_enum *par_enum, uint32_t value)
 
 
 
-static void ccParsPrintElement(FILE *f, struct ccpars *par, uint32_t cyc_sel, uint32_t array_idx)
+static void ccParsPrintElement(FILE *f, struct CCpars *par, uint32_t cyc_sel, uint32_t array_idx)
 {
     if(array_idx < par->num_elements[cyc_sel])
     {
-        union value_p value_p;
+        union CCvalue_p value_p;
 
         value_p.c = par->value_p.c + cyc_sel * par->cyc_sel_step;
 
@@ -391,7 +391,7 @@ static void ccParsPrintElement(FILE *f, struct ccpars *par, uint32_t cyc_sel, ui
 
 
 
-void ccParsPrint(FILE *f, char *cmd_name, struct ccpars *par, uint32_t cyc_sel, uint32_t array_idx)
+void ccParsPrint(FILE *f, char *cmd_name, struct CCpars *par, uint32_t cyc_sel, uint32_t array_idx)
 {
     uint32_t  num_elements;
     uint32_t  num_characters;
@@ -484,13 +484,13 @@ void ccParsPrint(FILE *f, char *cmd_name, struct ccpars *par, uint32_t cyc_sel, 
 
 
 
-void ccParsPrintAll(FILE *f, char *cmd_name, struct ccpars *par, uint32_t cyc_sel, uint32_t array_idx, uint32_t flags)
+void ccParsPrintAll(FILE *f, char *cmd_name, struct CCpars *par, uint32_t cyc_sel, uint32_t array_idx, uint32_t flags)
 {
     // If ALL_CYCLES specifed by ()
 
     if(cyc_sel == CC_ALL_CYCLES)
     {
-        struct ccpars *pars = par;
+        struct CCpars *pars = par;
 
         for(cyc_sel = 0 ; cyc_sel <= CC_MAX_CYC_SEL ; cyc_sel++)
         {

@@ -52,7 +52,7 @@
 /*!
  * Types of test function
  */
-enum fg_test_type
+enum FG_test_type
 {
     FG_TEST_UNDEFINED,
     FG_TEST_COSINE,
@@ -64,19 +64,16 @@ enum fg_test_type
 /*!
  * Test function parameters
  */
-struct fg_test
+struct FG_test
 {
-    double              delay;              //!< Time before start of function.
-    enum fg_test_type   type;               //!< Type of test function.
+    struct FG_meta      meta;               //!< Meta data for the armed function - this must be the first in the struct
+    enum FG_test_type   type;               //!< Type of test function.
     bool                window_enabled;     //!< Window control: true to use window for sine & cosine.
     uint32_t            num_cycles;         //!< Number of cycles or steps.
-    float               duration;           //!< period * number of cycles.
-    float               frequency;          //!< 1 / period.
-    float               half_period;        //!< period / 2.
-    float               initial_ref;        //!< Initial reference.
-    float               final_ref;          //!< Final reference after last cycle.
-    float               amplitude;          //!< Reference amplitude.
-    float               exp_decay;          //!< Exp decay factor (0 if disabled)
+    FG_float            frequency;          //!< 1 / period.
+    FG_float            half_period;        //!< period / 2.
+    FG_float            amplitude;          //!< Reference amplitude.
+    FG_float            exp_decay;          //!< Exp decay factor (0 if disabled)
 };
 
 #ifdef __cplusplus
@@ -89,9 +86,8 @@ extern "C" {
  * Initialise TEST function.
  *
  * @param[in]  limits              Pointer to fgc_limits structure (or NULL if no limits checking required).
- * @param[in]  pol_switch_auto  True if polarity switch can be changed automatically.
- * @param[in]  pol_switch_neg   True if polarity switch is currently in the negative position.
- * @param[in]  delay               Delay before the start of the function.
+ * @param[in]  pol_switch_auto     True if polarity switch can be changed automatically.
+ * @param[in]  pol_switch_neg      True if polarity switch is currently in the negative position.
  * @param[in]  type                Type of test function.
  * @param[in]  initial_ref         Initial reference value.
  * @param[in]  amplitude_pp        Peak-to-peak amplitude.
@@ -99,8 +95,8 @@ extern "C" {
  * @param[in]  period              Period.
  * @param[in]  window_enabled      Set true to use window function (for sine & cosine only).
  * @param[in]  exp_decay_enabled   Set true to use exponential decay when window is enabled.
- * @param[out] pars                Pointer to test function parameters.
- * @param[out] meta                Pointer to diagnostic information. Set to NULL if not required.
+ * @param[out] pars                Pointer to fg_pars union containing test parameter struct.
+ * @param[out] error               Pointer to error information. Set to NULL if not required.
  *
  * @retval FG_OK on success
  * @retval FG_BAD_PARAMETER if invalid function type requested
@@ -109,34 +105,33 @@ extern "C" {
  * @retval FG_OUT_OF_RATE_LIMITS if rate of change of reference exceeds limits
  * @retval FG_OUT_OF_ACCELERATION_LIMITS if acceleration exceeds limits
  */
-enum fg_error fgTestInit(struct fg_limits *limits, 
-                         bool   pol_switch_auto,
-                         bool   pol_switch_neg,
-                         double delay, 
-                         enum   fg_test_type type,
-                         float  initial_ref,
-                         float  amplitude_pp,
-                         float  num_cycles,
-                         float  period,
-                         bool   window_enabled,
-                         bool   exp_decay_enabled,
-                         struct fg_test *pars, 
-                         struct fg_meta *meta);
+enum FG_errno fgTestInit(struct FG_limits *limits, 
+                         bool              pol_switch_auto,
+                         bool              pol_switch_neg,
+                         enum FG_test_type type,
+                         FG_float          initial_ref,
+                         FG_float          amplitude_pp,
+                         FG_float          num_cycles,
+                         FG_float          period,
+                         bool              window_enabled,
+                         bool              exp_decay_enabled,
+                         union  FG_pars   *pars,
+                         struct FG_error  *error);
 
 
 
 /*!
- * Generate the reference for the Test functions.
+ * Real-time function to generate a SINE, COSINE, SQUARE or STEPS reference.
  *
- * @param[in]  pars             Pointer to test function parameters.
- * @param[in]  time             Pointer to current time within the function.
+ * @param[in]  pars             Pointer to fg_pars union containing test parameter struct.
+ * @param[in]  func_time        Time within the function.
  * @param[out] ref              Pointer to new reference value.
  *
  * @retval FG_GEN_PRE_FUNC      if time is before the start of the function.
  * @retval FG_GEN_DURING_FUNC   if time is during the function.
  * @retval FG_GEN_POST_FUNC     if time is after the end of the function.
  */
-enum fg_gen_status fgTestGen(struct fg_test *pars, const double *time, float *ref);
+enum FG_func_status fgTestRT(union FG_pars *pars, FG_float func_time, FG_float *ref);
 
 #ifdef __cplusplus
 }

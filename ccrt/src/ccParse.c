@@ -254,11 +254,11 @@ uint32_t ccParseLine(char *line)
 
 
 
-uint32_t ccParseParName(uint32_t cmd_idx, char **remaining_line, struct ccpars **par_matched)
+uint32_t ccParseParName(uint32_t cmd_idx, char **remaining_line, struct CCpars **par_matched)
 {
     size_t              par_string_len;
     char               *par_string = *remaining_line;
-    struct ccpars      *par;
+    struct CCpars      *par;
 
     // When a parameter name is provided, the command may not have a cycle selector or array index
 

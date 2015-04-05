@@ -205,7 +205,7 @@ uint32_t ccFileSaveAllConfigPars(void)
 
     for(cmd = cmds ; cmd->name != NULL ; cmd++)
     {
-        struct ccpars *par = cmd->pars;
+        struct CCpars *par = cmd->pars;
 
         if(par != NULL)
         {
@@ -229,7 +229,7 @@ uint32_t ccFileSaveAllConfigPars(void)
 
 
 
-uint32_t ccFileSaveConfigPar(char *cmd_name, struct ccpars *par)
+uint32_t ccFileSaveConfigPar(char *cmd_name, struct CCpars *par)
 {
     FILE    *par_file;
     char    path[CC_PATH_LEN];

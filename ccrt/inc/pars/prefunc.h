@@ -48,7 +48,7 @@ enum prefunc_policy
     PREFUNC_DOWNMAXMIN,
 };
 
-CCPARS_PREFUNC_EXT struct ccpars_enum enum_prefunc_policy[]
+CCPARS_PREFUNC_EXT struct CCpars_enum enum_prefunc_policy[]
 #ifdef GLOBALS
 = {
     { PREFUNC_RAMP,         "RAMP"          },
@@ -84,7 +84,7 @@ CCPARS_PREFUNC_EXT struct ccpars_prefunc ccpars_prefunc
 
 // Prefunc parameters description structure
 
-CCPARS_PREFUNC_EXT struct ccpars prefunc_pars[]
+CCPARS_PREFUNC_EXT struct CCpars prefunc_pars[]
 #ifdef GLOBALS
 = {// "Signal name"       type,  max_n_els, *enum,                       *value,                 num_prefuncs,cyc_sel_step,flags
     { "POLICY",           PAR_ENUM,  1,      enum_prefunc_policy, { .u = &ccpars_prefunc.policy           }, 1,     0,     PARS_RW|PARS_CFG },

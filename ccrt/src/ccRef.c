@@ -40,9 +40,9 @@
 
 
 
-enum fg_error ccRefInitPLEP(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitPLEP(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
-    return(fgPlepInit(  &ccrun.fg_limits,
+    return(fgPlepInit(  &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay,
@@ -59,9 +59,9 @@ enum fg_error ccRefInitPLEP(struct fg_meta *fg_meta, uint32_t cyc_sel)
 
 
 
-enum fg_error ccRefInitRAMP(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitRAMP(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
-    return(fgRampInit(  &ccrun.fg_limits,
+    return(fgRampInit(  &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay,
@@ -76,9 +76,9 @@ enum fg_error ccRefInitRAMP(struct fg_meta *fg_meta, uint32_t cyc_sel)
 
 
 
-enum fg_error ccRefInitPPPL(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitPPPL(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
-    return(fgPpplInit(  &ccrun.fg_limits,
+    return(fgPpplInit(  &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay,
@@ -103,9 +103,9 @@ enum fg_error ccRefInitPPPL(struct fg_meta *fg_meta, uint32_t cyc_sel)
 
 
 
-enum fg_error ccRefInitTABLE(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitTABLE(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
-    return(fgTableInit( &ccrun.fg_limits,
+    return(fgTableInit( &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay,
@@ -121,9 +121,9 @@ enum fg_error ccRefInitTABLE(struct fg_meta *fg_meta, uint32_t cyc_sel)
 
 
 
-enum fg_error ccRefInitSTEPS(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitSTEPS(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
-    return(fgTestInit(  &ccrun.fg_limits,
+    return(fgTestInit(  &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay,
@@ -140,9 +140,9 @@ enum fg_error ccRefInitSTEPS(struct fg_meta *fg_meta, uint32_t cyc_sel)
 
 
 
-enum fg_error ccRefInitSQUARE(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitSQUARE(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
-    return(fgTestInit(  &ccrun.fg_limits,
+    return(fgTestInit(  &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay,
@@ -159,9 +159,9 @@ enum fg_error ccRefInitSQUARE(struct fg_meta *fg_meta, uint32_t cyc_sel)
 
 
 
-enum fg_error ccRefInitSINE(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitSINE(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
-    return(fgTestInit(  &ccrun.fg_limits,
+    return(fgTestInit(  &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay,
@@ -178,9 +178,9 @@ enum fg_error ccRefInitSINE(struct fg_meta *fg_meta, uint32_t cyc_sel)
 
 
 
-enum fg_error ccRefInitCOSINE(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitCOSINE(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
-    return(fgTestInit(  &ccrun.fg_limits,
+    return(fgTestInit(  &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay,
@@ -197,9 +197,9 @@ enum fg_error ccRefInitCOSINE(struct fg_meta *fg_meta, uint32_t cyc_sel)
 
 
 
-enum fg_error ccRefInitLTRIM(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitLTRIM(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
-    return(fgTrimInit(  &ccrun.fg_limits,
+    return(fgTrimInit(  &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay,
@@ -213,9 +213,9 @@ enum fg_error ccRefInitLTRIM(struct fg_meta *fg_meta, uint32_t cyc_sel)
 
 
 
-enum fg_error ccRefInitCTRIM(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitCTRIM(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
-    return(fgTrimInit(  &ccrun.fg_limits,
+    return(fgTrimInit(  &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay,
@@ -229,7 +229,7 @@ enum fg_error ccRefInitCTRIM(struct fg_meta *fg_meta, uint32_t cyc_sel)
 
 
 
-enum fg_error ccRefInitPULSE(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitPULSE(struct FG_meta *fg_meta, uint32_t cyc_sel)
 {
     uint32_t    index = ccpars_pulse[cyc_sel].index;
 
@@ -239,11 +239,11 @@ enum fg_error ccRefInitPULSE(struct fg_meta *fg_meta, uint32_t cyc_sel)
        index >= pulse_pars[PULSE_LINEAR_RATE].num_elements[cyc_sel])
     {
         fgResetMeta(fg_meta, NULL, 0.0, 0.0);
-        fg_meta->fg_error = FG_BAD_ARRAY_LEN;
+        fg_meta->FG_errno = FG_BAD_ARRAY_LEN;
         return(FG_BAD_ARRAY_LEN);
     }
 
-    return(fgPulseInit( &ccrun.fg_limits,
+    return(fgPulseInit( &ccrun.fg_func_limits,
                         ccsim.polswitch.automatic,
                         ccsim.polswitch.negative,
                         ccpars_global.run_delay + ccpars_pulse[cyc_sel].time[index],

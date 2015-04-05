@@ -47,7 +47,6 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
 {
     float           delay;
     float           rate;
-    struct fg_meta  meta;
 
     // If a pre-function RAMP segment should be started
 
@@ -63,9 +62,9 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
 
             switch(reg_mgr.reg_mode)
             {
-            case REG_FIELD  : ccrun.cycle[ccrun.cycle_idx].max_abs_err = reg_mgr.b.err.max_abs_err; break;
-            case REG_CURRENT: ccrun.cycle[ccrun.cycle_idx].max_abs_err = reg_mgr.i.err.max_abs_err; break;
-            default:          ccrun.cycle[ccrun.cycle_idx].max_abs_err = 0.0;                    break;
+            case REG_FIELD  : ccrun.cycle[ccrun.cycle_idx].max_abs_err = regMgrVar(reg_mgr, BREG_MAX_ABS_ERR); break;
+            case REG_CURRENT: ccrun.cycle[ccrun.cycle_idx].max_abs_err = regMgrVar(reg_mgr, IREG_MAX_ABS_ERR); break;
+            default:          ccrun.cycle[ccrun.cycle_idx].max_abs_err = 0.0;                                  break;
             }
 
             // If functions are finished then program a final plateau of duration GLOBAL STOP_DELAY
@@ -97,14 +96,14 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
                     case PREFUNC_RAMP:
 
                         ccrun.prefunc.num_ramps    = 1;
-                        prefunc_final_ref          = ccrun.fg_meta[ccrun.cyc_sel].range.start;
+                        prefunc_final_ref          = ccrun.fg_pars[ccrun.cyc_sel].meta.range.initial_ref;
                         break;
 
                     case PREFUNC_MIN:
 
                         ccrun.prefunc.num_ramps    = 2;
                         prefunc_final_ref          = ccpars_ref[ccrun.cyc_sel].prefunc_min_ref * invert_limits;
-                        ccrun.prefunc.final_ref[1] = ccrun.fg_meta[ccrun.cyc_sel].range.start;
+                        ccrun.prefunc.final_ref[1] = ccrun.fg_pars[ccrun.cyc_sel].meta.range.initial_ref;
                         break;
 
                     case PREFUNC_MINMAX:
@@ -112,7 +111,7 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
                         ccrun.prefunc.num_ramps    = 3;
                         prefunc_final_ref          = ccpars_ref[ccrun.cyc_sel].prefunc_min_ref * invert_limits;
                         ccrun.prefunc.final_ref[1] = reg_mgr.lim_ref->pos * invert_limits;
-                        ccrun.prefunc.final_ref[2] = ccrun.fg_meta[ccrun.cyc_sel].range.start;
+                        ccrun.prefunc.final_ref[2] = ccrun.fg_pars[ccrun.cyc_sel].meta.range.initial_ref;
                         break;
                 }
 
@@ -138,8 +137,8 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
 
             // Prepare to generate the first pre-function RAMP segment
 
-            ccrun.fgen_func = fgRampGen;
-            ccrun.fgen_pars = &ccrun.prefunc.pars;
+            ccrun.fg_func      = fgRampRT;
+            ccrun.fg_func_pars = (FG_pars *)&ccrun.prefunc.pars;
         }
         else // Prepare to generate the second or third pre-function RAMP segment
         {
@@ -159,20 +158,19 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
                    ccpars_default.pars[reg_mgr.reg_mode].acceleration,
                    ccpars_default.pars[reg_mgr.reg_mode].linear_rate,
                    ccpars_default.pars[reg_mgr.reg_mode].deceleration,
-                   &ccrun.prefunc.pars,
-                   &meta);
+                   &ccrun.prefunc.pars);
 
-        ccrun.cycle_start_time = iter_time + reg_mgr.ref_advance;
+        ccrun.cycle_time_origin = iter_time + reg_mgr.ref_advance;
 
         if(reg_mgr.reg_mode != REG_VOLTAGE)
         {
-            ccrun.cycle_start_time -= reg_mgr.reg_signal->iteration_counter * reg_mgr.iter_period;
+            ccrun.cycle_time_origin -= reg_mgr.reg_signal->iteration_counter * reg_mgr.iter_period;
         }
         ccrun.prefunc.idx++;
     }
     else // Pre-function sequence complete - start the next function
     {
-        uint32_t func_idx;
+        enum FG_types func_idx;
 
         // If all functions completed
 
@@ -189,31 +187,36 @@ static uint32_t ccRunStartFunction(double iter_time, float *ref)
 
         func_idx = ccpars_ref[ccrun.cyc_sel].function;
 
-        ccrun.fgen_func = funcs[func_idx].fgen_func;
-        ccrun.fgen_pars = funcs[func_idx].fg_pars + funcs[func_idx].size_of_pars * ccrun.cyc_sel;
-
-        ccrun.cycle_duration = ccpars_global.run_delay + ccrun.fg_meta[ccrun.cyc_sel].duration;
-
-        ccrun.cycle_start_time = iter_time;
+        ccrun.fg_func      = funcs[func_idx].fg_func;
+        ccrun.fg_func_pars = &ccrun.fg_pars[ccrun.cyc_sel];
 
         ccrun.cycle[ccrun.cycle_idx].ref_advance = reg_mgr.ref_advance;
-        ccrun.cycle[ccrun.cycle_idx].start_time  = iter_time;
+        ccrun.cycle[ccrun.cycle_idx].start_time  = iter_time + ccpars_global.run_delay;
+        ccrun.cycle_time_origin = ccrun.cycle[ccrun.cycle_idx].start_time - ccrun.fg_pars[ccrun.cyc_sel].meta.time.start;
+        ccrun.cycle_end_time    = ccrun.cycle_time_origin + ccrun.fg_pars[ccrun.cyc_sel].meta.time.end;
 
         // Reset pre-function index for when this new function ends
 
         ccrun.prefunc.idx       = 0;
         ccrun.prefunc.num_ramps = 1;
 
+        // Reset dynamic economy
+
+        ccrun.dyn_eco.fg_func     = NULL;
+        ccrun.dyn_eco.time_offset = 0.0;
+
         // Reset table segment index in case function is DIRECT
 
-        fg_table[ccrun.cyc_sel].seg_idx = 0;
-        ccrun.dyn_eco.fgen_func = NULL;
+        if(func_idx == FG_DIRECT)
+        {
+            ccrun.fg_pars[ccrun.cyc_sel].table.seg_idx = 0;
+        }
     }
 
     return(1); // Return 1 to continue the simulation
 }
 /*---------------------------------------------------------------------------------------------------------*/
-static void ccDynamicEconomy(double ref_time, float ref)
+static bool ccDynamicEconomy(double iter_time, double ref_time, float ref)
 /*---------------------------------------------------------------------------------------------------------*\
   This will manage the dynamic economy reference function that can take over a function for a specified
   period.
@@ -225,33 +228,33 @@ static void ccDynamicEconomy(double ref_time, float ref)
     // of the dynamic economy window, or the end of the dyn_eco window is beyond the end of the function
 
     if(ccrun.prefunc.idx > 0                      ||
-       ccrun.fgen_func == fgRampGen               ||
+       ccrun.fg_func == fgRampRT                  ||
        ref_time < ccpars_global.dyn_eco_time[0]   ||
-       ccpars_global.dyn_eco_time[1] > ccrun.cycle_duration)
+       ccpars_global.dyn_eco_time[1] > ccrun.cycle_end_time)
     {
-        return;
+        return(false);
     }
 
     // If dynamic economy PLEP needs to be initialised
 
-    if(ccrun.dyn_eco.fgen_func == NULL)
+    if(ccrun.dyn_eco.fg_func == NULL)
     {
-        struct fg_meta  meta;
-        float           final_ref1;
-        double          end_time  = ccpars_global.dyn_eco_time[1];
-        double          end_time1 = ccpars_global.dyn_eco_time[1] + reg_mgr.reg_period;
+        float  final_ref1;
+        float  end_time  = ccpars_global.dyn_eco_time[1] - ccrun.cycle_time_origin + reg_mgr.ref_advance;;
+        float  end_time1 = end_time + reg_mgr.reg_period;
+
+        ccrun.dyn_eco.fg_func = ccrun.fg_func;
 
         // Evaluate function on consecutive regulation periods at the end of the window to work out the rate
 
-        ccrun.fgen_func(ccrun.fgen_pars, &end_time,  &final_ref);
-        ccrun.fgen_func(ccrun.fgen_pars, &end_time1, &final_ref1);
+        ccrun.fg_func(ccrun.fg_func_pars, end_time,  &final_ref);
+        ccrun.fg_func(ccrun.fg_func_pars, end_time1, &final_ref1);
 
         // If the PLEP initialises without errors and the start time of the PLEP is still in the future
 
         if(fgPlepInit(  NULL, 
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        0.0, 
                         ref, 
                         final_ref,
                         (final_ref1 - final_ref) / reg_mgr.reg_period,
@@ -259,49 +262,60 @@ static void ccDynamicEconomy(double ref_time, float ref)
                         ccpars_default.pars[reg_mgr.reg_mode].linear_rate,
                         0.0,
                         0.0,
-                        &ccrun.dyn_eco.pars, 
-                        &meta) == FG_OK &&
-           (ccrun.dyn_eco.pars.delay = ccpars_global.dyn_eco_time[1] - meta.duration) >= ref_time)
+                        (FG_pars *)&ccrun.dyn_eco.pars,
+                        NULL) == FG_OK &&
+           (ccrun.dyn_eco.time_offset = end_time - ccrun.dyn_eco.pars.meta.time.duration) >= ref_time)
         {
             uint32_t log_length = ccrun.dyn_eco.log.length++;
 
             // Log starting point
 
-            ccrun.dyn_eco.log.time[log_length] = ref_time;
+            ccrun.dyn_eco.log.time[log_length] = iter_time;
             ccrun.dyn_eco.log.ref [log_length] = ref;
 
             // Switch running function for PLEP to execute the dynamic economy section
 
-            ccrun.dyn_eco.fgen_func = ccrun.fgen_func;
-            ccrun.dyn_eco.fgen_pars = ccrun.fgen_pars;
+            ccrun.dyn_eco.fg_func_pars = ccrun.fg_func_pars;
 
-            ccrun.fgen_func = fgPlepGen;
-            ccrun.fgen_pars = &ccrun.dyn_eco.pars;
+            ccrun.fg_func      = fgPlepRT;
+            ccrun.fg_func_pars = (FG_pars *)&ccrun.dyn_eco.pars;
 
         }
         else
         {
             // Skip dynamic economy section completely
 
-            ccrun.dyn_eco.fgen_pars = NULL;
+            ccrun.dyn_eco.fg_func_pars = NULL;
+            ccrun.dyn_eco.time_offset  = 0.0;
         }
     }
-    else if(ref_time >= ccpars_global.dyn_eco_time[1] && ccrun.dyn_eco.fgen_pars != NULL)
+
+    // If dynamic economy function was initialised successfully
+
+    if(ccrun.dyn_eco.fg_func_pars != NULL)
     {
-        uint32_t log_length = ccrun.dyn_eco.log.length++;
+        if(iter_time >= ccpars_global.dyn_eco_time[1])
+        {
+            uint32_t log_length = ccrun.dyn_eco.log.length++;
 
-        // Log end point
+            ccrun.dyn_eco.log.time[log_length] = ccpars_global.dyn_eco_time[1];
+            ccrun.dyn_eco.log.ref [log_length] = final_ref;
 
-        ccrun.dyn_eco.log.time[log_length] = ccpars_global.dyn_eco_time[1];
-        ccrun.dyn_eco.log.ref [log_length] = final_ref;
+            // Resume previous function
 
-        // Resume previous function
+            ccrun.fg_func      = ccrun.dyn_eco.fg_func;
+            ccrun.fg_func_pars = ccrun.dyn_eco.fg_func_pars;
 
-        ccrun.fgen_func = ccrun.dyn_eco.fgen_func;
-        ccrun.fgen_pars = ccrun.dyn_eco.fgen_pars;
+            ccrun.dyn_eco.fg_func_pars = NULL;
+            ccrun.dyn_eco.time_offset  = 0.0;
 
-        ccrun.dyn_eco.fgen_pars = NULL;
+            return(false);
+        }
+
+        return(true);
     }
+
+    return(false);
 }
 /*---------------------------------------------------------------------------------------------------------*/
 static uint32_t ccRunAbort(double iter_time)
@@ -311,8 +325,7 @@ static uint32_t ccRunAbort(double iter_time)
   or field.  In this example, the rate of change is calculated from the ref values in the RST history.
 \*---------------------------------------------------------------------------------------------------------*/
 {
-    struct fg_meta  meta;
-    float           acceleration = reg_mgr.lim_ref->acceleration;
+    float  acceleration = reg_mgr.lim_ref->acceleration;
 
     // If acceleration limit is not set then base the acceleration limit on the rate limit
 
@@ -327,28 +340,27 @@ static uint32_t ccRunAbort(double iter_time)
                ccpars_limits.invert, 
                0.0,
                regRstDeltaRefRT(&reg_mgr.reg_signal->rst_vars) / reg_mgr.reg_period,  // last reference rate
-               regRstPrevRefRT (&reg_mgr.reg_signal->rst_vars),                    // last reference value
+               regRstPrevRefRT (&reg_mgr.reg_signal->rst_vars),                       // last reference value
                0.0,                                                             // final reference value
                acceleration,
                reg_mgr.lim_ref->rate,
                acceleration,
-               &fg_ramp[0],
-               &meta);
+               &ccrun.prefunc.pars);
 
     // Check that abort duration is not too large (limit to 50000 iterations)
     // This can be a problem if the exponential decay is included and the exp_final parameter is too close
     // to zero.
 
-    if(((meta.duration - iter_time) / reg_mgr.iter_period) > 50000)
+    if(((ccrun.prefunc.pars.meta.time.duration - iter_time) / reg_mgr.iter_period) > 50000)
     {
-        ccParsPrintError("aborting requires more than 50000 iterations : duration = %.1f\n",meta.duration);
+        ccParsPrintError("aborting requires more than 50000 iterations : duration = %.1f\n",ccrun.prefunc.pars.meta.time.duration);
         return(EXIT_FAILURE);
     }
 
-    ccrun.cycle_start_time = iter_time + reg_mgr.ref_advance;
+    ccrun.cycle_time_origin = iter_time + reg_mgr.ref_advance;
 
-    ccrun.fgen_func =  fgRampGen;
-    ccrun.fgen_pars = &fg_ramp[0];
+    ccrun.fg_func      =  fgRampRT;
+    ccrun.fg_func_pars = (FG_pars*)&ccrun.prefunc.pars;
 
     // Cancel any subsequent functions
 
@@ -371,15 +383,14 @@ void ccRunSimulation(void)
   or enabled (FIELD or CURRENT). Multiple reference functions can be played in a sequence.
 \*---------------------------------------------------------------------------------------------------------*/
 {
-    uint32_t           iteration_idx          = 0;        // Iteration index
-    bool               is_abort_active        = false;    // Abort function flag
-    float              ref;                               // Function generator reference value
-    float              perturb_volts          = 0.0;      // Voltage perturbation to apply to circuit
-    double             iter_time              = 0.0;      // Iteration time (since start of run)
-    double             ref_time               = 0.0;      // Reference time (since start of function)
-    double             trip_time              = 0.0;
-    bool               is_max_abs_err_enabled = false;    // Control max_abs_err calculation
-    enum fg_gen_status fg_gen_status;                     // Function generation status
+    bool                is_abort_active        = false;    // Abort function flag
+    float               ref;                               // Function generator reference value
+    float               perturb_volts          = 0.0;      // Voltage perturbation to apply to circuit
+    double              iter_time              = 0.0;      // Iteration time (since start of run)
+    double              ref_time               = 0.0;      // Reference time (since start of function)
+    double              trip_time              = 0.0;
+    bool                is_max_abs_err_enabled = false;    // Control max_abs_err calculation
+    enum FG_func_status fg_func_status;                    // Function generation status
 
     // Prepare to generation the first function with no pre-function
 
@@ -393,7 +404,7 @@ void ccRunSimulation(void)
 
     regMgrMeasSetRT(&reg_mgr, ccrun.cycle[0].reg_rst_source, 0, 0, true, is_max_abs_err_enabled);
 
-    ref = ccrun.fg_meta[ccrun.cyc_sel].range.start;
+    ref = ccrun.fg_pars[ccrun.cyc_sel].meta.range.initial_ref;
 
     ccRunStartFunction(iter_time, &ref);
 
@@ -407,7 +418,7 @@ void ccRunSimulation(void)
 
         // Calculate reference time taking into account the ref advance for the active regulation mode
 
-        ref_time = iter_time - ccrun.cycle_start_time + reg_mgr.ref_advance;
+        ref_time = iter_time - ccrun.cycle_time_origin + reg_mgr.ref_advance;
 
         // Set measurements to simulated values but support bad value with a defined probability
         // The "real" measurements are invalid while the simulated measurements are good
@@ -429,14 +440,12 @@ void ccRunSimulation(void)
 
             if(reg_iteration_counter == 0)
             {
-                if(ccpars_global.dyn_eco_time[0] > 0.0)
+                if(ccpars_global.dyn_eco_time[0] > 0.0 && ccDynamicEconomy(iter_time, ref_time, ref) == true)
                 {
-                    ccDynamicEconomy(ref_time, ref);
+                    ref_time -= ccrun.dyn_eco.time_offset;
                 }
 
-                fg_gen_status = ccrun.fgen_func(ccrun.fgen_pars, &ref_time, &ref);
-
-                is_max_abs_err_enabled = ccrun.prefunc.idx == 0 && fg_gen_status == FG_GEN_DURING_FUNC;
+                fg_func_status = ccrun.fg_func(ccrun.fg_func_pars, ref_time, &ref);
             }
 
             // Call ConvRegulate every iteration to keep RST histories up to date
@@ -461,14 +470,20 @@ void ccRunSimulation(void)
 
                 // else if function has finished
 
-                else if(fg_gen_status == FG_GEN_POST_FUNC)
+                else if(fg_func_status == FG_GEN_POST_FUNC && iter_time > ccrun.cycle_end_time)
                 {
+                    is_max_abs_err_enabled = false;
+
                     // Starting a new function can change conv.reg_mode, but not our local copy of reg_mode
 
                     if(ccRunStartFunction(iter_time, &ref) == 0)
                     {
                         break;
                     }
+                }
+                else
+                {
+                    is_max_abs_err_enabled = ccrun.prefunc.idx == 0 && fg_func_status != FG_GEN_PRE_FUNC;
                 }
             }
         }
@@ -482,7 +497,7 @@ void ccRunSimulation(void)
 
         // Simulate voltage source and load response (with voltage perturbation)
 
-        regMgrSimulateRT(&reg_mgr, NULL, perturb_volts);
+        regMgrSimulateRT(&reg_mgr, perturb_volts);
 
         // Check if simulated converter should be trip
 
@@ -548,7 +563,7 @@ void ccRunSimulation(void)
 
         // Calculate next iteration time
 
-        iter_time = reg_mgr.iter_period * ++iteration_idx;
+        iter_time += reg_mgr.iter_period;
     }
 }
 /*---------------------------------------------------------------------------------------------------------*/
@@ -559,36 +574,35 @@ void ccRunFuncGen(void)
 {
     uint32_t    cyc_sel;                    // Cycle selector for the current cycle
     uint32_t    func_idx;                   // Function index
-    uint32_t    iteration_idx   = 0;        // Iteration index
-    double      iter_time       = 0.0;      // Iteration time (since start of run)
+    double      iter_time;                  // Iteration time (since start of run)
     double      ref_time;                   // Reference time (since start of function)
-    double      cycle_start_time;           // Cycle start time (relative to start of run)
-    enum fg_gen_status fg_gen_status;       // Function generation status
+    enum FG_func_status fg_gen_status;       // Function generation status
 
     // Prepare to generation the first function
 
-    cyc_sel              = ccpars_global.cycle_selector[0];
-    func_idx             = ccpars_ref[cyc_sel].function;
-    ccrun.cycle_idx      = 0;
-    ccrun.cycle_duration = ccpars_global.run_delay + ccrun.fg_meta[cyc_sel].duration;
-    ccrun.fgen_func      = funcs[func_idx].fgen_func;
-    ccrun.fgen_pars      = funcs[func_idx].fg_pars + funcs[func_idx].size_of_pars * cyc_sel;
-
-    ccrun.cycle[0].start_time = cycle_start_time = 0.0;
+    cyc_sel                   = ccpars_global.cycle_selector[0];
+    func_idx                  = ccpars_ref[cyc_sel].function;
+    ccrun.cycle_idx           = 0;
+    ccrun.cycle_time_origin   = 0.0;
+    ccrun.cycle_end_time      = ccrun.fg_pars[cyc_sel].meta.time.end;
+    ccrun.fg_func             = funcs[func_idx].fg_func;
+    ccrun.fg_func_pars        = &ccrun.fg_pars[cyc_sel];
+    iter_time                 = ccrun.fg_pars[cyc_sel].meta.time.start - ccpars_global.run_delay;
+    ccrun.cycle[0].start_time = ccrun.fg_pars[cyc_sel].meta.time.start;
 
     // Loop until all functions have completed
 
     for(;;)
     {
-        ref_time = iter_time - cycle_start_time;
+        ref_time = iter_time - ccrun.cycle_time_origin;
 
         // Generate reference value using libfg function
 
-        fg_gen_status = ccrun.fgen_func(ccrun.fgen_pars, &ref_time, &reg_mgr.v.ref);
+        fg_gen_status = ccrun.fg_func(ccrun.fg_func_pars, ref_time, &reg_mgr.v.ref);
 
         // If reference function has finished
 
-        if(ref_time > ccrun.cycle_duration && fg_gen_status == FG_GEN_POST_FUNC)
+        if(ref_time > ccrun.cycle_end_time && fg_gen_status == FG_GEN_POST_FUNC)
         {
             // If not yet into the stop delay period, advance to next function
 
@@ -602,17 +616,19 @@ void ccRunFuncGen(void)
 
                     cyc_sel              = ccpars_global.cycle_selector[ccrun.cycle_idx];
                     func_idx             = ccpars_ref[cyc_sel].function;
-                    ccrun.cycle_duration = ccpars_global.run_delay + ccrun.fg_meta[cyc_sel].duration;
-                    ccrun.fgen_func      = funcs[func_idx].fgen_func;
-                    ccrun.fgen_pars      = funcs[func_idx].fg_pars + funcs[func_idx].size_of_pars * cyc_sel;
+                    ccrun.cycle_end_time = ccrun.fg_pars[cyc_sel].meta.time.end;
+                    ccrun.fg_func        = funcs[func_idx].fg_func;
+                    ccrun.fg_func_pars   = &ccrun.fg_pars[cyc_sel];
 
-                    ccrun.cycle[ccrun.cycle_idx].start_time = cycle_start_time = iter_time + ccpars_default.plateau_duration;
+                    ccrun.cycle_time_origin = iter_time + ccpars_default.plateau_duration - ccrun.fg_pars[cyc_sel].meta.time.start;
+
+                    ccrun.cycle[ccrun.cycle_idx].start_time = ccrun.cycle_time_origin + ccrun.fg_pars[cyc_sel].meta.time.start;
                 }
                 else // else last function completed
                 {
                     // Set duration to the stop delay and continue to use the last function
 
-                    ccrun.cycle_duration = ref_time + ccpars_global.stop_delay;
+                    ccrun.cycle_end_time = ref_time + ccpars_global.stop_delay;
                 }
             }
             else // else stop delay is complete so break out of loop
@@ -628,7 +644,7 @@ void ccRunFuncGen(void)
 
         // Calculate next iteration time
 
-        iter_time = reg_mgr.iter_period * ++iteration_idx;
+        iter_time += reg_mgr.iter_period;
     }
 }
 /*---------------------------------------------------------------------------------------------------------*/
@@ -639,36 +655,37 @@ void ccRunFuncGenReverseTime(void)
 {
     uint32_t    cyc_sel;                // Cycle selector for the current cycle
     uint32_t    iteration_idx;          // Iteration index
-    double      iter_time;              // Iteration time (runs backwards)
+    double      func_time;              // Function time (runs backwards)
+    double      end_time;               // End of function time
 
     // Reverse time can only be used with a single function
 
     cyc_sel              = ccpars_global.cycle_selector[0];
     ccrun.cycle_idx      = 0;
-    ccrun.cycle_duration = ccpars_global.run_delay + ccrun.fg_meta[cyc_sel].duration + ccpars_global.stop_delay;
-    ccrun.fgen_func      =  funcs[ccpars_ref[cyc_sel].function].fgen_func;
-    ccrun.fgen_pars      = &funcs[ccpars_ref[cyc_sel].function].fg_pars[cyc_sel];
+    ccrun.cycle_end_time = ccpars_global.run_delay + ccrun.fg_pars[cyc_sel].meta.time.duration + ccpars_global.stop_delay;
+    ccrun.fg_func        = funcs[ccpars_ref[cyc_sel].function].fg_func;
+    ccrun.fg_func_pars   = &ccrun.fg_pars[cyc_sel];
+    end_time             = ccrun.fg_pars[cyc_sel].meta.time.end + ccpars_global.stop_delay;
 
-    ccrun.num_iterations = (uint32_t)(1.4999 + ccrun.cycle_duration / reg_mgr.iter_period);
+    ccrun.num_iterations = (uint32_t)(1.4999 + ccrun.cycle_end_time / reg_mgr.iter_period);
 
     ccrun.cycle[0].start_time = 0.0;
 
     // Loop for the duration of the function plus stop delay
 
-    for(iteration_idx = 0 ; iteration_idx < ccrun.num_iterations ; iteration_idx++)
+    for(iteration_idx = 0 ; iteration_idx <= ccrun.num_iterations ; iteration_idx++)
     {
         // Calculate iteration time
 
-        iter_time = reg_mgr.iter_period * (ccrun.num_iterations - iteration_idx - 1);
+        func_time = end_time - reg_mgr.iter_period * iteration_idx;
 
         // Generate reference value using libfg function
 
-        ccrun.fgen_func(ccrun.fgen_pars, &iter_time, &reg_mgr.v.ref);
+        ccrun.fg_func(ccrun.fg_func_pars, func_time, &reg_mgr.v.ref);
 
-        // Store and print enabled signals
+        // Only support writing to CSV file
 
-        ccLogStoreMeas(iter_time);
-        ccFileWriteCsvValues(iter_time);
+        ccFileWriteCsvValues(func_time);
     }
 }
 // EOF

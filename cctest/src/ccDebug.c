@@ -26,6 +26,7 @@
 
 // Include cctest program header files
 
+#include "libfg.h"
 #include "ccRef.h"
 #include "ccRun.h"
 #include "ccPars.h"
@@ -64,30 +65,31 @@ static void ccDebugFuncMeta(FILE *f, char *prefix, uint32_t cyc_sel)
 
     fprintf(f,"%s " PARS_STRING_FORMAT "\n", ccDebugLabel("%s function(%u)"               , prefix, cyc_sel), ccParsEnumString(enum_function_type,    ccpars_ref[cyc_sel].function));
     fprintf(f,"%s " PARS_STRING_FORMAT "\n", ccDebugLabel("%s reg_mode(%u)"               , prefix, cyc_sel), ccParsEnumString(enum_reg_mode,         ccpars_ref[cyc_sel].reg_mode));
-    fprintf(f,"%s " PARS_STRING_FORMAT "\n", ccDebugLabel("%s fg_meta(%u).polarity"       , prefix, cyc_sel), ccParsEnumString(enum_func_pol,         ccrun.fg_meta[cyc_sel].polarity));
-    fprintf(f,"%s " PARS_STRING_FORMAT "\n", ccDebugLabel("%s fg_meta(%u).limits_inverted", prefix, cyc_sel), ccParsEnumString(enum_enabled_disabled, ccrun.fg_meta[cyc_sel].limits_inverted));
+    fprintf(f,"%s " PARS_STRING_FORMAT "\n", ccDebugLabel("%s fg_meta(%u).polarity"       , prefix, cyc_sel), ccParsEnumString(enum_func_pol,         ccrun.fg_pars[cyc_sel].meta.polarity));
+    fprintf(f,"%s " PARS_STRING_FORMAT "\n", ccDebugLabel("%s fg_meta(%u).limits_inverted", prefix, cyc_sel), ccParsEnumString(enum_enabled_disabled, ccrun.fg_pars[cyc_sel].meta.limits_inverted));
 
-    if(ccrun.fg_meta[cyc_sel].fg_error != FG_OK)
+    if(ccrun.fg_error[cyc_sel].fg_errno != FG_OK)
     {
-        fprintf(f,"%s " PARS_STRING_FORMAT "\n", ccDebugLabel("%s fg_meta(%u).fg_error"   , prefix, cyc_sel), ccParsEnumString(enum_fg_error, ccrun.fg_meta[cyc_sel].fg_error));
-        fprintf(f,"%s " PARS_INT_FORMAT    "\n", ccDebugLabel("%s fg_meta(%u).error.index", prefix, cyc_sel), ccrun.fg_meta[cyc_sel].error.index);
-        fprintf(f,"%s",                          ccDebugLabel("%s fg_meta(%u).error.data ", prefix, cyc_sel));
+        fprintf(f,"%s " PARS_STRING_FORMAT "\n", ccDebugLabel("%s fg_error(%u).fg_errno", prefix, cyc_sel), ccParsEnumString(enum_fg_error, ccrun.fg_error[cyc_sel].fg_errno));
+        fprintf(f,"%s " PARS_INT_FORMAT    "\n", ccDebugLabel("%s fg_error(%u).index",    prefix, cyc_sel), ccrun.fg_error[cyc_sel].index);
+        fprintf(f,"%s",                          ccDebugLabel("%s fg_error(%u).data ",    prefix, cyc_sel));
 
         for(i = 0 ; i < FG_ERR_DATA_LEN ; i++)
         {
-            fprintf(f," " PARS_FLOAT_FORMAT, ccrun.fg_meta[cyc_sel].error.data[i]);
+            fprintf(f," " PARS_FLOAT_FORMAT, ccrun.fg_error[cyc_sel].data[i]);
         }
 
         fputc('\n',f);
     }
 
-    fprintf(f,"%s " PARS_TIME_FORMAT  "\n",  ccDebugLabel("%s fg_meta(%u).delay"           , prefix, cyc_sel), ccrun.fg_meta[cyc_sel].delay           );
-    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).duration"        , prefix, cyc_sel), ccrun.fg_meta[cyc_sel].duration        );
-    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).range.start"     , prefix, cyc_sel), ccrun.fg_meta[cyc_sel].range.start     );
-    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).range.end"       , prefix, cyc_sel), ccrun.fg_meta[cyc_sel].range.end       );
-    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).range.min"       , prefix, cyc_sel), ccrun.fg_meta[cyc_sel].range.min       );
-    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).range.max"       , prefix, cyc_sel), ccrun.fg_meta[cyc_sel].range.max       );
-    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n\n",ccDebugLabel("%s fg_meta(%u).range.final_rate", prefix, cyc_sel), ccrun.fg_meta[cyc_sel].range.final_rate);
+    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).time.start"       , prefix, cyc_sel), ccrun.fg_pars[cyc_sel].meta.time.start       );
+    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).time.end"         , prefix, cyc_sel), ccrun.fg_pars[cyc_sel].meta.time.end         );
+    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).time.duration"    , prefix, cyc_sel), ccrun.fg_pars[cyc_sel].meta.time.duration    );
+    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).range.initial_ref", prefix, cyc_sel), ccrun.fg_pars[cyc_sel].meta.range.initial_ref);
+    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).range.final_ref"  , prefix, cyc_sel), ccrun.fg_pars[cyc_sel].meta.range.final_ref  );
+    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).range.min_ref"    , prefix, cyc_sel), ccrun.fg_pars[cyc_sel].meta.range.min_ref    );
+    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n",  ccDebugLabel("%s fg_meta(%u).range.max_ref"    , prefix, cyc_sel), ccrun.fg_pars[cyc_sel].meta.range.max_ref    );
+    fprintf(f,"%s " PARS_FLOAT_FORMAT "\n\n",ccDebugLabel("%s fg_meta(%u).range.final_rate" , prefix, cyc_sel), ccrun.fg_pars[cyc_sel].meta.range.final_rate );
 }
 
 
@@ -110,7 +112,7 @@ static void ccDebugPrintCycle(FILE *f, uint32_t cycle_idx)
 
 
 
-static void ccDebugPrintLoad(FILE *f, char *prefix, struct reg_load_pars *load_pars)
+static void ccDebugPrintLoad(FILE *f, char *prefix, struct REG_load_pars *load_pars)
 {
     // Report internally calculated load parameters
 
@@ -141,7 +143,7 @@ static void ccDebugPrintLoad(FILE *f, char *prefix, struct reg_load_pars *load_p
 
 
 
-static void ccDebugPrintMeas(FILE *f, char *prefix, struct reg_meas_filter *meas_filter)
+static void ccDebugPrintMeas(FILE *f, char *prefix, struct REG_meas_filter *meas_filter)
 {
     fprintf(f,"%s " PARS_INT_FORMAT   "\n",  ccDebugLabel("%s fir_length[0]"          , prefix), meas_filter->fir_length[0]          );
     fprintf(f,"%s " PARS_INT_FORMAT   "\n",  ccDebugLabel("%s fir_length[1]"          , prefix), meas_filter->fir_length[1]          );
@@ -155,12 +157,14 @@ static void ccDebugPrintMeas(FILE *f, char *prefix, struct reg_meas_filter *meas
 
 
 
-static void ccDebugPrintReg(FILE *f, char *prefix, struct reg_rst_pars *rst_pars)
+static void ccDebugPrintReg(FILE *f, char *prefix, struct REG_rst_pars *rst_pars)
 {
     uint32_t i;
 
     fprintf(f,"%s " PARS_STRING_FORMAT "\n", ccDebugLabel("%s status"             , prefix), ccParsEnumString(enum_reg_status,       rst_pars->status));
     fprintf(f,"%s " PARS_STRING_FORMAT "\n", ccDebugLabel("%s jurys_result"       , prefix), ccParsEnumString(enum_reg_jurys_result, rst_pars->jurys_result));
+    fprintf(f,"%s " PARS_FLOAT_FORMAT  "\n", ccDebugLabel("%s sum_even_s"         , prefix), rst_pars->sum_even_s             );
+    fprintf(f,"%s " PARS_FLOAT_FORMAT  "\n", ccDebugLabel("%s sum_odd_s"          , prefix), rst_pars->sum_odd_s              );
     fprintf(f,"%s " PARS_INT_FORMAT    "\n", ccDebugLabel("%s alg_index"          , prefix), rst_pars->alg_index              );
     fprintf(f,"%s " PARS_INT_FORMAT    "\n", ccDebugLabel("%s dead_beat"          , prefix), rst_pars->dead_beat              );
     fprintf(f,"%s " PARS_FLOAT_FORMAT  "\n", ccDebugLabel("%s modulus_margin"     , prefix), rst_pars->modulus_margin         );

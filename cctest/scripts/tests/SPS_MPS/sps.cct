@@ -32,9 +32,9 @@ LIMITS V_QUADRANTS41        0.0,0.0
 # Voltage source parameters
 
 PC ACT_DELAY_ITERS          1.0
-PC BANDWIDTH                10000.0
-PC TAU_ZERO                 0.0
-PC Z                        0.9
+PC SIM_BANDWIDTH            10000.0
+PC SIM_TAU_ZERO             0.0
+PC SIM_Z                    0.9
 
 # Load parameters (common to RB and QF circuits)
 
@@ -50,8 +50,8 @@ MEAS V_DELAY_ITERS          1.3
 MEAS I_FIR_LENGTHS          3,1
 MEAS I_SIM_NOISE_PP         0.03
 MEAS V_SIM_NOISE_PP         0.05
-MEAS TONE_HALF_PERIOD_ITERS 100
-MEAS I_SIM_TONE_AMP         0.0
+MEAS SIM_TONE_PERIOD_ITERS  200
+MEAS I_SIM_TONE_PP          0.0
 
 # Current regulation
 

@@ -33,19 +33,16 @@
 #include "ccRef.h"
 
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_gen_status ccRefDirectGen(struct fg_table *pars, const double *time, float *ref)
+enum FG_func_status ccRefDirectRT(union FG_pars *pars, FG_float func_time, float *ref)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    double                       func_time;              // Time since end of run delay
     float                        prev_rate;
     static float                 prev_ref;
     static float                 next_ref;
     static float                 final_ref;
-    static enum fg_gen_status    fg_gen_status;
+    static enum FG_func_status    fg_gen_status;
 
-    // Coast during run delay
-
-    func_time = *time - pars->delay;
+    // Pre-function coast
 
     if(func_time < 0.0)
     {
@@ -54,7 +51,7 @@ enum fg_gen_status ccRefDirectGen(struct fg_table *pars, const double *time, flo
 
     // If DIRECT function is already running
 
-    if(pars->seg_idx > 0)
+    if(pars->table.seg_idx > 0)
     {
         prev_rate = (*ref - prev_ref) / reg_mgr.reg_period;
         prev_ref  = *ref;
@@ -71,11 +68,11 @@ enum fg_gen_status ccRefDirectGen(struct fg_table *pars, const double *time, flo
 
     // Scan through table to find segment containing the current time
 
-    while(func_time >= pars->time[pars->seg_idx])      // while time exceeds end of segment
+    while(func_time >= pars->table.time[pars->table.seg_idx])      // while time exceeds end of segment
     {
         // If vector is already complete or is now complete
 
-        if(pars->seg_idx >= pars->num_points || ++pars->seg_idx >= pars->num_points)
+        if(pars->table.seg_idx >= pars->table.num_points || ++pars->table.seg_idx >= pars->table.num_points)
         {
             // Return function running flag from RAMP function
 
@@ -85,11 +82,11 @@ enum fg_gen_status ccRefDirectGen(struct fg_table *pars, const double *time, flo
 
     // If target reference has changed then re-arm the RAMP function
 
-    if(pars->ref[pars->seg_idx] != next_ref)
+    if(pars->table.ref[pars->table.seg_idx] != next_ref)
     {
         // Initialise RAMP based on reg_mode
 
-        final_ref = next_ref = pars->ref[pars->seg_idx];
+        final_ref = next_ref = pars->table.ref[pars->table.seg_idx];
 
         // Clip reference
 
@@ -127,22 +124,20 @@ enum fg_gen_status ccRefDirectGen(struct fg_table *pars, const double *time, flo
                    ccpars_default.pars[reg_mgr.reg_mode].acceleration,
                    ccpars_default.pars[reg_mgr.reg_mode].linear_rate,
                    ccpars_default.pars[reg_mgr.reg_mode].deceleration,
-                   &ccrun.prefunc.pars,
-                   NULL);
+                   &ccrun.prefunc.pars);
     }
 
-    fg_gen_status = fgRampGen(&ccrun.prefunc.pars, &func_time, ref);
+    fg_gen_status = fgRampRT((FG_pars *)&ccrun.prefunc.pars, func_time, ref);
 
     return(FG_GEN_DURING_FUNC);
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitPLEP(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitPLEP(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgPlepInit(  ccrun.fg_limits,
+    return(fgPlepInit(  ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        ccpars_global.run_delay,
                         ccpars_plep[cyc_sel].initial_ref,
                         ccpars_plep[cyc_sel].final_ref,
                         ccpars_plep[cyc_sel].final_rate,
@@ -150,33 +145,32 @@ enum fg_error ccRefInitPLEP(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         ccpars_plep[cyc_sel].linear_rate,
                         ccpars_plep[cyc_sel].exp_tc,
                         ccpars_plep[cyc_sel].exp_final,
-                        &fg_plep[cyc_sel],
-                        fg_meta));
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitRAMP(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitRAMP(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgRampInit(  ccrun.fg_limits,
+    return(fgRampInit(  ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
-                        ccpars_limits.invert, 
-                        ccpars_global.run_delay,
+                        ccpars_limits.invert,
+                        ccpars_ramp[cyc_sel].start_time,
                         ccpars_ramp[cyc_sel].initial_ref,
                         ccpars_ramp[cyc_sel].final_ref,
                         ccpars_ramp[cyc_sel].acceleration,
                         ccpars_ramp[cyc_sel].linear_rate,
                         ccpars_ramp[cyc_sel].deceleration,
-                        &fg_ramp[cyc_sel],
-                        fg_meta));
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitPPPL(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitPPPL(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgPpplInit(  ccrun.fg_limits,
+    return(fgPpplInit(  ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        ccpars_global.run_delay,
                         ccpars_pppl[cyc_sel].initial_ref,
                         ccpars_pppl[cyc_sel].acceleration1,
                         pppl_pars[1].num_elements[cyc_sel],
@@ -192,34 +186,33 @@ enum fg_error ccRefInitPPPL(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         pppl_pars[6].num_elements[cyc_sel],
                         ccpars_pppl[cyc_sel].duration4,
                         pppl_pars[7].num_elements[cyc_sel],
-                        &fg_pppl[cyc_sel],
-                        fg_meta));
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitTABLE(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitTABLE(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgTableInit( ccrun.fg_limits,
+    return(fgTableInit( ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        ccpars_global.run_delay,
                         reg_mgr.iter_period,
                         ccpars_table[cyc_sel].ref,
                         table_pars[0].num_elements[cyc_sel],
                         ccpars_table[cyc_sel].time,
                         table_pars[1].num_elements[cyc_sel],
-                        &fg_table[cyc_sel],
-                        fg_meta));
-    return(EXIT_SUCCESS);
+                        NULL,
+                        NULL,
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitSTEPS(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitSTEPS(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgTestInit(  ccrun.fg_limits,
+    return(fgTestInit(  ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        ccpars_global.run_delay,
                         FG_TEST_STEPS,
                         ccpars_test[cyc_sel].initial_ref,
                         ccpars_test[cyc_sel].amplitude_pp,
@@ -227,17 +220,16 @@ enum fg_error ccRefInitSTEPS(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         ccpars_test[cyc_sel].period,
                         false,                                  // is_window_active not used for STEPS
                         false,                                  // is_exp_decay_active not used for STEPS
-                        &fg_test[cyc_sel],
-                        fg_meta));
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitSQUARE(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitSQUARE(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgTestInit(  ccrun.fg_limits,
+    return(fgTestInit(  ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        ccpars_global.run_delay,
                         FG_TEST_SQUARE,
                         ccpars_test[cyc_sel].initial_ref,
                         ccpars_test[cyc_sel].amplitude_pp,
@@ -245,17 +237,16 @@ enum fg_error ccRefInitSQUARE(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         ccpars_test[cyc_sel].period,
                         false,                                  // is_window_active not used for SQUARE
                         false,                                  // is_exp_decay_active not used for SQUARE
-                        &fg_test[cyc_sel],
-                        fg_meta));
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitSINE(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitSINE(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgTestInit(  ccrun.fg_limits,
+    return(fgTestInit(  ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        ccpars_global.run_delay,
                         FG_TEST_SINE,
                         ccpars_test[cyc_sel].initial_ref,
                         ccpars_test[cyc_sel].amplitude_pp,
@@ -263,17 +254,16 @@ enum fg_error ccRefInitSINE(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         ccpars_test[cyc_sel].period,
                         ccpars_test[cyc_sel].use_window,
                         ccpars_test[cyc_sel].use_exp_decay,
-                        &fg_test[cyc_sel],
-                        fg_meta));
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitCOSINE(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitCOSINE(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgTestInit(  ccrun.fg_limits,
+    return(fgTestInit(  ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        ccpars_global.run_delay,
                         FG_TEST_COSINE,
                         ccpars_test[cyc_sel].initial_ref,
                         ccpars_test[cyc_sel].amplitude_pp,
@@ -281,52 +271,50 @@ enum fg_error ccRefInitCOSINE(struct fg_meta *fg_meta, uint32_t cyc_sel)
                         ccpars_test[cyc_sel].period,
                         ccpars_test[cyc_sel].use_window,
                         ccpars_test[cyc_sel].use_exp_decay,
-                        &fg_test[cyc_sel],
-                        fg_meta));
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitLTRIM(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitLTRIM(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgTrimInit(  ccrun.fg_limits,
+    return(fgTrimInit(  ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        ccpars_global.run_delay,
                         FG_TRIM_LINEAR,
                         ccpars_trim[cyc_sel].initial_ref,
                         ccpars_trim[cyc_sel].final_ref,
                         ccpars_trim[cyc_sel].duration,
-                        &fg_trim[cyc_sel],
-                        fg_meta));
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitCTRIM(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitCTRIM(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgTrimInit(  ccrun.fg_limits,
+    return(fgTrimInit(  ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        ccpars_global.run_delay,
                         FG_TRIM_CUBIC,
                         ccpars_trim[cyc_sel].initial_ref,
                         ccpars_trim[cyc_sel].final_ref,
                         ccpars_trim[cyc_sel].duration,
-                        &fg_trim[cyc_sel],
-                        fg_meta));
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 /*---------------------------------------------------------------------------------------------------------*/
-enum fg_error ccRefInitPULSE(struct fg_meta *fg_meta, uint32_t cyc_sel)
+enum FG_errno ccRefInitPULSE(struct FG_error *fg_error, uint32_t cyc_sel)
 /*---------------------------------------------------------------------------------------------------------*/
 {
-    return(fgPulseInit( ccrun.fg_limits,
+    return(fgPulseInit( ccrun.fg_func_limits,
                         ccpars_load.pol_swi_auto,
                         ccpars_limits.invert, 
-                        ccpars_global.run_delay + ccpars_pulse[cyc_sel].time,
                         ccpars_pulse[cyc_sel].ref,
+                        ccpars_pulse[cyc_sel].acceleration,
                         ccpars_pulse[cyc_sel].linear_rate,
                         ccpars_pulse[cyc_sel].duration,
-                        &fg_pulse[cyc_sel],
-                        fg_meta));
+                        &ccrun.fg_pars[cyc_sel],
+                        fg_error));
 }
 
 // EOF

@@ -36,7 +36,7 @@
 
 // Load parameters structure
 
-struct ccpars_load
+struct CCpars_load
 {
     // Load file parameters
 
@@ -56,10 +56,10 @@ struct ccpars_load
     float       perturb_volts;                      // Open loop voltage perturbation
     float       perturb_time;                       // Time for open loop voltage perturbation
 
-    enum reg_enabled_disabled pol_swi_auto;         // Auto polarity switch will follow function
+    enum REG_enabled_disabled pol_swi_auto;         // Auto polarity switch will follow function
 };
 
-CCPARS_LOAD_EXT struct ccpars_load ccpars_load
+CCPARS_LOAD_EXT struct CCpars_load ccpars_load
 #ifdef GLOBALS
 = {//   Default values                        Parameter
     {   0.5,   0.5,   0.5,   0.5, },       // LOAD OHMS_SER
@@ -82,7 +82,7 @@ CCPARS_LOAD_EXT struct ccpars_load ccpars_load
 
 // Load parameters description structure
 
-CCPARS_LOAD_EXT struct ccpars load_pars[]
+CCPARS_LOAD_EXT struct CCpars load_pars[]
 #ifdef GLOBALS
 = {// "Signal name"    type,         max_n_els,  *enum,               *value,                      num_defaults,cyc_sel_step,flags
     { "OHMS_SER",      PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  ccpars_load.ohms_ser      }, REG_NUM_LOADS, 0, PARS_FIXED_LENGTH },

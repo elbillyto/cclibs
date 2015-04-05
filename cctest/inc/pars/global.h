@@ -40,7 +40,7 @@
 
 // Regulation error rate control enum comes from libreg
 
-CCPARS_GLOBAL_EXT struct ccpars_enum enum_reg_err_rate[]
+CCPARS_GLOBAL_EXT struct CCpars_enum enum_reg_err_rate[]
 #ifdef GLOBALS
 = {
     { REG_ERR_RATE_REGULATION,   "REGULATION"     },
@@ -52,31 +52,31 @@ CCPARS_GLOBAL_EXT struct ccpars_enum enum_reg_err_rate[]
 
 // Global parameters structure
 
-struct ccpars_global
+struct CCpars_global
 {
     float                       run_delay;                  // Delay given to libfg for each function
     float                       stop_delay;                 // Time after end of last ref function
     uint32_t                    iter_period_us;             // Global iteration period (us)
     float                       abort_time;                 // Time to abort the ref function (limits are required)
     uint32_t                    log_length;                 // Log length in samples
-    enum reg_enabled_disabled   reverse_time;               // Reverse time flag (tests ref function with decreasing time)
+    enum REG_enabled_disabled   reverse_time;               // Reverse time flag (tests ref function with decreasing time)
     uint32_t                    cycle_selector[MAX_CYCLES]; // Cycle selectors
     uint32_t                    test_cyc_sel;               // Cycle selector on which to use test RST parameters
     uint32_t                    test_ref_cyc_sel;           // Cycle selector for reference function when playing test_cyc_sel
     float                       dyn_eco_time[2];            // Start/end time since start of function for dynamic economy
-    enum reg_err_rate           reg_err_rate;               // Regulation error rate control
-    enum reg_enabled_disabled   fg_limits;                  // Enable limits for function generator initialisation
-    enum reg_enabled_disabled   sim_load;                   // Enable load simulation
-    enum reg_enabled_disabled   stop_on_error;              // Enable stop on error - this will stop reading the file
-    enum reg_enabled_disabled   csv_output;                 // CSV  format output control (ENABLED or DISABLED)
-    enum reg_enabled_disabled   html_output;                // HTML format output control (ENABLED or DISABLED)
-    enum reg_enabled_disabled   debug_output;               // Debug (ccd) format output control (ENABLED or DISABLED)
+    enum REG_err_rate           reg_err_rate;               // Regulation error rate control
+    enum REG_enabled_disabled   fg_limits;                  // Enable limits for function generator initialisation
+    enum REG_enabled_disabled   sim_load;                   // Enable load simulation
+    enum REG_enabled_disabled   stop_on_error;              // Enable stop on error - this will stop reading the file
+    enum REG_enabled_disabled   csv_output;                 // CSV  format output control (ENABLED or DISABLED)
+    enum REG_enabled_disabled   html_output;                // HTML format output control (ENABLED or DISABLED)
+    enum REG_enabled_disabled   debug_output;               // Debug (ccd) format output control (ENABLED or DISABLED)
     char *                      group;                      // Test group name (e.g. sandbox or tests)
     char *                      project;                    // Project name (e.g. SPS_MPS)
     char *                      file;                       // Results filename root (exclude .csv or .html)
 };
 
-CCPARS_GLOBAL_EXT struct ccpars_global ccpars_global
+CCPARS_GLOBAL_EXT struct CCpars_global ccpars_global
 #ifdef GLOBALS
 = {//  Default value                 Parameter
        1.0                    ,   // GLOBAL RUN_DELAY
@@ -126,7 +126,7 @@ enum global_pars_index_enum
     GLOBAL_FILE
 };
 
-CCPARS_GLOBAL_EXT struct ccpars global_pars[]
+CCPARS_GLOBAL_EXT struct CCpars global_pars[]
 #ifdef GLOBALS
 = {// "Signal name"      type,         max_n_els, *enum,                         *value,            num_defaults,cyc_sel_step,flags
     { "RUN_DELAY",       PAR_FLOAT,    1,          NULL,                  { .f = &ccpars_global.run_delay        }, 1, 0, 0                 },

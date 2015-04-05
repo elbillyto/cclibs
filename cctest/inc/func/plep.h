@@ -26,7 +26,6 @@
 
 #include "ccTest.h"
 #include "ccPars.h"
-#include "libfg/plep.h"
 
 // GLOBALS is defined in source file where global variables should be defined
 
@@ -36,13 +35,9 @@
 #define CCPARS_PLEP_EXT extern
 #endif
 
-// Libfg PLEP parameter structures
-
-CCPARS_PLEP_EXT struct fg_plep fg_plep[CC_NUM_CYC_SELS];
-
 // PLEP data structure
 
-struct ccpars_plep
+struct CCpars_plep
 {
     // cctest PLEP parameters
 
@@ -55,7 +50,7 @@ struct ccpars_plep
     float                       exp_final;                      // End reference of exponential segment (can be zero)
 };
 
-CCPARS_PLEP_EXT struct ccpars_plep ccpars_plep[CC_NUM_CYC_SELS]
+CCPARS_PLEP_EXT struct CCpars_plep ccpars_plep[CC_NUM_CYC_SELS]
 #ifdef GLOBALS
 = {// Default value           Parameter
     { 0.0,                 // PLEP INITIAL_REF
@@ -71,16 +66,16 @@ CCPARS_PLEP_EXT struct ccpars_plep ccpars_plep[CC_NUM_CYC_SELS]
 
 // PLEP data description structure
 
-CCPARS_PLEP_EXT struct ccpars   plep_pars[]
+CCPARS_PLEP_EXT struct CCpars   plep_pars[]
 #ifdef GLOBALS
 = {// "Signal name"   type,     max_n_els,*enum,        *value,                   num_defaults      cyc_sel_step     flags 
-    { "INITIAL_REF",  PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].initial_ref  }, 1, sizeof(struct ccpars_plep), 0 },
-    { "FINAL_REF",    PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].final_ref    }, 1, sizeof(struct ccpars_plep), 0 },
-    { "FINAL_RATE",   PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].final_rate   }, 1, sizeof(struct ccpars_plep), 0 },
-    { "ACCELERATION", PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].acceleration }, 1, sizeof(struct ccpars_plep), 0 },
-    { "LINEAR_RATE",  PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].linear_rate  }, 1, sizeof(struct ccpars_plep), 0 },
-    { "EXP_TC",       PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].exp_tc       }, 1, sizeof(struct ccpars_plep), 0 },
-    { "EXP_FINAL",    PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].exp_final    }, 1, sizeof(struct ccpars_plep), 0 },
+    { "INITIAL_REF",  PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].initial_ref  }, 1, sizeof(struct CCpars_plep), 0 },
+    { "FINAL_REF",    PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].final_ref    }, 1, sizeof(struct CCpars_plep), 0 },
+    { "FINAL_RATE",   PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].final_rate   }, 1, sizeof(struct CCpars_plep), 0 },
+    { "ACCELERATION", PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].acceleration }, 1, sizeof(struct CCpars_plep), 0 },
+    { "LINEAR_RATE",  PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].linear_rate  }, 1, sizeof(struct CCpars_plep), 0 },
+    { "EXP_TC",       PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].exp_tc       }, 1, sizeof(struct CCpars_plep), 0 },
+    { "EXP_FINAL",    PAR_FLOAT,    1,     NULL, { .f = &ccpars_plep[0].exp_final    }, 1, sizeof(struct CCpars_plep), 0 },
     { NULL }
 }
 #endif

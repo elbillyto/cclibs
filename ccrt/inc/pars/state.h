@@ -48,7 +48,7 @@ enum state_pc
     PC_FAULT,
 };
 
-CCPARS_STATE_EXT struct ccpars_enum enum_state_pc[]
+CCPARS_STATE_EXT struct CCpars_enum enum_state_pc[]
 #ifdef GLOBALS
 = { //                               flags
     {  PC_OFF,       "OFF",          0                                  },
@@ -61,7 +61,7 @@ CCPARS_STATE_EXT struct ccpars_enum enum_state_pc[]
 
 // Reference state enum
 
-CCPARS_STATE_EXT struct ccpars_enum enum_state_ref[]
+CCPARS_STATE_EXT struct CCpars_enum enum_state_ref[]
 #ifdef GLOBALS
 = { //                                          flags
     { REF_OFF,              "OFF",              0                                },
@@ -94,7 +94,7 @@ enum state_polswitch
     POLSWITCH_FAULT,
 };
 
-CCPARS_STATE_EXT struct ccpars_enum enum_state_polswitch[]
+CCPARS_STATE_EXT struct CCpars_enum enum_state_polswitch[]
 #ifdef GLOBALS
 = { //                                          flags
     {  POLSWITCH_NONE,       "NONE",            0                  },
@@ -129,7 +129,7 @@ enum state_pars_index_enum
 
 // State parameters description structure
 
-CCPARS_STATE_EXT struct ccpars state_pars[]
+CCPARS_STATE_EXT struct CCpars state_pars[]
 #ifdef GLOBALS
 = {// "Signal name" type,  max_n_els, *enum,                        *value,           num_states,cyc_sel_step,flags
     { "PC",         PAR_ENUM,  1,      enum_state_pc,        { .u = &ccpars_state.pc        }, 1,      0,     PARS_RO },

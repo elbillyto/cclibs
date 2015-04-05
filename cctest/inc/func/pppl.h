@@ -26,7 +26,6 @@
 
 #include "ccTest.h"
 #include "ccPars.h"
-#include "libfg/pppl.h"
 
 // GLOBALS is defined in source file where global variables should be defined
 
@@ -36,13 +35,9 @@
 #define CCPARS_PPPL_EXT extern
 #endif
 
-// Libfg PPPL parameter structures
-
-CCPARS_PPPL_EXT struct fg_pppl fg_pppl[CC_NUM_CYC_SELS];
-
 // PPPL parameters structure
 
-struct ccpars_pppl
+struct CCpars_pppl
 {
     // cctest PPPL parameters
 
@@ -56,7 +51,7 @@ struct ccpars_pppl
     float                       duration4    [FG_MAX_PPPLS];    // Duration of fourth (linear) segment.
 };
 
-CCPARS_PPPL_EXT struct ccpars_pppl ccpars_pppl[CC_NUM_CYC_SELS]
+CCPARS_PPPL_EXT struct CCpars_pppl ccpars_pppl[CC_NUM_CYC_SELS]
 #ifdef GLOBALS
 = {//   Default value           Parameter
     {    0.0,                // PPPL INITIAL_REF
@@ -73,17 +68,17 @@ CCPARS_PPPL_EXT struct ccpars_pppl ccpars_pppl[CC_NUM_CYC_SELS]
 
 // PPPL data description structure
 
-CCPARS_PPPL_EXT struct ccpars   pppl_pars[]
+CCPARS_PPPL_EXT struct CCpars   pppl_pars[]
 #ifdef GLOBALS
 = {// "Signal name"    type,         max_n_els, *enum,        *value,                    num_defaults      cyc_sel_step     flags
-    { "INITIAL_REF",   PAR_FLOAT,            1,  NULL, { .f = &ccpars_pppl[0].initial_ref   }, 1, sizeof(struct ccpars_pppl), 0 },
-    { "ACCELERATION1", PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].acceleration1 }, 1, sizeof(struct ccpars_pppl), 0 },
-    { "ACCELERATION2", PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].acceleration2 }, 1, sizeof(struct ccpars_pppl), 0 },
-    { "ACCELERATION3", PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].acceleration3 }, 1, sizeof(struct ccpars_pppl), 0 },
-    { "RATE2",         PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].rate2         }, 1, sizeof(struct ccpars_pppl), 0 },
-    { "RATE4",         PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].rate4         }, 1, sizeof(struct ccpars_pppl), 0 },
-    { "REF4",          PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].ref4          }, 1, sizeof(struct ccpars_pppl), 0 },
-    { "DURATION4",     PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].duration4     }, 1, sizeof(struct ccpars_pppl), 0 },
+    { "INITIAL_REF",   PAR_FLOAT,            1,  NULL, { .f = &ccpars_pppl[0].initial_ref   }, 1, sizeof(struct CCpars_pppl), 0 },
+    { "ACCELERATION1", PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].acceleration1 }, 1, sizeof(struct CCpars_pppl), 0 },
+    { "ACCELERATION2", PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].acceleration2 }, 1, sizeof(struct CCpars_pppl), 0 },
+    { "ACCELERATION3", PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].acceleration3 }, 1, sizeof(struct CCpars_pppl), 0 },
+    { "RATE2",         PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].rate2         }, 1, sizeof(struct CCpars_pppl), 0 },
+    { "RATE4",         PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].rate4         }, 1, sizeof(struct CCpars_pppl), 0 },
+    { "REF4",          PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].ref4          }, 1, sizeof(struct CCpars_pppl), 0 },
+    { "DURATION4",     PAR_FLOAT, FG_MAX_PPPLS,  NULL, { .f =  ccpars_pppl[0].duration4     }, 1, sizeof(struct CCpars_pppl), 0 },
     { NULL }
 }
 #endif

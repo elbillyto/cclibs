@@ -35,21 +35,25 @@
 
 // Static function declarations
 
-static void regMgrModeSetNoneOrVoltageRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mode);
-static void regMgrSignalPrepareRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mode, uint32_t unix_time, uint32_t us_time);
+static void regMgrModeSetNoneOrVoltageRT(struct REG_mgr *reg_mgr, enum REG_mode reg_mode);
+static void regMgrSignalPrepareRT(struct REG_mgr *reg_mgr, enum REG_mode reg_mode, uint32_t unix_time, uint32_t us_time);
 
 
 
 // Background functions - do not call these from the real-time thread or interrupt
 
-void regMgrInit(struct reg_mgr *reg_mgr, uint32_t iter_period_us,
-                 enum reg_enabled_disabled field_regulation, enum reg_enabled_disabled current_regulation)
+void regMgrInit(struct REG_mgr           *reg_mgr,
+                uint32_t                  iter_period_us,
+                enum REG_enabled_disabled field_regulation,
+                enum REG_enabled_disabled current_regulation,
+                enum REG_enabled_disabled voltage_regulation)
 {
     reg_mgr->iter_period_us = iter_period_us;
     reg_mgr->iter_period    = iter_period_us * 1.0E-6;
 
     reg_mgr->b.regulation   = field_regulation;
     reg_mgr->i.regulation   = current_regulation;
+    reg_mgr->v.regulation   = voltage_regulation;
 
     reg_mgr->reg_mode       = REG_NONE;
     reg_mgr->reg_rst_source = REG_OPERATIONAL_RST_PARS;
@@ -85,26 +89,26 @@ void regMgrInit(struct reg_mgr *reg_mgr, uint32_t iter_period_us,
 
 
 
-static void regMgrRstInit( struct reg_mgr         *reg_mgr,
-                           enum reg_mode           reg_mode,
-                           enum reg_rst_source     reg_rst_source,
-                           uint32_t                reg_period_iters,
-                           float                   auxpole1_hz,
-                           float                   auxpoles2_hz,
-                           float                   auxpoles2_z,
-                           float                   auxpole4_hz,
-                           float                   auxpole5_hz,
-                           float                   pure_delay_periods,
-                           float                   track_delay_periods,
-                           float                   manual_r[REG_NUM_RST_COEFFS],
-                           float                   manual_s[REG_NUM_RST_COEFFS],
-                           float                   manual_t[REG_NUM_RST_COEFFS])
+static void regMgrRstInit( struct REG_mgr     *reg_mgr,
+                           enum REG_mode       reg_mode,
+                           enum REG_rst_source reg_rst_source,
+                           uint32_t            reg_period_iters,
+                           REG_float           auxpole1_hz,
+                           REG_float           auxpoles2_hz,
+                           REG_float           auxpoles2_z,
+                           REG_float           auxpole4_hz,
+                           REG_float           auxpole5_hz,
+                           REG_float           pure_delay_periods,
+                           REG_float           track_delay_periods,
+                           REG_float           manual_r[REG_NUM_RST_COEFFS],
+                           REG_float           manual_s[REG_NUM_RST_COEFFS],
+                           REG_float           manual_t[REG_NUM_RST_COEFFS])
 {
-    struct reg_mgr_rst_pars    *mgr_rst_pars;
-    struct reg_mgr_signal      *reg_signal;
-    struct reg_load_pars       *load_pars;
-    struct reg_rst_pars        *rst_pars;
-    struct reg_rst_pars        *reg_signal_last_rst_pars;
+    struct REG_mgr_rst_pars *mgr_rst_pars;
+    struct REG_mgr_signal   *reg_signal;
+    struct REG_load_pars    *load_pars;
+    struct REG_rst_pars     *rst_pars;
+    struct REG_rst_pars     *reg_signal_last_rst_pars;
 
     // Set pointer to the reg_mgr_rst_pars structure for FIELD/CURRENT regulation with OPERATIONAL/TEST parameters
 
@@ -112,13 +116,13 @@ static void regMgrRstInit( struct reg_mgr         *reg_mgr,
 
     if(reg_rst_source == REG_OPERATIONAL_RST_PARS)
     {
-        mgr_rst_pars            = &reg_signal->op_rst_pars;
+        mgr_rst_pars             = &reg_signal->op_rst_pars;
         reg_signal_last_rst_pars = &reg_signal->last_op_rst_pars;
         load_pars                = &reg_mgr->load_pars;
     }
     else // REG_TEST_PARS
     {
-        mgr_rst_pars            = &reg_signal->test_rst_pars;
+        mgr_rst_pars             = &reg_signal->test_rst_pars;
         reg_signal_last_rst_pars = &reg_signal->last_test_rst_pars;
         load_pars                = &reg_mgr->load_pars_test;
     }
@@ -132,17 +136,17 @@ static void regMgrRstInit( struct reg_mgr         *reg_mgr,
     // one period for a signal (current or field).
 
     reg_signal->reg_period_iters = reg_period_iters;
-    reg_signal->reg_period       = reg_mgr->iter_period * (float)reg_period_iters;
+    reg_signal->reg_period       = reg_mgr->iter_period * (REG_float)reg_period_iters;
     reg_signal->inv_reg_period   = 1.0 / reg_signal->reg_period;
 
     // When actuation is CURRENT_REF then don't try to initialise the RST regulation,
     // just prepare the periods so that the delayed_reg calculation works
 
-    if(reg_mgr->par_values.pc_actuation[0] == REG_CURRENT_REF)
+    if(regMgrVarP(reg_mgr, PC_ACTUATION) == REG_CURRENT_REF)
     {
         rst_pars->status               = REG_OK;
         rst_pars->reg_mode             = REG_CURRENT;
-        rst_pars->inv_reg_period_iters = 1.0 / (float)reg_signal->reg_period_iters;
+        rst_pars->inv_reg_period_iters = 1.0 / (REG_float)reg_signal->reg_period_iters;
         rst_pars->reg_period           = reg_signal->reg_period;
 
         // Signal to real-time regMgrSignalPrepareRT() to switch to use next RST pars
@@ -153,26 +157,26 @@ static void regMgrRstInit( struct reg_mgr         *reg_mgr,
 
         *reg_signal_last_rst_pars = *rst_pars;
     }
-    else // Actuation is VOLTAGE_REF
+    else // Actuation is VOLTAGE_REF or FIRING_REF
     {
         // Only attempt to initialise RST parameters if regulation for this signal is enabled
 
         if(reg_signal->regulation == REG_ENABLED)
         {
-            struct reg_rst manual;
+            struct REG_rst manual;
 
             // Prepare structure with manual RST coefficients
 
-            memcpy(manual.r, manual_r, REG_NUM_RST_COEFFS * sizeof(float));  // On Mac, gcc returns an error compiling sizeof(manual_r)
-            memcpy(manual.s, manual_s, REG_NUM_RST_COEFFS * sizeof(float));
-            memcpy(manual.t, manual_t, REG_NUM_RST_COEFFS * sizeof(float));
+            memcpy(manual.r, manual_r, REG_NUM_RST_COEFFS * sizeof(REG_float));  // On Mac, gcc returns an error compiling sizeof(manual_r)
+            memcpy(manual.s, manual_s, REG_NUM_RST_COEFFS * sizeof(REG_float));
+            memcpy(manual.t, manual_t, REG_NUM_RST_COEFFS * sizeof(REG_float));
 
             // if pure_delay_periods is zero then calculate it
 
             if(pure_delay_periods <= 0.0)
             {
                 pure_delay_periods = (reg_mgr->sim_pc_pars.act_delay_iters + reg_mgr->sim_pc_pars.rsp_delay_iters +
-                                      reg_signal->meas.delay_iters[reg_signal->meas.reg_select]) / (float)reg_period_iters;
+                                      reg_signal->meas.delay_iters[reg_signal->meas.reg_select]) / (REG_float)reg_period_iters;
             }
 
             // if new RST parameters are valid, the prepare for regulation error calculation
@@ -191,7 +195,7 @@ static void regMgrRstInit( struct reg_mgr         *reg_mgr,
 
                 // If reg error is to be calculated at the regulation rate
 
-                if(reg_mgr->par_values.reg_err_rate[0] == REG_ERR_RATE_REGULATION)
+                if(regMgrVarP(reg_mgr, REG_ERR_RATE) == REG_ERR_RATE_REGULATION)
                 {
                     // Regulation error will use the regulation signal (so ref_delay = track_delay)
 
@@ -205,7 +209,7 @@ static void regMgrRstInit( struct reg_mgr         *reg_mgr,
 
                     rst_pars->ref_delay_periods += (reg_signal->meas.delay_iters[REG_MEAS_UNFILTERED] -
                                                     reg_signal->meas.delay_iters[reg_signal->meas.reg_select]) /
-                                                    (float)reg_period_iters;
+                                                    (REG_float)reg_period_iters;
 
                     // However, if ref_delay is less than 1 period then unfiltered measurement cannot be used
 
@@ -238,29 +242,28 @@ static void regMgrRstInit( struct reg_mgr         *reg_mgr,
 
 
 
-static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
+static void regMgrParsWithMask(struct REG_mgr *reg_mgr, uint32_t par_groups_mask)
 {
-    uint32_t        i;
-    uint32_t        flags;
-    uint32_t        load_select;
-    uint32_t        load_test_select;
-    uint32_t        test_pars_mask = pars_mask;
-    struct reg_par *par;
+    uint32_t              i;
+    uint32_t              load_select;
+    uint32_t              load_test_select;
+    uint32_t              test_par_groups_mask = par_groups_mask;
+    struct REG_pars_meta *par_meta;
 
     // Update load_select and load_test_select if they are supplied by calling program and if they are valid
 
-    if(reg_mgr->pars.load_select.value != REG_PAR_NOT_USED)
+    if(reg_mgr->pars.u.values.load_select != REG_PAR_NOT_USED)
     {
-        load_select = *((uint32_t*)reg_mgr->pars.load_select.value);
+        load_select = *((uint32_t*)reg_mgr->pars.u.values.load_select);
 
         if(load_select < REG_NUM_LOADS)
         {
             reg_mgr->par_values.load_select[0] = load_select;
         }
 
-        if(reg_mgr->pars.load_test_select.value != REG_PAR_NOT_USED)
+        if(reg_mgr->pars.u.values.load_test_select != REG_PAR_NOT_USED)
         {
-            load_test_select = *((uint32_t*)reg_mgr->pars.load_test_select.value);
+            load_test_select = *((uint32_t*)reg_mgr->pars.u.values.load_test_select);
 
             if(load_test_select < REG_NUM_LOADS)
             {
@@ -274,54 +277,53 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
 
     // Scan all active parameters for changes
 
-    par = (struct reg_par *)&reg_mgr->pars;
+    par_meta = &reg_mgr->pars.meta[0];
 
-    for(i = 0 ; i < REG_NUM_PARS ; i++, par++)
+    for(i = 0 ; i < REG_NUM_PARS ; i++, par_meta++)
     {
-        if(par->value != REG_PAR_NOT_USED)
+        uint32_t  flags;
+        uint32_t  groups;
+        char      *value_src = (char*)reg_mgr->pars.u.value[i];
+
+        if(value_src != (char *)REG_PAR_NOT_USED)
         {
-            flags = par->flags;
+            flags  = par_meta->flags;
+            groups = par_meta->groups;
 
             // Skip parameters that must be ignored or are not relevant
 
-            if((reg_mgr->reg_mode     == REG_NONE    || (flags & REG_MODE_NONE_ONLY) == 0) &&
-               (reg_mgr->b.regulation == REG_ENABLED || (flags & REG_FIELD_REG     ) == 0) &&
-               (reg_mgr->i.regulation == REG_ENABLED || (flags & REG_CURRENT_REG   ) == 0))
+            if((reg_mgr->reg_mode     == REG_NONE    || (flags & REG_PAR_FLAG_MODE_NONE_ONLY) == 0) &&
+               (reg_mgr->b.regulation == REG_ENABLED || (flags & REG_PAR_FLAG_FIELD_REG     ) == 0) &&
+               (reg_mgr->i.regulation == REG_ENABLED || (flags & REG_PAR_FLAG_CURRENT_REG   ) == 0) &&
+               (reg_mgr->v.regulation == REG_ENABLED || (flags & REG_PAR_FLAG_VOLTAGE_REG   ) == 0))
             {
-                char *value_src  = (char*)par->value;
-                char *value_dest = (char*)par->copy_of_value;
-                size_t size_in_bytes;
+                char   *value_dest = (char*)reg_mgr->pars.copy_of_value[i];
+                size_t size_in_bytes = par_meta->size_in_bytes;
 
                 // If parameter is an array based on load select then point to scalar value addressed by load_select
 
-                if((flags & REG_LOAD_SELECT) != 0)
+                if((flags & REG_PAR_FLAG_LOAD_SELECT) != 0)
                 {
-                    size_in_bytes = par->sizeof_type;
-
                     value_src += load_select * size_in_bytes;
-                }
-                else
-                {
-                    size_in_bytes = par->size_in_bytes;
                 }
 
                 // If parameter value has changed
 
                 if(memcmp(value_dest,value_src,size_in_bytes) != 0)
                 {
-                    // Save the changed value and set flags for this parameter
+                    // Save the changed value and set groups mask for this parameter
 
                     memcpy(value_dest,value_src,size_in_bytes);
 
-                    pars_mask |= flags;
+                    par_groups_mask |= groups;
                 }
 
-                // If parameter is an array based on load select then copy scalar value addressed by load_test_select
-                // if it has changed
+                // If parameter is an array based on load select and it is flagged as being a test parameter,
+                // then copy scalar value addressed by load_test_select if it has changed.
 
-                if((flags & (REG_LOAD_SELECT|REG_TEST_PAR|REG_MODE_NONE_ONLY)) == (REG_LOAD_SELECT|REG_TEST_PAR))
+                if((flags & (REG_PAR_FLAG_LOAD_SELECT|REG_PAR_FLAG_TEST_PAR)) == (REG_PAR_FLAG_LOAD_SELECT|REG_PAR_FLAG_TEST_PAR))
                 {
-                    value_src   = (char*)par->value + load_test_select * size_in_bytes;
+                    value_src   = (char*)reg_mgr->pars.u.value[i] + load_test_select * size_in_bytes;
                     value_dest += size_in_bytes;
 
                     // If parameter value has changed
@@ -332,7 +334,7 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
 
                         memcpy(value_dest,value_src,size_in_bytes);
 
-                        test_pars_mask |= flags;
+                        test_par_groups_mask |= groups;
                     }
                 }
             }
@@ -341,23 +343,33 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
 
     // Check every parameter flag in hierarchical order
 
-    // REG_PAR_SIM_VS
+    // REG_PAR_PC_SIM
 
-    if((pars_mask & REG_PAR_SIM_VS) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_PC_SIM) != 0)
     {
         regSimPcInit(          &reg_mgr->sim_pc_pars,
                                 reg_mgr->iter_period,
                                 reg_mgr->par_values.pc_act_delay_iters[0],
-                                reg_mgr->par_values.pc_bandwidth[0],
-                                reg_mgr->par_values.pc_z[0],
-                                reg_mgr->par_values.pc_tau_zero[0],
+                                reg_mgr->par_values.pc_sim_bandwidth[0],
+                                reg_mgr->par_values.pc_sim_z[0],
+                                reg_mgr->par_values.pc_sim_tau_zero[0],
                                 reg_mgr->par_values.pc_sim_den,
                                 reg_mgr->par_values.pc_sim_num);
     }
 
-    // REG_PAR_INVERT_LIMITS
+    // REG_PAR_PC_SIM_NOISE_AND_TONE
 
-    if((pars_mask & REG_PAR_INVERT_LIMITS) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_PC_SIM_NOISE_AND_TONE) != 0)
+    {
+        regMeasSetNoiseAndTone(&reg_mgr->sim_pc_noise_and_tone,
+                                reg_mgr->par_values.pc_sim_noise_pp[0],
+                                reg_mgr->par_values.pc_sim_tone_pp[0],
+                                reg_mgr->par_values.pc_sim_tone_period_iters[0]);
+    }
+
+    // REG_PAR_GROUP_INVERT_LIMITS
+
+    if((par_groups_mask & REG_PAR_GROUP_INVERT_LIMITS) != 0)
     {
         regLimMeasInvert(      &reg_mgr->i.lim_meas,
                                 reg_mgr->par_values.limits_invert[0]);
@@ -369,11 +381,11 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.limits_invert[0]);
         regLimRefInvert(       &reg_mgr->v.lim_ref,
                                 reg_mgr->par_values.limits_invert[0]);
-}
+    }
 
-    // REG_PAR_V_LIMITS_REF
+    // REG_PAR_GROUP_V_LIMITS_REF
 
-    if((pars_mask & REG_PAR_V_LIMITS_REF) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_V_LIMITS_REF) != 0)
     {
         regLimVrefInit(        &reg_mgr->v.lim_ref,
                                 reg_mgr->par_values.limits_v_pos[0],
@@ -384,18 +396,18 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.limits_v_quadrants41);
     }
 
-    // REG_PAR_V_LIMITS_ERR
+    // REG_PAR_GROUP_V_LIMITS_ERR
 
-    if((pars_mask & REG_PAR_V_LIMITS_ERR) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_V_LIMITS_ERR) != 0)
     {
         regErrInitLimits(      &reg_mgr->v.err,
                                 reg_mgr->par_values.limits_v_err_warning[0],
                                 reg_mgr->par_values.limits_v_err_fault[0]);
     }
 
-    // REG_PAR_I_LIMITS_MEAS (reg mode NONE only)
+    // REG_PAR_GROUP_I_LIMITS_MEAS (reg mode NONE only)
 
-    if((pars_mask & REG_PAR_I_LIMITS_MEAS) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_I_LIMITS_MEAS) != 0)
     {
         regLimMeasInit(        &reg_mgr->i.lim_meas,
                                 reg_mgr->par_values.limits_i_pos[0],
@@ -404,9 +416,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.limits_i_zero[0]);
     }
 
-    // REG_PAR_I_LIMITS_REF
+    // REG_PAR_GROUP_I_LIMITS_REF
 
-    if((pars_mask & REG_PAR_I_LIMITS_REF) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_I_LIMITS_REF) != 0)
     {
         regLimRefInit (        &reg_mgr->i.lim_ref,
                                 reg_mgr->par_values.limits_i_pos[0],
@@ -417,18 +429,18 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.limits_i_closeloop[0]);
     }
 
-    // REG_PAR_I_LIMITS_ERR
+    // REG_PAR_GROUP_I_LIMITS_ERR
 
-    if((pars_mask & REG_PAR_I_LIMITS_ERR) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_I_LIMITS_ERR) != 0)
     {
         regErrInitLimits(      &reg_mgr->i.err,
                                 reg_mgr->par_values.limits_i_err_warning[0],
                                 reg_mgr->par_values.limits_i_err_fault[0]);
     }
 
-    // REG_PAR_B_LIMITS_MEAS (reg mode NONE only)
+    // REG_PAR_GROUP_B_LIMITS_MEAS (reg mode NONE only)
 
-    if((pars_mask & REG_PAR_B_LIMITS_MEAS) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_B_LIMITS_MEAS) != 0)
     {
         regLimMeasInit(        &reg_mgr->b.lim_meas,
                                 reg_mgr->par_values.limits_b_pos[0],
@@ -437,9 +449,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.limits_b_zero[0]);
     }
 
-    // REG_PAR_B_LIMITS_REF
+    // REG_PAR_GROUP_B_LIMITS_REF
 
-    if((pars_mask & REG_PAR_B_LIMITS_REF) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_B_LIMITS_REF) != 0)
     {
         regLimRefInit (        &reg_mgr->b.lim_ref,
                                 reg_mgr->par_values.limits_b_pos[0],
@@ -450,18 +462,18 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.limits_b_closeloop[0]);
     }
 
-    // REG_PAR_B_LIMITS_ERR
+    // REG_PAR_GROUP_B_LIMITS_ERR
 
-    if((pars_mask & REG_PAR_B_LIMITS_ERR) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_B_LIMITS_ERR) != 0)
     {
         regErrInitLimits(      &reg_mgr->b.err,
                                 reg_mgr->par_values.limits_b_err_warning[0],
                                 reg_mgr->par_values.limits_b_err_fault[0]);
     }
 
-    // REG_PAR_I_LIMITS_RMS
+    // REG_PAR_GROUP_I_LIMITS_RMS
 
-    if((pars_mask & REG_PAR_I_LIMITS_RMS) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_I_LIMITS_RMS) != 0)
     {
         regLimRmsInit(         &reg_mgr->lim_i_rms,
                                 reg_mgr->par_values.limits_i_rms_warning[0],
@@ -470,9 +482,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->iter_period);
     }
 
-    // REG_PAR_I_LIMITS_RMS_LOAD
+    // REG_PAR_GROUP_I_LIMITS_RMS_LOAD
 
-    if((pars_mask & REG_PAR_I_LIMITS_RMS_LOAD) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_I_LIMITS_RMS_LOAD) != 0)
     {
         regLimRmsInit(         &reg_mgr->lim_i_rms_load,
                                 reg_mgr->par_values.limits_i_rms_load_warning[0],
@@ -481,16 +493,16 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->iter_period);
     }
 
-    // REG_PAR_I_MEAS_REG_SELECT
+    // REG_PAR_GROUP_I_MEAS_REG_SELECT
 
-    if((pars_mask & REG_PAR_I_MEAS_REG_SELECT) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_I_MEAS_REG_SELECT) != 0)
     {
         reg_mgr->i.meas.reg_select = reg_mgr->par_values.meas_i_reg_select[0];
     }
 
-    // REG_PAR_I_MEAS_FILTER (reg mode NONE only)
+    // REG_PAR_GROUP_I_MEAS_FILTER (reg mode NONE only)
 
-    if((pars_mask & REG_PAR_I_MEAS_FILTER) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_I_MEAS_FILTER) != 0)
     {
         regMeasFilterInit(     &reg_mgr->i.meas,
                                 reg_mgr->par_values.meas_i_fir_lengths,
@@ -500,16 +512,16 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.meas_i_delay_iters[0]);
     }
 
-    // REG_PAR_B_MEAS_REG_SELECT
+    // REG_PAR_GROUP_B_MEAS_REG_SELECT
 
-    if((pars_mask & REG_PAR_B_MEAS_REG_SELECT) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_B_MEAS_REG_SELECT) != 0)
     {
         reg_mgr->b.meas.reg_select = reg_mgr->par_values.meas_b_reg_select[0];
     }
 
-    // REG_PAR_B_MEAS_FILTER (reg mode NONE only and field regulation ENABLED)
+    // REG_PAR_GROUP_B_MEAS_FILTER (reg mode NONE only and field regulation ENABLED)
 
-    if((pars_mask & REG_PAR_B_MEAS_FILTER) != 0 && reg_mgr->b.regulation == REG_ENABLED)
+    if((par_groups_mask & REG_PAR_GROUP_B_MEAS_FILTER) != 0 && reg_mgr->b.regulation == REG_ENABLED)
     {
         regMeasFilterInit(     &reg_mgr->b.meas,
                                 reg_mgr->par_values.meas_b_fir_lengths,
@@ -519,9 +531,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.meas_b_delay_iters[0]);
     }
 
-    // REG_PAR_MEAS_SIM_DELAYS (reg mode NONE only)
+    // REG_PAR_GROUP_MEAS_SIM_DELAYS (reg mode NONE only)
 
-    if((pars_mask & REG_PAR_MEAS_SIM_DELAYS) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_MEAS_SIM_DELAYS) != 0)
     {
         regDelayInitDelay(     &reg_mgr->b.sim.meas_delay,
                                 reg_mgr->par_values.pc_act_delay_iters[0] + reg_mgr->par_values.meas_b_delay_iters[0] - 1.0);
@@ -533,21 +545,21 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.pc_act_delay_iters[0] + reg_mgr->par_values.meas_v_delay_iters[0] - 1.0);
     }
 
-    // REG_PAR_MEAS_SIM_NOISE_AND_TONE
+    // REG_PAR_GROUP_MEAS_SIM_NOISE_AND_TONE
 
-    if((pars_mask & REG_PAR_MEAS_SIM_NOISE_AND_TONE) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_MEAS_SIM_NOISE_AND_TONE) != 0)
     {
         // Current and field measurement simulations have noise and tone
 
         regMeasSetNoiseAndTone(&reg_mgr->b.sim.noise_and_tone,
                                 reg_mgr->par_values.meas_b_sim_noise_pp[0],
-                                reg_mgr->par_values.meas_b_sim_tone_amp[0],
-                                reg_mgr->par_values.meas_tone_half_period_iters[0]);
+                                reg_mgr->par_values.meas_b_sim_tone_pp[0],
+                                reg_mgr->par_values.meas_sim_tone_period_iters[0]);
 
         regMeasSetNoiseAndTone(&reg_mgr->i.sim.noise_and_tone,
                                 reg_mgr->par_values.meas_i_sim_noise_pp[0],
-                                reg_mgr->par_values.meas_i_sim_tone_amp[0],
-                                reg_mgr->par_values.meas_tone_half_period_iters[0]);
+                                reg_mgr->par_values.meas_i_sim_tone_pp[0],
+                                reg_mgr->par_values.meas_sim_tone_period_iters[0]);
 
         // Voltage measurement simulation only had noise and no tone
 
@@ -557,9 +569,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 0);
     }
 
-    // REG_PAR_LOAD
+    // REG_PAR_GROUP_LOAD
 
-    if((pars_mask & REG_PAR_LOAD) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_LOAD) != 0)
     {
         regLoadInit(           &reg_mgr->load_pars,
                                 reg_mgr->par_values.load_ohms_ser[0],
@@ -569,9 +581,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.load_gauss_per_amp[0]);
     }
 
-    // REG_PAR_LOAD_SAT
+    // REG_PAR_GROUP_LOAD_SAT
 
-    if((pars_mask & REG_PAR_LOAD_SAT) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_LOAD_SAT) != 0)
     {
         regLoadInitSat(        &reg_mgr->load_pars,
                                 reg_mgr->par_values.load_henrys_sat[0],
@@ -579,9 +591,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.load_i_sat_end[0]);
     }
 
-    // REG_PAR_LOAD_SIM
+    // REG_PAR_GROUP_LOAD_SIM
 
-    if((pars_mask & REG_PAR_LOAD_SIM) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_LOAD_SIM) != 0)
     {
         regSimLoadInit(        &reg_mgr->sim_load_pars,
                                &reg_mgr->load_pars,
@@ -589,9 +601,18 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->iter_period);
     }
 
-    // REG_PAR_IREG
+    // REG_PAR_GROUP_VREG
 
-    if((pars_mask & REG_PAR_IREG) != 0)
+    if((test_par_groups_mask & REG_PAR_GROUP_VREG) != 0)
+    {
+
+    // Include init function for voltage regulation and output filter simulation
+
+    }
+
+    // REG_PAR_GROUP_IREG
+
+    if((par_groups_mask & REG_PAR_GROUP_IREG) != 0)
     {
         // Loop until updated parameters have been accepted. This may take one iteration period
         // before the real-time thread/interrupt executes and processes a pending set of RST parameters.
@@ -615,9 +636,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.ireg_t);
     }
 
-    // REG_PAR_BREG
+    // REG_PAR_GROUP_BREG
 
-    if((pars_mask & REG_PAR_BREG) != 0)
+    if((par_groups_mask & REG_PAR_GROUP_BREG) != 0)
     {
         // Loop until updated parameters have been accepted. This may take one iteration period
         // before the real-time thread/interrupt executes and processes a pending set of RST parameters
@@ -641,9 +662,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.breg_t);
     }
 
-    // REG_PAR_LOAD_TEST
+    // REG_PAR_GROUP_LOAD_TEST
 
-    if((test_pars_mask & REG_PAR_LOAD_TEST) != 0)
+    if((test_par_groups_mask & REG_PAR_GROUP_LOAD_TEST) != 0)
     {
         regLoadInit(           &reg_mgr->load_pars_test,
                                 reg_mgr->par_values.load_ohms_ser[1],
@@ -653,9 +674,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.load_gauss_per_amp[1]);
     }
 
-    // REG_PAR_LOAD_SAT_TEST
+    // REG_PAR_GROUP_LOAD_SAT_TEST
 
-    if((test_pars_mask & REG_PAR_LOAD_SAT_TEST) != 0)
+    if((test_par_groups_mask & REG_PAR_GROUP_LOAD_SAT_TEST) != 0)
     {
         regLoadInitSat(        &reg_mgr->load_pars_test,
                                 reg_mgr->par_values.load_henrys_sat[1],
@@ -663,9 +684,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.load_i_sat_end[1]);
     }
 
-    // REG_PAR_IREG_TEST
+    // REG_PAR_GROUP_IREG_TEST
 
-    if((test_pars_mask & REG_PAR_IREG_TEST) != 0)
+    if((test_par_groups_mask & REG_PAR_GROUP_IREG_TEST) != 0)
     {
         // Loop until updated parameters have been accepted. This may take one iteration period
         // before the real-time thread/interrupt executes and processes a pending set of RST parameters
@@ -689,9 +710,9 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
                                 reg_mgr->par_values.ireg_test_t);
     }
 
-    // REG_PAR_BREG_TEST
+    // REG_PAR_GROUP_BREG_TEST
 
-    if((test_pars_mask & REG_PAR_BREG_TEST) != 0)
+    if((test_par_groups_mask & REG_PAR_GROUP_BREG_TEST) != 0)
     {
         // Loop until updated parameters have been accepted. This may take one iteration period
         // before the real-time thread/interrupt executes and processes a pending set of RST parameters
@@ -718,7 +739,7 @@ static void regMgrParsWithMask(struct reg_mgr *reg_mgr, uint32_t pars_mask)
 
 
 
-void regMgrPars(struct reg_mgr *reg_mgr)
+void regMgrPars(struct REG_mgr *reg_mgr)
 {
     // Call regMgrParsWithMask with mask set to zero so no initialisation functions are run automatically
 
@@ -727,9 +748,9 @@ void regMgrPars(struct reg_mgr *reg_mgr)
 
 
 
-void regMgrSimInit(struct reg_mgr *reg_mgr, enum reg_mode reg_mode, float init_meas)
+void regMgrSimInit(struct REG_mgr *reg_mgr, enum REG_mode reg_mode, REG_float init_meas)
 {
-    struct reg_mgr_signal *reg_signal = &reg_mgr->i;
+    struct REG_mgr_signal *reg_signal = &reg_mgr->i;
 
     // Initialise all libreg parameters
 
@@ -777,12 +798,18 @@ void regMgrSimInit(struct reg_mgr *reg_mgr, enum reg_mode reg_mode, float init_m
 
     // Initialise current and field (if enabled) filter histories
 
-    regMgrParsWithMask(reg_mgr, reg_mgr->b.regulation == REG_ENABLED ? REG_PAR_B_MEAS_FILTER | REG_PAR_I_MEAS_FILTER  : REG_PAR_I_MEAS_FILTER);
+    regMgrParsWithMask(reg_mgr, reg_mgr->b.regulation == REG_ENABLED ? REG_PAR_GROUP_B_MEAS_FILTER | REG_PAR_GROUP_I_MEAS_FILTER  : REG_PAR_GROUP_I_MEAS_FILTER);
 
     // Initialise power converter model history according to the actuation because for CURRENT_REF,
     // the model is used for the current in the load rather than the voltage from the voltage source
 
-    if(reg_mgr->par_values.pc_actuation[0] == REG_VOLTAGE_REF)
+    if(regMgrVarP(reg_mgr, PC_ACTUATION) == REG_CURRENT_REF)
+    {
+        reg_mgr->i.ref_limited = init_meas;
+        reg_mgr->sim_load_vars.magnet_current = reg_mgr->i.ref_limited * reg_mgr->sim_pc_pars.gain;
+        regSimPcInitHistory(&reg_mgr->sim_pc_pars, &reg_mgr->sim_pc_vars, reg_mgr->sim_load_vars.magnet_current);
+    }
+    else // Actuation is VOLTAGE_REF or FIRING_REF
     {
         reg_mgr->v.ref_sat     =
         reg_mgr->v.ref_limited =
@@ -804,24 +831,17 @@ void regMgrSimInit(struct reg_mgr *reg_mgr, enum reg_mode reg_mode, float init_m
             reg_mgr->is_openloop = init_meas < reg_signal->lim_ref.closeloop;
         }
     }
-    else // Actuation is CURRENT_REF
-    {
-        reg_mgr->i.ref_limited = init_meas;
-        reg_mgr->sim_load_vars.magnet_current = reg_mgr->i.ref_limited * reg_mgr->sim_pc_pars.gain;
-
-        regSimPcInitHistory(&reg_mgr->sim_pc_pars, &reg_mgr->sim_pc_vars, reg_mgr->sim_load_vars.magnet_current);
-    }
 
     regMgrSignalPrepareRT(reg_mgr, reg_mode, 0, 0);
     regMgrModeSetRT(reg_mgr, reg_mode);
-    regMgrSimulateRT(reg_mgr, NULL, 0.0);
+    regMgrSimulateRT(reg_mgr, 0.0);
 }
 
 
 
-void regMgrMeasInit(struct reg_mgr *reg_mgr, struct reg_meas_signal *v_meas_p, struct reg_meas_signal *i_meas_p, struct reg_meas_signal *b_meas_p)
+void regMgrMeasInit(struct REG_mgr *reg_mgr, struct REG_meas_signal *v_meas_p, struct REG_meas_signal *i_meas_p, struct REG_meas_signal *b_meas_p)
 {
-    static struct reg_meas_signal null_signal = { 0.0, true };
+    static struct REG_meas_signal null_signal = { 0.0, true };
 
     reg_mgr->b.input_p = (b_meas_p == NULL ? &null_signal : b_meas_p);;
     reg_mgr->i.input_p = (i_meas_p == NULL ? &null_signal : i_meas_p);;
@@ -844,10 +864,10 @@ void regMgrMeasInit(struct reg_mgr *reg_mgr, struct reg_meas_signal *v_meas_p, s
  * @param[in]         unix_time   Unix_time for this iteration
  * @param[in]         us_time     Microsecond time for this iteration
  */
-static void regMgrSignalPrepareRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mode, uint32_t unix_time, uint32_t us_time)
+static void regMgrSignalPrepareRT(struct REG_mgr *reg_mgr, enum REG_mode reg_mode, uint32_t unix_time, uint32_t us_time)
 {
-    struct reg_rst_pars   *rst_pars;
-    struct reg_mgr_signal *reg_signal = reg_mode == REG_FIELD ? &reg_mgr->b : &reg_mgr->i;
+    struct REG_rst_pars   *rst_pars;
+    struct REG_mgr_signal *reg_signal = reg_mode == REG_FIELD ? &reg_mgr->b : &reg_mgr->i;
 
     // If the option of regulation for this signal is enabled
 
@@ -899,7 +919,7 @@ static void regMgrSignalPrepareRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mod
 
 
 
-static void regMgrModeSetNoneOrVoltageRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mode)
+static void regMgrModeSetNoneOrVoltageRT(struct REG_mgr *reg_mgr, enum REG_mode reg_mode)
 {
     if(reg_mode == REG_VOLTAGE)
     {
@@ -947,12 +967,12 @@ static void regMgrModeSetNoneOrVoltageRT(struct reg_mgr *reg_mgr, enum reg_mode 
 
 
 
-static void regMgrModeSetFieldOrCurrentRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mode)
+static void regMgrModeSetFieldOrCurrentRT(struct REG_mgr *reg_mgr, enum REG_mode reg_mode)
 {
     uint32_t                idx;
-    struct reg_mgr_signal *reg_signal;
-    struct reg_rst_pars    *rst_pars;
-    struct reg_rst_vars    *rst_vars;
+    struct REG_mgr_signal *reg_signal;
+    struct REG_rst_pars    *rst_pars;
+    struct REG_rst_vars    *rst_vars;
 
     // Get points to RST parameters and variables
 
@@ -961,11 +981,11 @@ static void regMgrModeSetFieldOrCurrentRT(struct reg_mgr *reg_mgr, enum reg_mode
     rst_pars   =  reg_signal->rst_pars;
     rst_vars   = &reg_signal->rst_vars;
 
-    // If actuation is CURRENT_REF then current regulation is open-loop in libreg
+    // If actuation is CURRENT_REF then current regulation is in the power converter
 
-    if(reg_mgr->par_values.pc_actuation[0] == REG_CURRENT_REF)
+    if(regMgrVarP(reg_mgr, PC_ACTUATION) == REG_CURRENT_REF)
     {
-        float meas_reg;
+        REG_float meas_reg;
 
         regMgrModeSetNoneOrVoltageRT(reg_mgr, REG_NONE);
 
@@ -982,11 +1002,11 @@ static void regMgrModeSetFieldOrCurrentRT(struct reg_mgr *reg_mgr, enum reg_mode
             rst_vars->openloop_ref[idx] = meas_reg;
         }
     }
-    else // Actuation is VOLTAGE_REF
+    else // Actuation is VOLTAGE_REF or FIRING_REF so current or field regulation is in libreg
     {
         reg_mgr->ref_advance = rst_pars->ref_advance;
 
-        reg_signal->is_delayed_ref_available = (reg_mgr->par_values.reg_err_rate[0] == REG_ERR_RATE_MEASUREMENT &&
+        reg_signal->is_delayed_ref_available = (regMgrVarP(reg_mgr, REG_ERR_RATE) == REG_ERR_RATE_MEASUREMENT &&
                                                 rst_pars->reg_err_meas_select    == REG_MEAS_UNFILTERED);
 
         regRstInitRefRT(rst_pars, rst_vars, reg_signal->rate.estimate);
@@ -1003,7 +1023,7 @@ static void regMgrModeSetFieldOrCurrentRT(struct reg_mgr *reg_mgr, enum reg_mode
 
 
 
-static void regMgrResetRegSignalRT(struct reg_mgr_signal *reg_signal)
+static void regMgrResetRegSignalRT(struct REG_mgr_signal *reg_signal)
 {
     reg_signal->is_delayed_ref_available = false;
     reg_signal->meas.reg                 = 0.0;
@@ -1017,7 +1037,7 @@ static void regMgrResetRegSignalRT(struct reg_mgr_signal *reg_signal)
 
 
 
-void regMgrModeSetRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mode)
+void regMgrModeSetRT(struct REG_mgr *reg_mgr, enum REG_mode reg_mode)
 {
     // If regulation mode has changed
 
@@ -1075,12 +1095,12 @@ void regMgrModeSetRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mode)
 
 
 
-uint32_t regMgrMeasSetRT(struct reg_mgr *reg_mgr, enum reg_rst_source reg_rst_source,
+uint32_t regMgrMeasSetRT(struct REG_mgr *reg_mgr, enum REG_rst_source reg_rst_source,
                          uint32_t unix_time, uint32_t us_time,
                          bool use_sim_meas, bool is_max_abs_err_enabled)
 {
     uint32_t iteration_counter;
-    float    i_meas_unfiltered;
+    REG_float    i_meas_unfiltered;
 
     // Store parameters for this iteration
 
@@ -1256,9 +1276,9 @@ uint32_t regMgrMeasSetRT(struct reg_mgr *reg_mgr, enum reg_rst_source reg_rst_so
         }
     }
 
-    // When actuation is VOLTAGE_REF and the converter is running, then manage the voltage related limits
+    // When actuation is VOLTAGE_REF or FIRING_REF and the converter is running, then manage the voltage related limits
 
-    if(reg_mgr->par_values.pc_actuation[0] == REG_VOLTAGE_REF && reg_mgr->reg_mode != REG_NONE)
+    if(regMgrVarP(reg_mgr, PC_ACTUATION) != REG_CURRENT_REF && reg_mgr->reg_mode != REG_NONE)
     {
         // Calculate and check the voltage regulation limits
 
@@ -1274,9 +1294,9 @@ uint32_t regMgrMeasSetRT(struct reg_mgr *reg_mgr, enum reg_rst_source reg_rst_so
 
 
 
-static void regMgrSignalRegulateRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mode, float *ref)
+static void regMgrSignalRegulateRT(struct REG_mgr *reg_mgr, enum REG_mode reg_mode, REG_float *ref)
 {
-    struct reg_mgr_signal *reg_signal = reg_mode == REG_FIELD ? &reg_mgr->b : &reg_mgr->i;
+    struct REG_mgr_signal *reg_signal = reg_mode == REG_FIELD ? &reg_mgr->b : &reg_mgr->i;
 
     if(reg_signal->regulation == REG_ENABLED)
     {
@@ -1295,7 +1315,7 @@ static void regMgrSignalRegulateRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mo
         }
         else
         {
-            struct reg_rst_pars * rst_pars = reg_signal->rst_pars;
+            struct REG_rst_pars * rst_pars = reg_signal->rst_pars;
 
             if(reg_signal->iteration_counter == 0)
             {
@@ -1306,13 +1326,17 @@ static void regMgrSignalRegulateRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mo
 
                 reg_signal->ref_limited = regLimRefRT(&reg_signal->lim_ref, reg_mgr->reg_period, reg_signal->ref, reg_signal->ref_limited);
 
-                // If Actuation is VOLTAGE_REF
+                // If Actuation is CURRENT_REF - current regulation is inside the power converter
 
-                if(reg_mgr->par_values.pc_actuation[0] == REG_VOLTAGE_REF)
+                if(regMgrVarP(reg_mgr, PC_ACTUATION) == REG_CURRENT_REF)
+                {
+                    reg_mgr->i.rst_vars.ref[reg_mgr->i.rst_vars.history_index] = reg_signal->ref_limited;
+                }
+                else // Actuation is VOLTAGE_REF or FIRING_REF - libreg is responsible for the the current or field regulation
                 {
                     bool  is_limited;
-                    float v_ref;
-                    float meas;
+                    REG_float v_ref;
+                    REG_float meas;
 
                     // Calculate voltage reference using RST algorithm
 
@@ -1393,15 +1417,11 @@ static void regMgrSignalRegulateRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mo
                     }
 
                 }
-                else // Actuation is CURRENT_REF
-                {
-                    reg_mgr->i.rst_vars.ref[reg_mgr->i.rst_vars.history_index] = reg_signal->ref_limited;
-                }
             }
 
             // Monitor regulation error using the delayed reference
 
-            if(reg_mgr->par_values.reg_err_rate[0] == REG_ERR_RATE_MEASUREMENT || reg_signal->iteration_counter == 0)
+            if(regMgrVarP(reg_mgr, REG_ERR_RATE) == REG_ERR_RATE_MEASUREMENT || reg_signal->iteration_counter == 0)
             {
                 regErrCheckLimitsRT(&reg_signal->err, 
                                     reg_mgr->is_max_abs_err_enabled,
@@ -1414,7 +1434,7 @@ static void regMgrSignalRegulateRT(struct reg_mgr *reg_mgr, enum reg_mode reg_mo
 
 
 
-void regMgrRegulateRT(struct reg_mgr *reg_mgr, float *ref)
+void regMgrRegulateRT(struct REG_mgr *reg_mgr, REG_float *ref)
 {
     switch(reg_mgr->reg_mode)
     {
@@ -1457,7 +1477,7 @@ void regMgrRegulateRT(struct reg_mgr *reg_mgr, float *ref)
 
 
 
-static float regMgrSimulationQuantization(float signal, float quantization)
+static REG_float regMgrSimulationQuantization(REG_float signal, REG_float quantization)
 {
     if(quantization > 0.0)
     {
@@ -1469,47 +1489,27 @@ static float regMgrSimulationQuantization(float signal, float quantization)
 
 
 
-void regMgrSimulateRT(struct reg_mgr *reg_mgr, float *v_circuit, float v_perturbation)
+void regMgrSimulateRT(struct REG_mgr *reg_mgr, REG_float v_perturbation)
 {
-    float v_circ;      // Simulated v_circuit without PC ACT_DELAY
+    REG_float v_circ;      // Simulated v_circuit without PC ACT_DELAY
 
-    // If Actuation is VOLTAGE
+    // If Actuation is CURRENT_REF
 
-    if(reg_mgr->par_values.pc_actuation[0] == REG_VOLTAGE_REF)
-    {
-        if(v_circuit == NULL)
-        {
-            v_circ = regSimPcRT(&reg_mgr->sim_pc_pars, &reg_mgr->sim_pc_vars, regMgrSimulationQuantization(reg_mgr->v.ref_limited, reg_mgr->par_values.pc_sim_quantization[0]));
-        }
-        else
-        {
-            // Use circuit voltage simulated externally (e.g. by the application using libvreg)
-
-            v_circ = reg_mgr->sim_load_vars.circuit_voltage = *v_circuit;
-        }
-
-        //
-
-        v_circ += v_perturbation + regMeasWhiteNoiseRT(reg_mgr->par_values.pc_sim_ripple[0]);
-
-        // Simulate load current and field in response to v_circuit plus the perturbation, also without taking into account PC ACT_DELAY
-
-        regSimLoadRT(&reg_mgr->sim_load_pars, &reg_mgr->sim_load_vars, reg_mgr->sim_pc_pars.is_pc_undersampled, v_circ);
-    }
-    else // Actuation is CURRENT_REF
+    if(regMgrVarP(reg_mgr, PC_ACTUATION) == REG_CURRENT_REF)
     {
         // Use the power converter model as the current source model and assume that all the circuit current passes through the magnet
         // i.e. assume ohms_par is large - if this is not true then the simulation will not be accurate
 
-        reg_mgr->sim_load_vars.circuit_current = regSimPcRT(&reg_mgr->sim_pc_pars, &reg_mgr->sim_pc_vars, reg_mgr->i.ref_limited);
+        reg_mgr->sim_load_vars.circuit_current = regSimPcRT(&reg_mgr->sim_pc_pars, &reg_mgr->sim_pc_vars, reg_mgr->i.ref_limited) +
+                                                 regMeasNoiseAndToneRT(&reg_mgr->sim_pc_noise_and_tone);
 
         // Derive the circuit voltage using V = I.R + L(I) dI/dt
         // Note: reg_mgr->sim_load_vars.magnet_current contains current from previous iteration so it is used to calculate dI/dt
 
         reg_mgr->sim_load_vars.circuit_voltage = reg_mgr->sim_load_vars.circuit_current * reg_mgr->sim_load_pars.load_pars.ohms +
-                                              reg_mgr->sim_load_pars.load_pars.henrys *
-                                              regLoadSatFactorRT(&reg_mgr->sim_load_pars.load_pars,reg_mgr->sim_load_vars.circuit_voltage) *
-                                              (reg_mgr->sim_load_vars.circuit_current - reg_mgr->sim_load_vars.magnet_current) / reg_mgr->iter_period;
+                                                 reg_mgr->sim_load_pars.load_pars.henrys *
+                                                 regLoadSatFactorRT(&reg_mgr->sim_load_pars.load_pars,reg_mgr->sim_load_vars.circuit_voltage) *
+                                                 (reg_mgr->sim_load_vars.circuit_current - reg_mgr->sim_load_vars.magnet_current) / reg_mgr->iter_period;
 
         reg_mgr->sim_load_vars.magnet_current = reg_mgr->sim_load_vars.circuit_current;
 
@@ -1517,15 +1517,41 @@ void regMgrSimulateRT(struct reg_mgr *reg_mgr, float *v_circuit, float v_perturb
 
         reg_mgr->sim_load_vars.magnet_field = regLoadCurrentToFieldRT(&reg_mgr->sim_load_pars.load_pars, reg_mgr->sim_load_vars.magnet_current);
     }
+    else // Actuation is VOLTAGE_REF or FIRING_REF
+    {
+        // Simulate circuit voltage based from voltage reference using voltage source model
+
+        if(regMgrVarP(reg_mgr, PC_ACTUATION) == REG_VOLTAGE_REF)
+        {
+            v_circ = regSimPcRT(&reg_mgr->sim_pc_pars, &reg_mgr->sim_pc_vars, regMgrSimulationQuantization(reg_mgr->v.ref_limited, regMgrVarP(reg_mgr, PC_SIM_QUANTIZATION)));
+        }
+        else // Simulate circuit voltage from firing reference using output filter model
+        {
+            v_circ = regSimPcRT(&reg_mgr->sim_pc_pars, &reg_mgr->sim_pc_vars, regMgrSimulationQuantization(reg_mgr->v.ref_limited, regMgrVarP(reg_mgr, PC_SIM_QUANTIZATION)));
+        }
+
+        // Combine voltage perturbation and noise and tone with simulated circuit voltage
+
+        v_circ += v_perturbation + regMeasNoiseAndToneRT(&reg_mgr->sim_pc_noise_and_tone);
+
+        // Simulate load current and field in response to v_circuit plus the perturbation, also without taking into account PC ACT_DELAY
+
+        regSimLoadRT(&reg_mgr->sim_load_pars, &reg_mgr->sim_load_vars, reg_mgr->sim_pc_pars.is_pc_undersampled, v_circ);
+    }
 
     // Use delays to estimate the measurement of the magnet's field and the circuit's current and voltage
 
-    reg_mgr->b.sim.signal = regDelaySignalRT(&reg_mgr->b.sim.meas_delay, reg_mgr->sim_load_vars.magnet_field,
-                                           reg_mgr->sim_pc_pars.is_pc_undersampled && reg_mgr->sim_load_pars.is_load_undersampled);
-    reg_mgr->i.sim.signal = regDelaySignalRT(&reg_mgr->i.sim.meas_delay, reg_mgr->sim_load_vars.circuit_current,
-                                           reg_mgr->sim_pc_pars.is_pc_undersampled && reg_mgr->sim_load_pars.is_load_undersampled);
-    reg_mgr->v.sim.signal = regDelaySignalRT(&reg_mgr->v.sim.meas_delay, reg_mgr->sim_load_vars.circuit_voltage,
-                                           reg_mgr->sim_pc_pars.is_pc_undersampled);
+    reg_mgr->b.sim.signal = regDelaySignalRT(&reg_mgr->b.sim.meas_delay,
+                                              reg_mgr->sim_load_vars.magnet_field,
+                                              reg_mgr->sim_pc_pars.is_pc_undersampled && reg_mgr->sim_load_pars.is_load_undersampled);
+
+    reg_mgr->i.sim.signal = regDelaySignalRT(&reg_mgr->i.sim.meas_delay,
+                                              reg_mgr->sim_load_vars.circuit_current,
+                                              reg_mgr->sim_pc_pars.is_pc_undersampled && reg_mgr->sim_load_pars.is_load_undersampled);
+
+    reg_mgr->v.sim.signal = regDelaySignalRT(&reg_mgr->v.sim.meas_delay,
+                                              reg_mgr->sim_load_vars.circuit_voltage,
+                                              reg_mgr->sim_pc_pars.is_pc_undersampled);
 
     // Store simulated voltage measurement without noise as the delayed ref for the v_err calculation
 
@@ -1537,11 +1563,11 @@ void regMgrSimulateRT(struct reg_mgr *reg_mgr, float *v_circuit, float v_perturb
     reg_mgr->i.sim.signal += regMeasNoiseAndToneRT(&reg_mgr->i.sim.noise_and_tone);
     reg_mgr->v.sim.signal += regMeasNoiseAndToneRT(&reg_mgr->v.sim.noise_and_tone);
 
-    // Simulation ADC quantization
+    // Simulation ADC quantisation
 
-    reg_mgr->b.sim.signal = regMgrSimulationQuantization(reg_mgr->b.sim.signal, reg_mgr->par_values.meas_b_sim_quantization[0]);
-    reg_mgr->i.sim.signal = regMgrSimulationQuantization(reg_mgr->i.sim.signal, reg_mgr->par_values.meas_i_sim_quantization[0]);
-    reg_mgr->v.sim.signal = regMgrSimulationQuantization(reg_mgr->v.sim.signal, reg_mgr->par_values.meas_v_sim_quantization[0]);
+    reg_mgr->b.sim.signal = regMgrSimulationQuantization(reg_mgr->b.sim.signal, regMgrVarP(reg_mgr, MEAS_B_SIM_QUANTIZATION));
+    reg_mgr->i.sim.signal = regMgrSimulationQuantization(reg_mgr->i.sim.signal, regMgrVarP(reg_mgr, MEAS_I_SIM_QUANTIZATION));
+    reg_mgr->v.sim.signal = regMgrSimulationQuantization(reg_mgr->v.sim.signal, regMgrVarP(reg_mgr, MEAS_V_SIM_QUANTIZATION));
 }
 
 // EOF

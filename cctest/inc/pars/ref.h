@@ -37,7 +37,7 @@
 
 // Function polarity enum (for debug only)
 
-CCPARS_REF_EXT struct ccpars_enum enum_func_pol[]
+CCPARS_REF_EXT struct CCpars_enum enum_func_pol[]
 #ifdef GLOBALS
 = {
     { FG_FUNC_POL_ZERO,      "ZERO"     },
@@ -58,7 +58,7 @@ enum prefunc_policy
     PREFUNC_MINMAX,
 };
 
-CCPARS_REF_EXT struct ccpars_enum enum_prefunc_policy[]
+CCPARS_REF_EXT struct CCpars_enum enum_prefunc_policy[]
 #ifdef GLOBALS
 = {
     { PREFUNC_RAMP,      "RAMP"         },
@@ -71,7 +71,7 @@ CCPARS_REF_EXT struct ccpars_enum enum_prefunc_policy[]
 
 // Function type enum - must match order of struct fgfunc funcs[] in ccRef.h
 
-enum fg_types
+enum FG_types
 {
     FG_NONE,
     FG_DIRECT,
@@ -88,7 +88,7 @@ enum fg_types
     FG_PULSE,
 };
 
-CCPARS_REF_EXT struct ccpars_enum enum_function_type[]
+CCPARS_REF_EXT struct CCpars_enum enum_function_type[]
 #ifdef GLOBALS
 = {
     { FG_NONE,        "NONE"   },
@@ -109,7 +109,7 @@ CCPARS_REF_EXT struct ccpars_enum enum_function_type[]
 #endif
 ;
 
-CCPARS_REF_EXT struct ccpars_enum enum_reg_mode[]
+CCPARS_REF_EXT struct CCpars_enum enum_reg_mode[]
 #ifdef GLOBALS
 = {
     { REG_NONE,       "NONE"    },
@@ -121,7 +121,7 @@ CCPARS_REF_EXT struct ccpars_enum enum_reg_mode[]
 #endif
 ;
 
-CCPARS_REF_EXT struct ccpars_enum enum_fg_error[]
+CCPARS_REF_EXT struct CCpars_enum enum_fg_error[]
 #ifdef GLOBALS
 = {
     { FG_OK,                         "OK"                         },
@@ -140,8 +140,8 @@ CCPARS_REF_EXT struct ccpars_enum enum_fg_error[]
 
 struct ccpars_ref
 {
-    enum reg_mode               reg_mode;               // Regulation mode (VOLTAGE, CURRENT or FIELD)
-    enum fg_types               function;               // Ref function type
+    enum REG_mode               reg_mode;               // Regulation mode (VOLTAGE, CURRENT or FIELD)
+    enum FG_types               function;               // Ref function type
     enum prefunc_policy         prefunc_policy;         // Pre-function policy
     float                       prefunc_min_ref;        // Minimum reference for pre-function
 };
@@ -168,7 +168,7 @@ enum ref_pars_index_enum
     REF_PREFUNC_MIN_REF,
 };
 
-CCPARS_REF_EXT struct ccpars ref_pars[]
+CCPARS_REF_EXT struct CCpars ref_pars[]
 #ifdef GLOBALS
 = {// "Signal name"      type,  max_n_els, *enum,                       *value,                     num_defaults,    cyc_sel_step,    flags
     { "REG_MODE",        PAR_ENUM,  1,      enum_reg_mode,       { .u = &ccpars_ref[0].reg_mode        }, 1, sizeof(struct ccpars_ref), 0 },

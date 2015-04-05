@@ -1,0 +1,26 @@
+# CCTEST - Reverse time test script
+
+GLOBAL ITER_PERIOD_US   10000
+GLOBAL GROUP            sandbox
+GLOBAL PROJECT          ReverseTime
+GLOBAL HTML_OUTPUT      DISABLED
+GLOBAL CSV_OUTPUT       ENABLED
+GLOBAL REVERSE_TIME     ENABLED
+
+REF FUNCTION            SINE
+GLOBAL FILE             sine
+RUN
+
+REF FUNCTION            PLEP
+GLOBAL FILE             plep
+RUN
+
+REF FUNCTION            TABLE
+GLOBAL FILE             table
+RUN
+
+REF FUNCTION            PPPL
+GLOBAL FILE             pppl
+RUN
+
+# EOF

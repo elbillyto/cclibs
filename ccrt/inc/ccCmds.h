@@ -145,7 +145,7 @@ struct cccmds
 {
     char                *name;
     uint32_t           (*cmd_func)(uint32_t cmd_idx, char *remaining_line);
-    struct ccpars       *pars;
+    struct CCpars       *pars;
     char                *help_message;
     uint32_t             flags;
 };

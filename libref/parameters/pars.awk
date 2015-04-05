@@ -180,7 +180,7 @@ BEGIN {
     print " * To use libref, the calling program should initialize the parameter value"                     > of
     print " * pointers to access the parameter variables in the calling program. Here"                      > of
     print " * is an example template for all the libref parameters, which assumes that"                     > of
-    print " * the ref_conv struct is called conv. Copy this into your initialization"                       > of
+    print " * the REF_mgr struct is called ref_mgr. Copy this into your initialization"                     > of
     print " * function and for each parameter that you want to control, replace"                            > of
     print " * REF_PAR_NOT_USED with the address of your variable.\n"                                        > of
 
@@ -202,19 +202,19 @@ BEGIN {
         printf "#define %-40s(1u<<%d)\n", flag[i], i                                                        > of
     }
 
-    print "\nstruct ref_par_meta"                                                                           > of
+    print "\nstruct REF_par_meta"                                                                           > of
     print "{"                                                                                               > of
     print "    uint32_t                 *num_els;"                                                          > of
     print "    uint32_t                  cyc_sel_step;"                                                     > of
     print "    uint32_t                  flags;"                                                            > of
     print "};\n"                                                                                            > of
-    print "struct ref_pars"                                                                                 > of
+    print "struct REF_pars"                                                                                 > of
     print "{"                                                                                               > of
 
     for(i=0 ; i < n_pars ; i++)
     {
         printf "    %30s%s;\n", par_type[i], par_variable[i]                                                > of
-        printf "    struct ref_par            %s_meta;\n", par_variable[i]                                  > of
+        printf "    struct REF_par            %s_meta;\n", par_variable[i]                                  > of
     }
 
     print "};\n"                                                                                            > of
@@ -265,7 +265,7 @@ BEGIN {
     print "#ifndef LIBREF_INIT_PARS_H"                                                                      > of
     print "#define LIBREF_INIT_PARS_H\n"                                                                    > of
 
-    print "static void refParsInit(struct ref_mgr *ref_mgr)"                                                > of
+    print "static void refParsInit(struct REF_mgr *ref_mgr)"                                                > of
     print "{"                                                                                               > of
 
     for(i=0 ; i < n_pars ; i++)

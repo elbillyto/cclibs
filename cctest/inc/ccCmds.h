@@ -48,6 +48,7 @@
 
 // Include libreg header files - required by cccmds[]
 
+#include "libfg.h"
 #include "libreg.h"
 
 // Include cctest function data header files
@@ -128,7 +129,7 @@ struct cccmds
 {
     char                *name;
     uint32_t           (*cmd_func)(uint32_t cmd_idx, char *remaining_line);
-    struct ccpars       *pars;
+    struct CCpars       *pars;
     char                *help_message;
     bool                is_enabled;
 };

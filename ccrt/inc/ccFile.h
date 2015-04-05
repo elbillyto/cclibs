@@ -74,7 +74,7 @@ uint32_t ccFileMakePath             (char *path);
 uint32_t ccFileReadAll              (char *path);
 uint32_t ccFileWriteLog             (void);
 uint32_t ccFileSaveAllConfigPars    (void);
-uint32_t ccFileSaveConfigPar        (char *cmd_name, struct ccpars *par);
+uint32_t ccFileSaveConfigPar        (char *cmd_name, struct CCpars *par);
 uint32_t ccFileSaveRefPars          (uint32_t cyc_sel);
 
 #endif

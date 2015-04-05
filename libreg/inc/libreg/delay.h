@@ -37,6 +37,7 @@
 #define LIBREG_DELAY_H
 
 #include <stdint.h>
+#include <libreg.h>
 
 /*!
  * Size of circular buffer. Specified as a mask, so value must be of the form \f$2^n-1\f$.
@@ -46,12 +47,12 @@
 /*!
  * Signal delay structure
  */
-struct reg_delay
+struct REG_delay
 {
     int32_t                     buf_index;                         //!< Index into circular buffer
-    float                       buf[REG_DELAY_BUF_INDEX_MASK+1];   //!< Circular buffer for signal. See also #REG_DELAY_BUF_INDEX_MASK
+    REG_float                   buf[REG_DELAY_BUF_INDEX_MASK+1];   //!< Circular buffer for signal. See also #REG_DELAY_BUF_INDEX_MASK
     int32_t                     delay_int;                         //!< Integer delays in iteration periods
-    float                       delay_frac;                        //!< Fractional delays in iteration periods
+    REG_float                   delay_frac;                        //!< Fractional delays in iteration periods
 };
 
 // Signal delay functions
@@ -69,7 +70,7 @@ extern "C" {
  * @param[in]     delay_iters           no. of iterations to delay. Can be fractional.
  *                                      Value is clipped to the range (0,#REG_DELAY_BUF_INDEX_MASK-1.0)
  */
-void regDelayInitDelay(struct reg_delay *delay, float delay_iters);
+void regDelayInitDelay(struct REG_delay *delay, REG_float delay_iters);
 
 /*!
  * Initialise reg_delay structure buffer
@@ -79,7 +80,7 @@ void regDelayInitDelay(struct reg_delay *delay, float delay_iters);
  * @param[out]    delay                 data struct to initialise
  * @param[in]     initial_signal        Value to assign to all elements of reg_delay::buf
  */
-void regDelayInitVars(struct reg_delay *delay, float initial_signal);
+void regDelayInitVars(struct REG_delay *delay, REG_float initial_signal);
 
 /*!
  * Assign signal value to next slot in reg_delay::buf
@@ -94,7 +95,7 @@ void regDelayInitVars(struct reg_delay *delay, float initial_signal);
  *                                      immediately.
  * @returns Signal value after delay
  */
-float regDelaySignalRT(struct reg_delay *delay, float signal, uint32_t under_sampled_flag);
+REG_float regDelaySignalRT(struct REG_delay *delay, REG_float signal, uint32_t under_sampled_flag);
 
 #ifdef __cplusplus
 }

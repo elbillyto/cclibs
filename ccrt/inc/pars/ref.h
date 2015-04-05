@@ -42,7 +42,7 @@
 
 // Function type enum - must match order of struct fgfunc funcs[] in ccRef.h
 
-enum fg_types
+enum FG_types
 {
     FG_NONE,
     FG_PLEP,
@@ -58,7 +58,7 @@ enum fg_types
     FG_PULSE,
 };
 
-CCPARS_REF_EXT struct ccpars_enum enum_function_type[]
+CCPARS_REF_EXT struct CCpars_enum enum_function_type[]
 #ifdef GLOBALS
 = { //                              flags
     { FG_NONE,        "NONE",       0                  },
@@ -78,7 +78,7 @@ CCPARS_REF_EXT struct ccpars_enum enum_function_type[]
 #endif
 ;
 
-CCPARS_REF_EXT struct ccpars_enum enum_reg_mode[]
+CCPARS_REF_EXT struct CCpars_enum enum_reg_mode[]
 #ifdef GLOBALS
 = { //                              flags
     { REG_NONE,       "NONE",       CC_ENUM_READ_ONLY  },
@@ -90,7 +90,7 @@ CCPARS_REF_EXT struct ccpars_enum enum_reg_mode[]
 #endif
 ;
 
-CCPARS_REF_EXT struct ccpars_enum enum_fg_error[]
+CCPARS_REF_EXT struct CCpars_enum enum_fg_error[]
 #ifdef GLOBALS
 = {
     { FG_OK,                         "OK"                         },
@@ -105,7 +105,7 @@ CCPARS_REF_EXT struct ccpars_enum enum_fg_error[]
 #endif
 ;
 
-CCPARS_REF_EXT struct ccpars_enum enum_func_pol[]
+CCPARS_REF_EXT struct CCpars_enum enum_func_pol[]
 #ifdef GLOBALS
 = {
     { FG_FUNC_POL_ZERO,      "ZERO"     },
@@ -121,13 +121,13 @@ CCPARS_REF_EXT struct ccpars_enum enum_func_pol[]
 
 struct ccpars_ref
 {   // Read/write
-    enum reg_enabled_disabled   play;                   // Play reference (ENABLED, DISABLED)
-    enum reg_mode               reg_mode;               // Regulation mode (VOLTAGE, CURRENT or FIELD)
-    enum fg_types               function;               // Ref function type
+    enum REG_enabled_disabled   play;                   // Play reference (ENABLED, DISABLED)
+    enum REG_mode               reg_mode;               // Regulation mode (VOLTAGE, CURRENT or FIELD)
+    enum FG_types               function;               // Ref function type
     // Read-only
-    enum reg_mode               armed_reg_mode;         // Armed regulation mode (VOLTAGE, CURRENT or FIELD)
-    enum fg_types               armed_function;         // Armed reference function type
-    struct fg_meta              fg_meta;                // Reference function meta data
+    enum REG_mode               armed_reg_mode;         // Armed regulation mode (VOLTAGE, CURRENT or FIELD)
+    enum FG_types               armed_function;         // Armed reference function type
+    struct FG_meta              fg_meta;                // Reference function meta data
 };
 
 CCPARS_REF_EXT struct ccpars_ref ccpars_ref[CC_NUM_CYC_SELS]
@@ -149,25 +149,25 @@ enum ref_pars_index_enum
     REF_FUNCTION,
 };
 
-CCPARS_REF_EXT struct ccpars ref_pars[]
+CCPARS_REF_EXT struct CCpars ref_pars[]
 #ifdef GLOBALS
 = {// "Signal name"      type,     max_n_els,          *enum,                         *value,                     num_defaults,                  cyc_sel_step,    flags
     { "PLAY",            PAR_ENUM,     1,               enum_enabled_disabled, { .u = &ccpars_ref[0].play                    }, 1,               sizeof(struct ccpars_ref), PARS_RW|PARS_CFG },
-    { "REG_MODE",        PAR_ENUM,     1,               enum_reg_mode,         { .u = &ccpars_ref[0].reg_mode                }, 1,               sizeof(struct ccpars_ref), PARS_RW|PARS_REF },
+    { "REG_MODE",        PAR_ENUM,     1,               enum_reg_mode,         { .u = &ccpars_ref[0].REG_mode                }, 1,               sizeof(struct ccpars_ref), PARS_RW|PARS_REF },
     { "FUNCTION",        PAR_ENUM,     1,               enum_function_type,    { .u = &ccpars_ref[0].function                }, 1,               sizeof(struct ccpars_ref), PARS_RW|PARS_REF },
     { "ARMED_REG_MODE",  PAR_ENUM,     1,               enum_reg_mode,         { .u = &ccpars_ref[0].armed_reg_mode          }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
     { "ARMED_FUNCTION",  PAR_ENUM,     1,               enum_function_type,    { .u = &ccpars_ref[0].armed_function          }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
-    { "STATUS",          PAR_ENUM,     1,               enum_fg_error,         { .u = &ccpars_ref[0].fg_meta.fg_error        }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
-    { "ERR_INDEX",       PAR_UNSIGNED, 1,               NULL,                  { .u = &ccpars_ref[0].fg_meta.error.index     }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
-    { "ERR_DATA",        PAR_FLOAT,    FG_ERR_DATA_LEN, enum_fg_error,         { .f =  ccpars_ref[0].fg_meta.error.data      }, FG_ERR_DATA_LEN, sizeof(struct ccpars_ref), PARS_RO          },
-    { "POLARITY",        PAR_ENUM,     1,               enum_func_pol,         { .u = &ccpars_ref[0].fg_meta.polarity        }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
-    { "LIMITS_INVERTED", PAR_BOOL,     1,               NULL,                  { .b = &ccpars_ref[0].fg_meta.limits_inverted }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
-    { "DELAY",           PAR_DOUBLE,   1,               NULL,                  { .d = &ccpars_ref[0].fg_meta.delay           }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
-    { "DURATION",        PAR_FLOAT,    1,               NULL,                  { .f = &ccpars_ref[0].fg_meta.duration        }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
-    { "START",           PAR_FLOAT,    1,               NULL,                  { .f = &ccpars_ref[0].fg_meta.range.start     }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
-    { "END",             PAR_FLOAT,    1,               NULL,                  { .f = &ccpars_ref[0].fg_meta.range.end       }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
-    { "MIN",             PAR_FLOAT,    1,               NULL,                  { .f = &ccpars_ref[0].fg_meta.range.min       }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
-    { "MAX",             PAR_FLOAT,    1,               NULL,                  { .f = &ccpars_ref[0].fg_meta.range.max       }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
+    { "STATUS",          PAR_ENUM,     1,               enum_fg_error,         { .u = &ccpars_ref[0].FG_meta.fg_error        }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
+    { "ERR_INDEX",       PAR_UNSIGNED, 1,               NULL,                  { .u = &ccpars_ref[0].FG_meta.error.index     }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
+    { "ERR_DATA",        PAR_FLOAT,    FG_ERR_DATA_LEN, enum_fg_error,         { .f =  ccpars_ref[0].FG_meta.error.data      }, FG_ERR_DATA_LEN, sizeof(struct ccpars_ref), PARS_RO          },
+    { "POLARITY",        PAR_ENUM,     1,               enum_func_pol,         { .u = &ccpars_ref[0].FG_meta.polarity        }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
+    { "LIMITS_INVERTED", PAR_BOOL,     1,               NULL,                  { .b = &ccpars_ref[0].FG_meta.limits_inverted }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
+    { "DELAY",           PAR_DOUBLE,   1,               NULL,                  { .d = &ccpars_ref[0].FG_meta.delay           }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
+    { "DURATION",        PAR_FLOAT,    1,               NULL,                  { .f = &ccpars_ref[0].FG_meta.duration        }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
+    { "START",           PAR_FLOAT,    1,               NULL,                  { .f = &ccpars_ref[0].FG_meta.range.start     }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
+    { "END",             PAR_FLOAT,    1,               NULL,                  { .f = &ccpars_ref[0].FG_meta.range.end       }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
+    { "MIN",             PAR_FLOAT,    1,               NULL,                  { .f = &ccpars_ref[0].FG_meta.range.min       }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
+    { "MAX",             PAR_FLOAT,    1,               NULL,                  { .f = &ccpars_ref[0].FG_meta.range.max       }, 1,               sizeof(struct ccpars_ref), PARS_RO          },
     { NULL }
 }
 #endif

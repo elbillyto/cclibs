@@ -47,7 +47,7 @@ enum postfunc_policy
     POSTFUNC_MINRMS,
 };
 
-CCPARS_POSTFUNC_EXT struct ccpars_enum enum_postfunc_policy[]
+CCPARS_POSTFUNC_EXT struct CCpars_enum enum_postfunc_policy[]
 #ifdef GLOBALS
 = {
     { POSTFUNC_MINRMS,       "MINRMS"       },
@@ -74,7 +74,7 @@ CCPARS_POSTFUNC_EXT struct ccpars_postfunc ccpars_postfunc
 
 // Postfunc parameters description structure
 
-CCPARS_POSTFUNC_EXT struct ccpars postfunc_pars[]
+CCPARS_POSTFUNC_EXT struct CCpars postfunc_pars[]
 #ifdef GLOBALS
 = {// "Signal name"       type,  max_n_els, *enum,                        *value,        num_postfuncs,cyc_sel_step,flags
     { "POLICY",           PAR_ENUM,  1,      enum_postfunc_policy, { .u = &ccpars_postfunc.policy }, 1,     0,      PARS_RW|PARS_CFG },

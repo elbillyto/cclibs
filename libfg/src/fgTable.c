@@ -26,49 +26,47 @@
  */
 
 #include "string.h"
-#include "libfg/table.h"
+#include "libfg.h"
 
 
 
-enum fg_error fgTableInit(struct   fg_limits *limits, 
-                          bool     pol_switch_auto,
-                          bool     pol_switch_neg,
-                          double   delay, 
-                          float    min_time_step,
-                          float   *ref,
-                          uint32_t ref_num_els,
-                          float   *time,
-                          uint32_t time_num_els,
-                          struct   fg_table *pars, 
-                          struct   fg_meta *meta)
+enum FG_errno fgTableInit(struct FG_limits *limits,
+                          bool              pol_switch_auto,
+                          bool              pol_switch_neg,
+                          FG_float          min_time_step,
+                          FG_float         *ref,
+                          uint32_t          ref_num_els,
+                          FG_float         *time,
+                          uint32_t          time_num_els,
+                          FG_float         *armed_ref,
+                          FG_float         *armed_time,
+                          union  FG_pars   *pars,
+                          struct FG_error  *error)
 {
-    enum fg_error  fg_error;       // Limit checking status
-    uint32_t       i;              // loop variable
-    uint32_t       num_points;     // Number of points in the table
-    float          grad;           // Segment gradient
-    struct fg_meta local_meta;     // Local meta data in case user meta is NULL
+    enum   FG_errno fg_errno;       // Error number
+    struct FG_error local_error;    // Local error data in case user error is NULL
+    struct FG_meta  meta;           // Local TABLE pars - copied to user *pars only if there are no errors
+    uint32_t        i;              // loop variable
+    uint32_t        num_points;     // Number of points in the table
+    FG_float        grad;           // Segment gradient
 
-    // Reset meta structure - uses local_meta if meta is NULL
+    // Unlike other functions, we do not need a local copy of struct fg_table.  We just need a local
+    // copy of meta because the function doesn't need to write anything other than the meta data
+    // to pars until the limits have been checked.
 
-    meta = fgResetMeta(meta, &local_meta, delay, ref[0]);
+    // Reset meta & error structures - uses local_error if error is NULL
+
+    error = fgResetMeta(ref[0], &meta, &local_error, error);
 
     // Initial checks of data integrity
 
     if(ref_num_els < 2 ||                          // If less than 2 points or
        ref_num_els != time_num_els)   // time and ref arrays are not the same length
     {
-        meta->error.data[0] = (float)ref_num_els;
-        meta->error.data[1] = (float)time_num_els;
+        error->data[0] = (float)ref_num_els;
+        error->data[1] = (float)time_num_els;
 
-        fg_error = FG_BAD_ARRAY_LEN;                            // Report bad array len
-        goto error;
-    }
-
-    if(time[0] != 0.0)                              // If first time value is not zero
-    {
-        meta->error.data[0] = time[0];
-
-        fg_error = FG_INVALID_TIME;                             // Report invalid time
+        fg_errno = FG_BAD_ARRAY_LEN;                            // Report bad array len
         goto error;
     }
 
@@ -81,38 +79,41 @@ enum fg_error fgTableInit(struct   fg_limits *limits,
     {
         if(time[i] < (time[i - 1] + min_time_step))        // Check time values
         {
-            meta->error.index   = i;
-            meta->error.data[0] = time[i];
-            meta->error.data[1] = time[i - 1] + min_time_step;
-            meta->error.data[2] = min_time_step;
+            error->index   = i;
+            error->data[0] = time[i];
+            error->data[1] = time[i - 1] + min_time_step;
+            error->data[2] = min_time_step;
 
-            fg_error = FG_INVALID_TIME;                             // Report invalid time
+            fg_errno = FG_INVALID_TIME;                             // Report invalid time
             goto error;
         }
 
-        fgSetMinMax(meta, ref[i]);
+        fgSetMinMax(ref[i], &meta);
     }
 
     // Complete meta data
 
-    meta->duration         = time[i - 1];
-    meta->range.end        = ref [i - 1];
-    meta->range.final_rate = (ref[i - 1] - ref[i - 2]) / (time[i - 1] - time[i - 2]);
+    meta.time.start      = time[0];
+    meta.range.final_ref = ref[num_points - 1];
 
-    fgSetFuncPolarity(meta, pol_switch_auto, pol_switch_neg);
+    fgSetMeta(pol_switch_auto, pol_switch_neg, time[num_points - 1], limits, &meta);
 
     // Check reference function limits if provided
 
     if(limits != NULL)
     {
+        if((fg_errno = fgCheckRef(ref[0], 0.0, 0.0, &meta, error)))
+        {
+            goto error;
+        }
+
         for(i = 1 ; i < num_points ; i++)
         {
             grad = (ref[i] - ref[i - 1]) / (time[i] - time[i - 1]);
 
-            if((fg_error = fgCheckRef(limits, ref[i],     grad, 0.0, meta)) ||
-               (fg_error = fgCheckRef(limits, ref[i - 1], grad, 0.0, meta)))
+            if((fg_errno = fgCheckRef(ref[i], grad, 0.0, &meta, error)))
             {
-                meta->error.index = i;
+                error->index = i;
                 goto error;
             }
         }
@@ -120,31 +121,33 @@ enum fg_error fgTableInit(struct   fg_limits *limits,
 
     // Prepare table parameters
 
-    pars->delay        = delay;
-    pars->num_points   = num_points;
-    pars->seg_idx      = 0;
-    pars->prev_seg_idx = 0;
+    pars->table.meta         = meta;
+    pars->table.num_points   = num_points;
+    pars->table.seg_idx      = 0;
+    pars->table.prev_seg_idx = 0;
 
-    if(pars->ref == NULL)
+    // Transfer table ref data if armed_ref is supplied
+
+    if(armed_ref == NULL)
     {
-        pars->ref = ref;
+        pars->table.ref = ref;
+    }
+    else
+    {
+        pars->table.ref = armed_ref;
+        memcpy(armed_ref, ref, num_points * sizeof(ref[0]));
     }
 
-    if(pars->time == NULL)
+    // Transfer table time data if armed_time is supplied
+
+    if(armed_time == NULL)
     {
-        pars->time = time;
+        pars->table.time = time;
     }
-
-    // Copy data if pars arrays are different
-
-    if(pars->ref != ref)
+    else
     {
-        memcpy(pars->ref, ref, num_points * sizeof(ref[0]));
-    }
-
-    if(pars->time != time)
-    {
-        memcpy(pars->time, time, num_points * sizeof(time[0]));
+        pars->table.time = armed_time;
+        memcpy(armed_time, time, num_points * sizeof(time[0]));
     }
 
     return(FG_OK);
@@ -153,59 +156,58 @@ enum fg_error fgTableInit(struct   fg_limits *limits,
 
     error:
 
-        meta->fg_error = fg_error;
-        return(fg_error);
+        error->fg_errno = fg_errno;
+        return(fg_errno);
 }
 
 
 
-enum fg_gen_status fgTableGen(struct fg_table *pars, const double *time, float *ref)
+enum FG_func_status fgTableRT(union FG_pars *pars, FG_float func_time, FG_float *ref)
 {
-    float   func_time;                     // Time within function
+    // Pre-function coast
 
-    // Both *time and delay must be 64-bit doubles if time is UNIX time
-
-    func_time = (float)(*time - pars->delay);
-
-    // Pre-acceleration coast
-
-    if(func_time < 0.0)
+    if(func_time < pars->meta.time.start)
     {
-         *ref = pars->ref[0];
+         *ref = pars->meta.range.initial_ref;
 
          return(FG_GEN_PRE_FUNC);
     }
 
-    // Scan through table to find segment containing the current time
+    // Post-function coast
 
-    while(func_time >= pars->time[pars->seg_idx])      // while time exceeds end of segment
+    if(func_time >= pars->meta.time.end)
     {
-        if(++pars->seg_idx >= pars->num_points)                 // If vector complete
-        {
-            pars->seg_idx = pars->num_points - 1;                   // Force segment index to last seg
-            *ref          = pars->ref[pars->num_points - 1];        // Enter coast
+         *ref = pars->meta.range.final_ref;
 
-            return(FG_GEN_POST_FUNC);
-        }
+         return(FG_GEN_POST_FUNC);
     }
 
-    while(func_time < pars->time[pars->seg_idx - 1])      // while time before start of segment
+    // Scan forward through table to find segment containing the current time
+
+    while(func_time >= pars->table.time[pars->table.seg_idx])
     {
-        pars->seg_idx--;
+        pars->table.seg_idx++;
+    }
+
+    // If time before start of segment than back up through the table
+
+    while(func_time < pars->table.time[pars->table.seg_idx - 1])
+    {
+        pars->table.seg_idx--;
     }
 
     // If time is in a new segment, calculate the gradient
 
-    if(pars->seg_idx != pars->prev_seg_idx)
+    if(pars->table.seg_idx != pars->table.prev_seg_idx)
     {
-        pars->prev_seg_idx = pars->seg_idx;
-        pars->seg_grad     = (pars->ref [pars->seg_idx] - pars->ref [pars->seg_idx - 1]) /
-                             (pars->time[pars->seg_idx] - pars->time[pars->seg_idx - 1]);
+        pars->table.prev_seg_idx = pars->table.seg_idx;
+        pars->table.seg_grad     = (pars->table.ref [pars->table.seg_idx] - pars->table.ref [pars->table.seg_idx - 1]) /
+                             (pars->table.time[pars->table.seg_idx] - pars->table.time[pars->table.seg_idx - 1]);
     }
 
     // Calculate reference using segment gradient
 
-    *ref = pars->ref[pars->seg_idx]  - (pars->time[pars->seg_idx] - func_time) * pars->seg_grad;
+    *ref = pars->table.ref[pars->table.seg_idx]  - (pars->table.time[pars->table.seg_idx] - func_time) * pars->table.seg_grad;
 
     return(FG_GEN_DURING_FUNC);
 }

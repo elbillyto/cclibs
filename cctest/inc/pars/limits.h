@@ -36,7 +36,7 @@
 
 // Limit parameters structure
 
-struct ccpars_limits
+struct CCpars_limits
 {
     float   b_pos              [REG_NUM_LOADS];    // Field positive trip limit
     float   b_min              [REG_NUM_LOADS];    // Field minimum regulation limit
@@ -77,10 +77,10 @@ struct ccpars_limits
     float   v_err_fault;                           // Voltage regulation error fault limit
     float   v_quadrants41      [2];                // Voltage exclusion zone limits for quadrants 4 and 1
 
-    enum reg_enabled_disabled  invert;             // Invert real-time limits (true if polarity switch is negative)
+    enum REG_enabled_disabled  invert;             // Invert real-time limits (true if polarity switch is negative)
 };
 
-CCPARS_LIMITS_EXT struct ccpars_limits ccpars_limits
+CCPARS_LIMITS_EXT struct CCpars_limits ccpars_limits
 #ifdef GLOBALS
 = {// Default values                          Parameter
     {   10.0,   10.0,   10.0,   10.0 },  // LIMITS B_POS
@@ -124,7 +124,7 @@ CCPARS_LIMITS_EXT struct ccpars_limits ccpars_limits
 
 // Global parameters description structure
 
-CCPARS_LIMITS_EXT struct ccpars limits_pars[]
+CCPARS_LIMITS_EXT struct CCpars limits_pars[]
 #ifdef GLOBALS
 = {// "Signal name"         type,      max_n_els,  *enum,               *value,                             num_defaults,cyc_sel_step,flags
     { "B_POS",              PAR_FLOAT, REG_NUM_LOADS, NULL,        { .f =  ccpars_limits.b_pos              }, REG_NUM_LOADS, 0, PARS_FIXED_LENGTH },

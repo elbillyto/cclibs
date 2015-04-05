@@ -276,7 +276,7 @@ static void ccFileWriteCsvValueForOneLog(struct cclog *log)
     {
         if(log->ana_sigs[sig_idx].is_enabled)
         {
-            fprintf(ccfile.csv_file,",%.7E",log->ana_sigs[sig_idx].value);
+            fprintf(ccfile.csv_file,",%.7E",*log->ana_sigs[sig_idx].source);
         }
     }
 
@@ -284,7 +284,7 @@ static void ccFileWriteCsvValueForOneLog(struct cclog *log)
     {
         if(log->dig_sigs[sig_idx].is_enabled)
         {
-            fprintf(ccfile.csv_file,",%u",(uint32_t)log->dig_sigs[sig_idx].value);
+            fprintf(ccfile.csv_file,",%u",(uint32_t)*log->dig_sigs[sig_idx].source);
         }
     }
 }

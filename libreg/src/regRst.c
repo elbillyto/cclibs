@@ -40,7 +40,7 @@
 // Macros
 
 #define MINIMUM(A,B)               (A<B?A:B)
-#define REG_MM_FREQ(index)         (0.1 + (9.9 / (REG_MM_STEPS*REG_MM_STEPS*REG_MM_STEPS)) * (float)(index*index*index))
+#define REG_MM_FREQ(index)         (0.1 + (9.9 / (REG_MM_STEPS*REG_MM_STEPS*REG_MM_STEPS)) * (REG_float)(index*index*index))
 
 // Typedef for complex numbers
 
@@ -52,14 +52,14 @@ typedef struct complex
 
 // Static function declarations
 
-static float  regVectorMultiply (float *p, float *m, int32_t p_order, int32_t m_idx);
-static float  regAbsComplexRatio(float *num, float *den, float k);
+static REG_float regVectorMultiply (REG_float *p, REG_float *m, int32_t p_order, int32_t m_idx);
+static REG_float regAbsComplexRatio(REG_float *num, REG_float *den, REG_float k);
 
 
 
 // Background functions - do not call these from the real-time thread or interrupt
 
-static enum reg_jurys_result regJurysTest(struct reg_rst_pars *pars)
+static enum REG_jurys_result regJurysTest(struct REG_rst_pars *pars)
 {
     int32_t     i;
     int32_t     n;
@@ -100,6 +100,10 @@ static enum reg_jurys_result regJurysTest(struct reg_rst_pars *pars)
             sum_odd_s += b[i];
         }
     }
+
+    pars->sum_even_s = sum_even_s;
+    pars->sum_odd_s  = sum_odd_s;
+
 
     // Jury's test -2 : s(1) > 0 for stability - allow for floating point rounding errors
 
@@ -147,13 +151,13 @@ static enum reg_jurys_result regJurysTest(struct reg_rst_pars *pars)
 
 
 
-static float regModulusMargin(struct reg_rst_pars *pars)
+static REG_float regModulusMargin(struct REG_rst_pars *pars)
 {
-    int32_t     frequency_index;
-    int32_t     frequency_index_step;                       // +/-1
-    float       frequency_fraction;                         // 1 = regulation frequency, 0.5 = Nyquist
-    float       frequency_fraction_for_min_abs_S_p_y;
-    float       abs_S_p_y;                                  // Current value of the sensitivity function
+    int32_t         frequency_index;
+    int32_t         frequency_index_step;                       // +/-1
+    REG_float       frequency_fraction;                         // 1 = regulation frequency, 0.5 = Nyquist
+    REG_float       frequency_fraction_for_min_abs_S_p_y;
+    REG_float       abs_S_p_y;                                  // Current value of the sensitivity function
 
     // For algorithm 1 (dead-beat, 1 period delay), the modulous margin comes at the Nyquist
 
@@ -224,7 +228,7 @@ static float regModulusMargin(struct reg_rst_pars *pars)
 
 
 
-static float regAbsComplexRatio(float *num, float *den, float k)
+static REG_float regAbsComplexRatio(REG_float *num, REG_float *den, REG_float k)
 {
     int32_t     idx;
     double      cosine;
@@ -272,13 +276,13 @@ static float regAbsComplexRatio(float *num, float *den, float k)
  * The calculation of the RST coefficients requires double precision floating point, even though the
  * coefficients themselves are stored as single precision.
  */
-static enum reg_jurys_result regRstInitPII(struct reg_rst_pars  *pars,
-                                           struct reg_load_pars *load,
-                                           float                 auxpole1_hz,
-                                           float                 auxpoles2_hz,
-                                           float                 auxpoles2_z,
-                                           float                 auxpole4_hz,
-                                           float                 auxpole5_hz)
+static enum REG_jurys_result regRstInitPII(struct REG_rst_pars  *pars,
+                                           struct REG_load_pars *load,
+                                           REG_float             auxpole1_hz,
+                                           REG_float             auxpoles2_hz,
+                                           REG_float             auxpoles2_z,
+                                           REG_float             auxpole4_hz,
+                                           REG_float             auxpole5_hz)
 {
     uint32_t    idx;
     int32_t     s_idx = 0;
@@ -578,7 +582,7 @@ static enum reg_jurys_result regRstInitPII(struct reg_rst_pars  *pars,
     return(REG_JR_OK);
 }
 
-static float regVectorMultiply(float *p, float *m, int32_t p_order, int32_t m_idx)
+static REG_float regVectorMultiply(REG_float *p, REG_float *m, int32_t p_order, int32_t m_idx)
 {
     int32_t    p_idx;
     double     product = 0.0;
@@ -597,13 +601,13 @@ static float regVectorMultiply(float *p, float *m, int32_t p_order, int32_t m_id
  * This function prepares coefficients for the RST regulation algorithm to implement a proportional-integral
  * controller. It can be used with fast slightly inductive circuits.
  */
-static void regRstInitPI(struct reg_rst_pars  *pars,
-                         struct reg_load_pars *load,
-                         float                 auxpole1_hz)
+static void regRstInitPI(struct REG_rst_pars  *pars,
+                         struct REG_load_pars *load,
+                         REG_float             auxpole1_hz)
 {
-    float a1 = -exp(-pars->reg_period * (load->ohms_ser + load->ohms_mag) * load->inv_henrys);
-    float b1 = (1.0 + a1) / (load->ohms_ser + load->ohms_mag);
-    float c1 = -exp(-pars->reg_period * M_TWO_PI * auxpole1_hz);
+    REG_float a1 = -exp(-pars->reg_period * (load->ohms_ser + load->ohms_mag) * load->inv_henrys);
+    REG_float b1 = (1.0 + a1) / (load->ohms_ser + load->ohms_mag);
+    REG_float c1 = -exp(-pars->reg_period * M_TWO_PI * auxpole1_hz);
 
     pars->alg_index = 10;
 
@@ -628,12 +632,12 @@ static void regRstInitPI(struct reg_rst_pars  *pars,
  * This function prepares coefficients for the RST regulation algorithm to implement an Integrator only.
  * This can be used with resistive circuits.
  */
-static void regRstInitI(struct reg_rst_pars  *pars,
-                        struct reg_load_pars *load,
-                        float                 auxpole1_hz)
+static void regRstInitI(struct REG_rst_pars  *pars,
+                        struct REG_load_pars *load,
+                        REG_float             auxpole1_hz)
 {
-    float b1 = 1.0 / (load->ohms_ser + load->ohms_mag);
-    float c1 = -exp(-M_TWO_PI * pars->reg_period * auxpole1_hz);
+    REG_float b1 = 1.0 / (load->ohms_ser + load->ohms_mag);
+    REG_float c1 = -exp(-M_TWO_PI * pars->reg_period * auxpole1_hz);
 
     pars->alg_index = 20;
 
@@ -655,7 +659,7 @@ static void regRstInitI(struct reg_rst_pars  *pars,
 /*
  * Calculate coefficients for open loop reference difference equation.
  */
-static inline void regRstInitOpenLoop(struct reg_rst_pars *pars, struct reg_load_pars *load)
+static inline void regRstInitOpenLoop(struct REG_rst_pars *pars, struct REG_load_pars *load)
 {
     // Forwards EULER
 
@@ -687,25 +691,25 @@ static inline void regRstInitOpenLoop(struct reg_rst_pars *pars, struct reg_load
 
 
 
-enum reg_status regRstInit(struct reg_rst_pars  *pars,
+enum REG_status regRstInit(struct REG_rst_pars  *pars,
                            uint32_t              reg_period_iters,
-                           float                 reg_period,
-                           struct reg_load_pars *load,
-                           float                 auxpole1_hz,
-                           float                 auxpoles2_hz,
-                           float                 auxpoles2_z,
-                           float                 auxpole4_hz,
-                           float                 auxpole5_hz,
-                           float                 pure_delay_periods,
-                           float                 track_delay_periods,
-                           enum reg_mode         reg_mode,
-                           struct reg_rst       *manual)
+                           REG_float             reg_period,
+                           struct REG_load_pars *load,
+                           REG_float             auxpole1_hz,
+                           REG_float             auxpoles2_hz,
+                           REG_float             auxpoles2_z,
+                           REG_float             auxpole4_hz,
+                           REG_float             auxpole5_hz,
+                           REG_float             pure_delay_periods,
+                           REG_float             track_delay_periods,
+                           enum REG_mode         reg_mode,
+                           struct REG_rst       *manual)
 {
     uint32_t    i;
     double      t0_correction;
 
     pars->reg_mode             = reg_mode;
-    pars->inv_reg_period_iters = 1.0 / (float)reg_period_iters;
+    pars->inv_reg_period_iters = 1.0 / (REG_float)reg_period_iters;
     pars->reg_period           = reg_period;
     pars->alg_index            = 0;
     pars->dead_beat            = 0;
@@ -795,7 +799,7 @@ enum reg_status regRstInit(struct reg_rst_pars  *pars,
         {
             if(pars->dead_beat > 0)
             {
-                pars->track_delay_periods = (float)pars->dead_beat;
+                pars->track_delay_periods = (REG_float)pars->dead_beat;
             }
             else
             {
@@ -826,7 +830,7 @@ enum reg_status regRstInit(struct reg_rst_pars  *pars,
 
 
 
-void regRstInitHistory(struct reg_rst_vars *vars, float ref, float openloop_ref, float act)
+void regRstInitHistory(struct REG_rst_vars *vars, REG_float ref, REG_float openloop_ref, REG_float act)
 {
     uint32_t    var_idx;
 
@@ -845,10 +849,10 @@ void regRstInitHistory(struct reg_rst_vars *vars, float ref, float openloop_ref,
 
 // Real-Time Functions
 
-void regRstInitRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, float rate)
+void regRstInitRefRT(struct REG_rst_pars *pars, struct REG_rst_vars *vars, REG_float rate)
 {
     double      meas;
-    float       ref_offset;
+    REG_float   ref_offset;
     uint32_t    var_idx;
     uint32_t    par_idx;
     uint32_t    rst_order = pars->rst_order;
@@ -890,13 +894,13 @@ void regRstInitRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, float
 
 
 
-float regRstCalcActRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, float ref, bool is_openloop)
+REG_float regRstCalcActRT(struct REG_rst_pars *pars, struct REG_rst_vars *vars, REG_float ref, bool is_openloop)
 /*!
  * <h3>Implementation Notes</h3>
  *
  * Computing the actuation requires a better precision than 32-bit floating point for the
  * intermediate results. This is achieved by using the type double for the local variable
- * act. On TI C32 DSP, double is simply an alias for float, <em>i.e.</em>, 32-bit floating
+ * act. On TI C32 DSP, double is simply an alias for REG_float, <em>i.e.</em>, 32-bit floating
  * point. However that DSP can take advantage of the extended 40-bit precision of its FPU,
  * by defining double to be long double.
  */
@@ -963,13 +967,13 @@ float regRstCalcActRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, floa
 
 
 
-void regRstCalcRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, float act, bool is_limited, bool is_openloop)
+void regRstCalcRefRT(struct REG_rst_pars *pars, struct REG_rst_vars *vars, REG_float act, bool is_limited, bool is_openloop)
 /*!
  * <h3>Implementation Notes</h3>
  *
  * Computing the actuation requires a better precision than 32-bit floating point for the
  * intermediate results. This is achieved by using the type double for the local variable
- * ref. On TI C32 DSP, double is simply an alias for float, <em>i.e.</em>, 32-bit floating
+ * ref. On TI C32 DSP, double is simply an alias for REG_float, <em>i.e.</em>, 32-bit floating
  * point. However that DSP can take advantage of the extended 40-bit precision of its FPU,
  * by defining double to be long double.
  */
@@ -1037,11 +1041,11 @@ void regRstCalcRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, float
 
 
 
-float regRstTrackDelayRT(struct reg_rst_vars *vars)
+REG_float regRstTrackDelayRT(struct REG_rst_vars *vars)
 {
-    float    meas_track_delay_periods   = 0.0;
-    float    delta_ref                  = regRstDeltaRefRT(vars);
-    uint32_t var_idx                    = vars->history_index;
+    REG_float meas_track_delay_periods   = 0.0;
+    REG_float delta_ref                  = regRstDeltaRefRT(vars);
+    uint32_t  var_idx                    = vars->history_index;
 
     // Measure track delay if reference is changing
 
@@ -1067,18 +1071,18 @@ float regRstTrackDelayRT(struct reg_rst_vars *vars)
 
 
 
-float regRstDelayedRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, uint32_t iteration_index)
+REG_float regRstDelayedRefRT(struct REG_rst_pars *pars, struct REG_rst_vars *vars, uint32_t iteration_index)
 {
-    int32_t  delay_int;
-    float    ref_delay_periods;
-    float    float_delay_int;
-    float    delay_frac;
-    float    ref1;
-    float    ref2;
+    int32_t    delay_int;
+    REG_float  ref_delay_periods;
+    REG_float  float_delay_int;
+    REG_float  delay_frac;
+    REG_float  ref1;
+    REG_float  ref2;
 
     // Adjust ref delay to account for the acquisition iteration time between regulation iterations
 
-    ref_delay_periods = pars->ref_delay_periods - (float)iteration_index * pars->inv_reg_period_iters;
+    ref_delay_periods = pars->ref_delay_periods - (REG_float)iteration_index * pars->inv_reg_period_iters;
 
     // Convert track delay to integer and fractional parts
 
@@ -1111,11 +1115,11 @@ float regRstDelayedRefRT(struct reg_rst_pars *pars, struct reg_rst_vars *vars, u
 
 
 
-float regRstAverageVrefRT(struct reg_rst_vars *vars)
+REG_float regRstAverageVrefRT(struct REG_rst_vars *vars)
 {
     uint32_t    i;
     uint32_t    var_idx  = vars->history_index;
-    float       sum_vref = 0.0;
+    REG_float   sum_vref = 0.0;
 
     for(i = 0 ; i < REG_AVE_V_REF_LEN ; i++, var_idx--)
     {

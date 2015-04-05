@@ -45,7 +45,7 @@ void ccInitPars(void)
   parameters it also copies the initialisation value from (0) to all the cycle selector slots.
 \*---------------------------------------------------------------------------------------------------------*/
 {
-    struct ccpars *par;
+    struct CCpars *par;
     struct cccmds *cmd;
 
     for(cmd = cmds ; cmd->name != NULL ; cmd++)
@@ -133,13 +133,29 @@ uint32_t ccInitFunctions(void)
             ccParsPrintError("only one function can be specified when REVERSE_TIME is ENABLED");
             return(EXIT_FAILURE);
         }
+
+        // CSV output must be enabled as only CSV data will be written
+
+        if(ccpars_global.csv_output != REG_ENABLED)
+        {
+            ccParsPrintError("GLOBAL CSV_OUTPUT must be ENABLED when REVERSE_TIME is ENABLED");
+            return(EXIT_FAILURE);
+        }
+
+        // HTML output must be disabled as only CSV data will be written
+
+        if(ccpars_global.html_output == REG_ENABLED)
+        {
+            ccParsPrintError("GLOBAL HTML_OUTPUT must be DISABLED when REVERSE_TIME is ENABLED");
+            return(EXIT_FAILURE);
+        }
     }
 
     // if GLOBAL FG_LIMITS is ENABLED then link to function generation limits
 
     if(ccpars_global.fg_limits == REG_ENABLED)
     {
-        ccrun.fg_limits = &ccrun.fgen_limits;
+        ccrun.fg_func_limits = &ccrun.fg_limits;
     }
 
     // If voltage perturbation is not required then set perturb_time to beyond end of simulation
@@ -200,31 +216,31 @@ uint32_t ccInitFunctions(void)
                 case REG_NONE: break;
                 case REG_FIELD:
 
-                    ccrun.is_breg_enabled          = true;
-                    ccrun.fgen_limits.pos          = ccpars_limits.b_pos         [ccpars_load.select];
-                    ccrun.fgen_limits.min          = ccpars_limits.b_min         [ccpars_load.select];
-                    ccrun.fgen_limits.neg          = ccpars_limits.b_neg         [ccpars_load.select];
-                    ccrun.fgen_limits.rate         = ccpars_limits.b_rate        [ccpars_load.select];
-                    ccrun.fgen_limits.acceleration = ccpars_limits.b_acceleration[ccpars_load.select];
+                    ccrun.is_breg_enabled        = true;
+                    ccrun.fg_limits.pos          = ccpars_limits.b_pos         [ccpars_load.select];
+                    ccrun.fg_limits.min          = ccpars_limits.b_min         [ccpars_load.select];
+                    ccrun.fg_limits.neg          = ccpars_limits.b_neg         [ccpars_load.select];
+                    ccrun.fg_limits.rate         = ccpars_limits.b_rate        [ccpars_load.select];
+                    ccrun.fg_limits.acceleration = ccpars_limits.b_acceleration[ccpars_load.select];
                     break;
 
                 case REG_CURRENT:
 
-                    ccrun.is_ireg_enabled          = true;
-                    ccrun.fgen_limits.pos          = ccpars_limits.i_pos         [ccpars_load.select];
-                    ccrun.fgen_limits.min          = ccpars_limits.i_min         [ccpars_load.select];
-                    ccrun.fgen_limits.neg          = ccpars_limits.i_neg         [ccpars_load.select];
-                    ccrun.fgen_limits.rate         = ccpars_limits.i_rate        [ccpars_load.select];
-                    ccrun.fgen_limits.acceleration = ccpars_limits.i_acceleration[ccpars_load.select];
+                    ccrun.is_ireg_enabled        = true;
+                    ccrun.fg_limits.pos          = ccpars_limits.i_pos         [ccpars_load.select];
+                    ccrun.fg_limits.min          = ccpars_limits.i_min         [ccpars_load.select];
+                    ccrun.fg_limits.neg          = ccpars_limits.i_neg         [ccpars_load.select];
+                    ccrun.fg_limits.rate         = ccpars_limits.i_rate        [ccpars_load.select];
+                    ccrun.fg_limits.acceleration = ccpars_limits.i_acceleration[ccpars_load.select];
                     break;
 
                 case REG_VOLTAGE:
 
-                    ccrun.fgen_limits.pos          = ccpars_limits.v_pos         [ccpars_load.select];
-                    ccrun.fgen_limits.min          = 0.0;
-                    ccrun.fgen_limits.neg          = ccpars_limits.v_neg         [ccpars_load.select];
-                    ccrun.fgen_limits.rate         = ccpars_limits.v_rate;
-                    ccrun.fgen_limits.acceleration = ccpars_limits.v_acceleration;
+                    ccrun.fg_limits.pos          = ccpars_limits.v_pos         [ccpars_load.select];
+                    ccrun.fg_limits.min          = 0.0;
+                    ccrun.fg_limits.neg          = ccpars_limits.v_neg         [ccpars_load.select];
+                    ccrun.fg_limits.rate         = ccpars_limits.v_rate;
+                    ccrun.fg_limits.acceleration = ccpars_limits.v_acceleration;
                     break;
             }
 
@@ -232,15 +248,15 @@ uint32_t ccInitFunctions(void)
 
             func = &funcs[ccpars_ref[cyc_sel].function];
 
-            if(func->init_func(&ccrun.fg_meta[cyc_sel], cyc_sel) != FG_OK)
+            if(func->init_func(&ccrun.fg_error[cyc_sel], cyc_sel) != FG_OK)
             {
                 ccParsPrintError("failed to initialise %s(%u) : %s : error_idx=%u : error_data=%g,%g,%g,%g", 
                         ccParsEnumString(enum_function_type, ccpars_ref[cyc_sel].function),
                         cyc_sel,
-                        ccParsEnumString(enum_fg_error, ccrun.fg_meta[cyc_sel].fg_error),
-                        ccrun.fg_meta[cyc_sel].error.index,
-                        ccrun.fg_meta[cyc_sel].error.data[0],ccrun.fg_meta[cyc_sel].error.data[1],
-                        ccrun.fg_meta[cyc_sel].error.data[2],ccrun.fg_meta[cyc_sel].error.data[3]);
+                        ccParsEnumString(enum_fg_error, ccrun.fg_error[cyc_sel].fg_errno),
+                        ccrun.fg_error[cyc_sel].index,
+                        ccrun.fg_error[cyc_sel].data[0],ccrun.fg_error[cyc_sel].data[1],
+                        ccrun.fg_error[cyc_sel].data[2],ccrun.fg_error[cyc_sel].data[3]);
                 exit_status = EXIT_FAILURE;
             }
 
@@ -290,7 +306,11 @@ uint32_t ccInitFunctions(void)
 
     memset(&reg_mgr, 0, sizeof(reg_mgr));
 
-    regMgrInit(&reg_mgr, ccpars_global.iter_period_us, ccrun.is_breg_enabled, ccrun.is_ireg_enabled);
+    regMgrInit(&reg_mgr,
+               ccpars_global.iter_period_us,
+               ccrun.is_breg_enabled,
+               ccrun.is_ireg_enabled,
+               false); // ccpars_pc.actuation == REG_FIRING_REF);
 
     return(EXIT_SUCCESS);
 }
@@ -303,7 +323,7 @@ uint32_t ccInitSimLoad(void)
 {
     size_t      buf_len;
     uint32_t    exit_status = EXIT_SUCCESS;
-    static struct reg_meas_signal invalid_meas = { 0.0, false };
+    static struct REG_meas_signal invalid_meas = { 0.0, false };
 
     // Enabled of commands whose parameters should be included in debug output
 
@@ -432,24 +452,26 @@ uint32_t ccInitSimLoad(void)
     regMgrParInitPointer(&reg_mgr,   meas_i_sim_quantization       ,&ccpars_meas.i_sim_quantization);
     regMgrParInitPointer(&reg_mgr,   meas_v_sim_quantization       ,&ccpars_meas.v_sim_quantization);
 
-    regMgrParInitPointer(&reg_mgr,   meas_tone_half_period_iters   ,&ccpars_meas.tone_half_period_iters);
-    regMgrParInitPointer(&reg_mgr,   meas_b_sim_tone_amp           ,&ccpars_meas.b_sim_tone_amp);
-    regMgrParInitPointer(&reg_mgr,   meas_i_sim_tone_amp           ,&ccpars_meas.i_sim_tone_amp);
+    regMgrParInitPointer(&reg_mgr,   meas_sim_tone_period_iters    ,&ccpars_meas.sim_tone_period_iters);
+    regMgrParInitPointer(&reg_mgr,   meas_b_sim_tone_pp            ,&ccpars_meas.b_sim_tone_pp);
+    regMgrParInitPointer(&reg_mgr,   meas_i_sim_tone_pp            ,&ccpars_meas.i_sim_tone_pp);
 
     regMgrParInitPointer(&reg_mgr,   pc_actuation                  ,&ccpars_pc.actuation);
     regMgrParInitPointer(&reg_mgr,   pc_act_delay_iters            ,&ccpars_pc.act_delay_iters);
-    regMgrParInitPointer(&reg_mgr,   pc_bandwidth                  ,&ccpars_pc.bandwidth);
-    regMgrParInitPointer(&reg_mgr,   pc_z                          ,&ccpars_pc.z);
-    regMgrParInitPointer(&reg_mgr,   pc_tau_zero                   ,&ccpars_pc.tau_zero);
+    regMgrParInitPointer(&reg_mgr,   pc_sim_bandwidth              ,&ccpars_pc.sim_bandwidth);
+    regMgrParInitPointer(&reg_mgr,   pc_sim_z                      ,&ccpars_pc.sim_z);
+    regMgrParInitPointer(&reg_mgr,   pc_sim_tau_zero               ,&ccpars_pc.sim_tau_zero);
     regMgrParInitPointer(&reg_mgr,   pc_sim_num                    ,&ccpars_pc.sim_pc_pars.num);
     regMgrParInitPointer(&reg_mgr,   pc_sim_den                    ,&ccpars_pc.sim_pc_pars.den);
     regMgrParInitPointer(&reg_mgr,   pc_sim_quantization           ,&ccpars_pc.sim_quantization);
-    regMgrParInitPointer(&reg_mgr,   pc_sim_ripple                 ,&ccpars_pc.sim_ripple);
+    regMgrParInitPointer(&reg_mgr,   pc_sim_noise_pp               ,&ccpars_pc.sim_noise_pp);
+    regMgrParInitPointer(&reg_mgr,   pc_sim_tone_period_iters      ,&ccpars_pc.sim_tone_period_iters);
+    regMgrParInitPointer(&reg_mgr,   pc_sim_tone_pp                ,&ccpars_pc.sim_tone_pp);
 
     // Initialise simulation
 
     regMgrSimInit(&reg_mgr, ccpars_ref[ccpars_global.cycle_selector[0]].reg_mode,
-                          ccrun.fg_meta[ccpars_global.cycle_selector[0]].range.start);
+                          ccrun.fg_pars[ccpars_global.cycle_selector[0]].meta.range.initial_ref);
 
     // Check simulated voltage source gain
 

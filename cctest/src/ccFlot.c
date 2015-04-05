@@ -57,13 +57,11 @@ static uint32_t ccFlotRefs(FILE *f, double end_time)
                     double      time = 0.0;;
                     double      end_cycle_time;
 
-                    fprintf(f,"[%.6f,%.7E],[%.6f,%.7E],",
+                    fprintf(f,"[%.6f,%.7E],",
                               ccrun.cycle[cycle_idx].start_time,
-                              ccrun.fg_meta[cyc_sel].range.start,
-                              ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay,
-                              ccrun.fg_meta[cyc_sel].range.start);
+                              ccrun.fg_pars[cyc_sel].meta.range.initial_ref);
 
-                    num_points += 3;
+                    num_points += 1;
 
                     switch(ccpars_ref[cyc_sel].function)
                     {
@@ -76,7 +74,9 @@ static uint32_t ccFlotRefs(FILE *f, double end_time)
 
                         for(iteration_idx = 1 ; iteration_idx < n ; iteration_idx++)
                         {
-                            time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay + ccpars_table[cyc_sel].time[iteration_idx];
+                            time = ccrun.cycle[cycle_idx].start_time +
+                                   ccpars_table[cyc_sel].time[iteration_idx] -
+                                   ccpars_table[cyc_sel].time[0];
 
                             if(time <= end_time)
                             {
@@ -88,20 +88,20 @@ static uint32_t ccFlotRefs(FILE *f, double end_time)
 
                     case FG_PPPL:
 
-                        time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay;
+                        time = ccrun.cycle[cycle_idx].start_time;
 
                         fprintf(f,"[%.6f,%.7E],", time, ccpars_pppl[cyc_sel].initial_ref);
                         num_points++;
 
-                        n = fg_pppl[cyc_sel].num_segs - 1;
+                        n = ccrun.fg_pars[cyc_sel].pppl.num_segs - 1;
 
                         for(iteration_idx = 1 ; iteration_idx < n ; iteration_idx++)
                         {
-                            time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay + fg_pppl[cyc_sel].time[iteration_idx];
+                            time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_pars[cyc_sel].pppl.seg_time[iteration_idx];
 
                             if(time <= end_time)
                             {
-                                fprintf(f,"[%.6f,%.7E],", time, fg_pppl[cyc_sel].a0[iteration_idx]);
+                                fprintf(f,"[%.6f,%.7E],", time, ccrun.fg_pars[cyc_sel].pppl.seg_a0[iteration_idx]);
                                 num_points++;
                             }
                         }
@@ -109,31 +109,40 @@ static uint32_t ccFlotRefs(FILE *f, double end_time)
 
                     case FG_PLEP:
 
-                        time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay;
+                        time = ccrun.cycle[cycle_idx].start_time;
 
                         fprintf(f,"[%.6f,%.7E],", time, ccpars_plep[cyc_sel].initial_ref);
                         num_points++;
 
                         for(iteration_idx = 1 ; iteration_idx <  FG_PLEP_NUM_SEGS ; iteration_idx++)
                         {
-                            time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay + fg_plep[cyc_sel].time[iteration_idx];
+                            time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_pars[cyc_sel].plep.seg_time[iteration_idx];
 
                             if(time <= end_time)
                             {
-                                fprintf(f,"[%.6f,%.7E],", time, fg_plep[cyc_sel].normalisation * fg_plep[cyc_sel].ref[iteration_idx]);
+                                fprintf(f,"[%.6f,%.7E],", time, ccrun.fg_pars[cyc_sel].plep.normalisation * ccrun.fg_pars[cyc_sel].plep.seg_ref[iteration_idx]);
                                 num_points++;
                             }
+                        }
+                        break;
+
+                    case FG_PULSE:
+
+                        if(ccrun.fg_pars[cyc_sel].pulse.linear_rate != 0.0)
+                        {
+                            fprintf(f,"[%.6f,%.7E],", ccrun.cycle[cycle_idx].start_time - ccrun.fg_pars[cyc_sel].meta.time.start, ccrun.fg_pars[cyc_sel].pulse.ref_pulse);
+                            num_points++;
                         }
                         break;
                     }
 
                     // End of function point
 
-                    end_cycle_time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_meta[cyc_sel].delay + ccrun.fg_meta[cyc_sel].duration;
+                    end_cycle_time = ccrun.cycle[cycle_idx].start_time + ccrun.fg_pars[cyc_sel].meta.time.duration;
 
                     if(end_cycle_time > time && end_cycle_time <= end_time)
                     {
-                        fprintf(f,"[%.6f,%.7E],", end_cycle_time, ccrun.fg_meta[cyc_sel].range.end);
+                        fprintf(f,"[%.6f,%.7E],", end_cycle_time, ccrun.fg_pars[cyc_sel].meta.range.final_ref);
                     }
                 }
             }

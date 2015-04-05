@@ -43,19 +43,19 @@
 
 struct ccpars_warnings
 {
-    enum reg_enabled_disabled   b_reg_err;                      // Field regulation error warning
-    enum reg_enabled_disabled   i_reg_err;                      // Current regulation error warning
-    enum reg_enabled_disabled   v_reg_err;                      // Voltage regulation error warning
+    enum REG_enabled_disabled   b_reg_err;                      // Field regulation error warning
+    enum REG_enabled_disabled   i_reg_err;                      // Current regulation error warning
+    enum REG_enabled_disabled   v_reg_err;                      // Voltage regulation error warning
 
-    enum reg_enabled_disabled   i_rms;                          // RMS Current exceeds converter warning limit
-    enum reg_enabled_disabled   i_rms_load;                     // RMS Current exceeds load warning limit
+    enum REG_enabled_disabled   i_rms;                          // RMS Current exceeds converter warning limit
+    enum REG_enabled_disabled   i_rms_load;                     // RMS Current exceeds load warning limit
 };
 
 CCPARS_WARNINGS_EXT struct ccpars_warnings ccpars_warnings;
 
 // Warnings parameters description structure
 
-CCPARS_WARNINGS_EXT struct ccpars warnings_pars[]
+CCPARS_WARNINGS_EXT struct CCpars warnings_pars[]
 #ifdef GLOBALS
 = {// "Signal name"     type,  max_n_els, *enum,                       *value,                  num_warnings,cyc_sel_step,flags
     { "B_REG_ERR",      PAR_ENUM,  1,      enum_enabled_disabled, { .u = &ccpars_warnings.b_reg_err      }, 1,     0,     PARS_RO },

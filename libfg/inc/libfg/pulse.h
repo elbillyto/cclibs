@@ -1,10 +1,11 @@
 /*!
- * @file    pulse.h
+ * @file    libfg/pulse.h
  * @brief   Generate linear pulse functions
  *
- * A pulse is simply a linear section at a specified time and for
- * a specified duration. As such, it is very similar to linear trim
- * except that the gradient is specified, instead of the final reference.
+ * A pulse is simply a linear section starting at time 0 for the
+ * specified duration. If the linear section is a ramp, then the function
+ * will generation a parabolic sectioning before time 0 in order to
+ * accelerate to the linear rate of the ramp.
  * 
  * <h2>Contact</h2>
  *
@@ -43,13 +44,12 @@
 /*!
  * Pulse function parameters
  */
-struct fg_pulse
+struct FG_pulse
 {
-    double              delay;          //!< Time before start of pulse.
-    float               duration;       //!< Pulse duration.
-    float               initial_ref;    //!< Initial reference.
-    float               linear_rate;    //!< Pulse gradient.
-    float               final_ref;      //!< Final reference.
+    struct FG_meta meta;                //!< Meta data for the armed function - this must be the first in the struct
+    FG_float       ref_pulse;           //!< Reference at start of linear pulse
+    FG_float       acceleration;        //!< Acceleration to reach linear_rate
+    FG_float       linear_rate;         //!< Pulse linear_rate.
 };
 
 #ifdef __cplusplus
@@ -64,42 +64,42 @@ extern "C" {
  * @param[in]  limits              Pointer to fgc_limits structure (or NULL if no limits checking required).
  * @param[in]  pol_switch_auto     Set true if polarity switch can be changed automatically.
  * @param[in]  pol_switch_neg      Set true if polarity switch is currently in the negative position.
- * @param[in]  delay               Delay before the start of the function.
  * @param[in]  initial_ref         Initial reference value.
- * @param[in]  linear_rate         Linear rate.
- * @param[in]  duration            Function duration (Zero to go as fast as limits allow).
- * @param[out] pars                Pointer to pulse function parameters.
- * @param[out] meta                Pointer to diagnostic information. Set to NULL if not required.
+ * @param[in]  acceleration        Acceleration to arrive at linear rate.
+ * @param[in]  linear_rate         Linear rate during plateau.
+ * @param[in]  duration            Pulse plateau duration.
+ * @param[out] pars                Pointer to fg_pars union containing pulse parameter struct.
+ * @param[out] error               Pointer to error information. Set to NULL if not required.
  *
  * @retval FG_OK on success
  * @retval FG_BAD_PARAMETER on parameter errors
  * @retval FG_OUT_OF_LIMITS if reference value exceeds limits
  * @retval FG_OUT_OF_RATE_LIMITS if rate of change of reference exceeds limits
  */
-enum fg_error fgPulseInit(struct fg_limits *limits,
-                         bool   pol_switch_auto,
-                         bool   pol_switch_neg,
-                         double delay, 
-                         float  initial_ref,
-                         float  linear_rate,
-                         float  duration,
-                         struct fg_pulse *pars,
-                         struct fg_meta *meta);
+enum FG_errno fgPulseInit(struct FG_limits *limits,
+                         bool               pol_switch_auto,
+                         bool               pol_switch_neg,
+                         FG_float           initial_ref,
+                         FG_float           acceleration,
+                         FG_float           linear_rate,
+                         FG_float           duration,
+                         union  FG_pars    *pars,
+                         struct FG_error   *error);
 
 
 
 /*!
- * Generate the reference for the Pulse function.
+ * Real-time function to generate a PULSE reference.
  *
- * @param[in]  pars            Pointer to pulse function parameters.
- * @param[in]  time            Pointer to time within the function.
- * @param[out] ref             Pointer to reference value.
+ * @param[in]  pars             Pointer to fg_pars union containing pulse parameter struct.
+ * @param[in]  func_time        Time within the function.
+ * @param[out] ref              Pointer to reference value.
  *
- * @retval FG_GEN_PRE_FUNC     if time is before the start of the function.
- * @retval FG_GEN_DURING_FUNC  if time is during the function.
- * @retval FG_GEN_POST_FUNC    if time is after the end of the function.
+ * @retval FG_GEN_PRE_FUNC      if time is before the start of the function.
+ * @retval FG_GEN_DURING_FUNC   if time is during the function.
+ * @retval FG_GEN_POST_FUNC     if time is after the end of the function.
  */
-enum fg_gen_status fgPulseGen (struct fg_pulse *pars, const double *time, float *ref);
+enum FG_func_status fgPulseRT(union FG_pars *pars, FG_float time, FG_float *ref);
 
 #ifdef __cplusplus
 }

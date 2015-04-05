@@ -34,48 +34,45 @@
 
 // Function prototypes
 
-enum fg_gen_status ccRefDirectGen       (struct fg_table *pars, const double *time, float *ref);
+enum FG_func_status ccRefDirectRT    (union  FG_pars *pars, FG_float func_time, float *ref);
 
-enum fg_error      ccRefInitDIRECT      (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitPLEP        (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitRAMP        (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitPPPL        (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitTABLE       (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitSTEPS       (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitSQUARE      (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitSINE        (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitCOSINE      (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitLTRIM       (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitCTRIM       (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitPULSE       (struct fg_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno       ccRefInitPLEP    (struct FG_error *fg_error, uint32_t cyc_sel);
+enum FG_errno       ccRefInitRAMP    (struct FG_error *fg_error, uint32_t cyc_sel);
+enum FG_errno       ccRefInitPPPL    (struct FG_error *fg_error, uint32_t cyc_sel);
+enum FG_errno       ccRefInitTABLE   (struct FG_error *fg_error, uint32_t cyc_sel);
+enum FG_errno       ccRefInitSTEPS   (struct FG_error *fg_error, uint32_t cyc_sel);
+enum FG_errno       ccRefInitSQUARE  (struct FG_error *fg_error, uint32_t cyc_sel);
+enum FG_errno       ccRefInitSINE    (struct FG_error *fg_error, uint32_t cyc_sel);
+enum FG_errno       ccRefInitCOSINE  (struct FG_error *fg_error, uint32_t cyc_sel);
+enum FG_errno       ccRefInitLTRIM   (struct FG_error *fg_error, uint32_t cyc_sel);
+enum FG_errno       ccRefInitCTRIM   (struct FG_error *fg_error, uint32_t cyc_sel);
+enum FG_errno       ccRefInitPULSE   (struct FG_error *fg_error, uint32_t cyc_sel);
 
 // Reference functions structure
 
 struct fgfunc
 {
     enum cccmds_enum         cmd_idx;
-    char                    *fg_pars;
-    size_t                   size_of_pars;
-    enum fg_error           (*init_func)(struct fg_meta *fg_meta, uint32_t cyc_sel);
-    enum fg_gen_status      (*fgen_func)();
+    enum FG_errno           (*init_func)(struct FG_error *fg_error, uint32_t cyc_sel);
+    FG_FuncRT                fg_func;
 };
 
 CCREF_EXT struct fgfunc funcs[]  // Must be in enum fg_types order (in ref.h)
 #ifdef GLOBALS
 = {
-    {   0,          NULL,             0,                       NULL,            NULL           },
-    {   CMD_TABLE, (char *)&fg_table, sizeof(struct fg_table), ccRefInitTABLE,  ccRefDirectGen },
-    {   CMD_PLEP,  (char *)&fg_plep,  sizeof(struct fg_plep),  ccRefInitPLEP,   fgPlepGen      },
-    {   CMD_RAMP,  (char *)&fg_ramp,  sizeof(struct fg_ramp),  ccRefInitRAMP,   fgRampGen      },
-    {   CMD_PPPL,  (char *)&fg_pppl,  sizeof(struct fg_pppl),  ccRefInitPPPL,   fgPpplGen      },
-    {   CMD_TABLE, (char *)&fg_table, sizeof(struct fg_table), ccRefInitTABLE,  fgTableGen     },
-    {   CMD_TEST,  (char *)&fg_test,  sizeof(struct fg_test),  ccRefInitSTEPS,  fgTestGen      },
-    {   CMD_TEST,  (char *)&fg_test,  sizeof(struct fg_test),  ccRefInitSQUARE, fgTestGen      },
-    {   CMD_TEST,  (char *)&fg_test,  sizeof(struct fg_test),  ccRefInitSINE,   fgTestGen      },
-    {   CMD_TEST,  (char *)&fg_test,  sizeof(struct fg_test),  ccRefInitCOSINE, fgTestGen      },
-    {   CMD_TRIM,  (char *)&fg_trim,  sizeof(struct fg_trim),  ccRefInitLTRIM,  fgTrimGen      },
-    {   CMD_TRIM,  (char *)&fg_trim,  sizeof(struct fg_trim),  ccRefInitCTRIM,  fgTrimGen      },
-    {   CMD_PULSE, (char *)&fg_pulse, sizeof(struct fg_pulse), ccRefInitPULSE,  fgPulseGen     },
+    {   0,         NULL,            NULL           },
+    {   CMD_TABLE, ccRefInitTABLE,  ccRefDirectRT },
+    {   CMD_PLEP,  ccRefInitPLEP,   fgPlepRT      },
+    {   CMD_RAMP,  ccRefInitRAMP,   fgRampRT      },
+    {   CMD_PPPL,  ccRefInitPPPL,   fgPpplRT      },
+    {   CMD_TABLE, ccRefInitTABLE,  fgTableRT     },
+    {   CMD_TEST,  ccRefInitSTEPS,  fgTestRT      },
+    {   CMD_TEST,  ccRefInitSQUARE, fgTestRT      },
+    {   CMD_TEST,  ccRefInitSINE,   fgTestRT      },
+    {   CMD_TEST,  ccRefInitCOSINE, fgTestRT      },
+    {   CMD_TRIM,  ccRefInitLTRIM,  fgTrimRT      },
+    {   CMD_TRIM,  ccRefInitCTRIM,  fgTrimRT      },
+    {   CMD_PULSE, ccRefInitPULSE,  fgPulseRT     },
 }
 #endif
 ;

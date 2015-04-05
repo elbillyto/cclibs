@@ -43,7 +43,7 @@ MEAS I_SIM_NOISE_PP         0.05
 MEAS I_DELAY_ITERS          5
 MEAS V_DELAY_ITERS          5
 
-PC BANDWIDTH                3000
+PC SIM_BANDWIDTH            3000
 PC ACT_DELAY_ITERS          12
 
 REF FUNCTION                TABLE

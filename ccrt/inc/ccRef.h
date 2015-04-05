@@ -41,17 +41,17 @@
 
 // Function prototypes
 
-enum fg_error      ccRefInitPLEP        (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitRAMP        (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitPPPL        (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitTABLE       (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitSTEPS       (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitSQUARE      (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitSINE        (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitCOSINE      (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitLTRIM       (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitCTRIM       (struct fg_meta *fg_meta, uint32_t cyc_sel);
-enum fg_error      ccRefInitPULSE       (struct fg_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitPLEP        (struct FG_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitRAMP        (struct FG_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitPPPL        (struct FG_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitTABLE       (struct FG_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitSTEPS       (struct FG_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitSQUARE      (struct FG_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitSINE        (struct FG_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitCOSINE      (struct FG_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitLTRIM       (struct FG_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitCTRIM       (struct FG_meta *fg_meta, uint32_t cyc_sel);
+enum FG_errno      ccRefInitPULSE       (struct FG_meta *fg_meta, uint32_t cyc_sel);
 
 // Reference functions structure
 
@@ -60,8 +60,8 @@ struct fgfunc
     enum cccmds_enum         cmd_idx;
     char                    *fg_pars;
     size_t                   size_of_pars;
-    enum fg_error           (*init_func)(struct fg_meta *fg_meta, uint32_t cyc_sel);
-    enum fg_gen_status      (*fgen_func)();
+    enum FG_errno           (*init_func)(struct FG_meta *FG_meta, uint32_t cyc_sel);
+    enum FG_func_status      (*fgen_func)();
 };
 
 CCREF_EXT struct fgfunc funcs[]  // Must be in enum fg_types order (in ref.h)

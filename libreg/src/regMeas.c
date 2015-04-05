@@ -35,13 +35,13 @@
  * @param[in,out] filter    Measurement filter parameters and values
  * @returns       Value of reg_meas_filter::fir_accumulator adjusted by reg_meas_filter::integer_to_float factor
  */
-static float regMeasFirFilterRT(struct reg_meas_filter *filter);
+static REG_float regMeasFirFilterRT(struct REG_meas_filter *filter);
 
 
 
 // Background functions - do not call these from the real-time thread or interrupt
 
-void regMeasFilterInitBuffer(struct reg_meas_filter *filter, int32_t *buf, uint32_t buf_len)
+void regMeasFilterInitBuffer(struct REG_meas_filter *filter, int32_t *buf, uint32_t buf_len)
 {
     filter->fir_buf[0] = buf;
     filter->buf_len    = buf_len;
@@ -49,13 +49,13 @@ void regMeasFilterInitBuffer(struct reg_meas_filter *filter, int32_t *buf, uint3
 
 
 
-void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
-                       uint32_t extrapolation_len_iters, float pos, float neg, float meas_delay_iters)
+void regMeasFilterInit(struct REG_meas_filter *filter, uint32_t fir_length[2],
+                       uint32_t extrapolation_len_iters, REG_float pos, REG_float neg, REG_float meas_delay_iters)
 {
     uint32_t    total_fir_len;
     uint32_t     buf_len;
-    float       filter_delay;
-    float      *extrapolation_buf;
+    REG_float       filter_delay;
+    REG_float      *extrapolation_buf;
 
     // Stop the filter
     
@@ -117,7 +117,7 @@ void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
     // Set the pointers to the second stage FIR buffer and extrapolation buffer
 
     filter->fir_buf[1]              = filter->fir_buf[0] + filter->fir_length[0];
-    filter->extrapolation_buf       = extrapolation_buf = (float*)(filter->fir_buf[1] + filter->fir_length[1]);
+    filter->extrapolation_buf       = extrapolation_buf = (REG_float*)(filter->fir_buf[1] + filter->fir_length[1]);
     filter->extrapolation_len_iters = extrapolation_len_iters;
 
     // If at least one stage is in use, calculate important filter variables
@@ -129,20 +129,20 @@ void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
 
         // Set filter delay
 
-        filter_delay = 0.5 * (float)(total_fir_len - (filter->fir_length[1] > 0 ? 2 : 1));
+        filter_delay = 0.5 * (REG_float)(total_fir_len - (filter->fir_length[1] > 0 ? 2 : 1));
 
-        // Calculate float/integer scalings for FIR filter stages
+        // Calculate REG_float/integer scalings for FIR filter stages
     
         filter->float_to_integer = INT32_MAX / (filter->fir_length[0] * filter->max_meas_value);
         filter->integer_to_float = 1.0 / filter->float_to_integer;
 
         if(filter->fir_length[1] == 0)
         {
-            filter->integer_to_float /= (float)filter->fir_length[0];
+            filter->integer_to_float /= (REG_float)filter->fir_length[0];
         }
         else
         {
-            filter->integer_to_float /= (float)filter->fir_length[1];
+            filter->integer_to_float /= (REG_float)filter->fir_length[1];
         }
 
         // Initialise the FIR filter stages
@@ -173,13 +173,16 @@ void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
 
     // Calculate extrapolation factor so that it cancels the filtered measurement delay
 
-    filter->extrapolation_factor = filter->delay_iters[REG_MEAS_FILTERED] / (float)extrapolation_len_iters;
-
-    // Initialise extrapolation buffer
-
-    while(extrapolation_len_iters--)
+    if(extrapolation_len_iters > 0)
     {
-        *(extrapolation_buf++) = filter->signal[REG_MEAS_FILTERED];
+        filter->extrapolation_factor = filter->delay_iters[REG_MEAS_FILTERED] / (REG_float)extrapolation_len_iters;
+
+        // Initialise extrapolation buffer
+
+        while(extrapolation_len_iters--)
+        {
+            *(extrapolation_buf++) = filter->signal[REG_MEAS_FILTERED];
+        }
     }
 
     filter->signal[REG_MEAS_EXTRAPOLATED] = filter->signal[REG_MEAS_FILTERED];
@@ -191,22 +194,40 @@ void regMeasFilterInit(struct reg_meas_filter *filter, uint32_t fir_length[2],
 
 
 
-void regMeasSetNoiseAndTone(struct reg_noise_and_tone *noise_and_tone, float noise_pp,
-                            float tone_amp, uint32_t tone_half_period_iters)
+void regMeasSetNoiseAndTone(struct REG_noise_and_tone *noise_and_tone, REG_float noise_pp,
+                            REG_float tone_pp, uint32_t tone_period_iters)
 {
+    // Store peak-peak noise level
+
     noise_and_tone->noise_pp = noise_pp;
-    noise_and_tone->tone_amp = tone_amp;
-    noise_and_tone->tone_half_period_iters = tone_half_period_iters;
+
+    // For the tone, if the period is not an even number of iterations, then the tone will be an square wave with a
+    // asymmetric mark-space ratio.  The positive and negative offsets of the square wave are adjusted so that the
+    // average offset will be zero.
+
+    if(tone_period_iters > 1 && tone_pp > 0.0)
+    {
+        noise_and_tone->iter_counter_start =  tone_period_iters / 2;
+        noise_and_tone->iter_counter_end   = -(tone_period_iters + 1) / 2;
+        noise_and_tone->tone_positive      = -tone_pp * (REG_float)noise_and_tone->iter_counter_end   / (REG_float)(tone_period_iters);
+        noise_and_tone->tone_negative      = -tone_pp * (REG_float)noise_and_tone->iter_counter_start / (REG_float)(tone_period_iters);
+    }
+    else
+    {
+        // Set iter_counter_start to deactivate the tone
+
+        noise_and_tone->iter_counter_start = 0;
+    }
 }
 
 
 
 // Real-Time Functions
 
-static float regMeasFirFilterRT(struct reg_meas_filter *filter)
+static REG_float regMeasFirFilterRT(struct REG_meas_filter *filter)
 {
     int32_t input_integer;
-    float   input_meas = filter->signal[REG_MEAS_UNFILTERED];
+    REG_float   input_meas = filter->signal[REG_MEAS_UNFILTERED];
 
     // Clip unfiltered input measurement value to avoid crazy roll-overs in the integer stage
 
@@ -238,7 +259,7 @@ static float regMeasFirFilterRT(struct reg_meas_filter *filter)
 
     if(filter->fir_length[1] == 0)
     {
-        return(filter->integer_to_float * (float)filter->fir_accumulator[0]);
+        return(filter->integer_to_float * (REG_float)filter->fir_accumulator[0]);
     }
 
     // Filter stage 2
@@ -258,14 +279,15 @@ static float regMeasFirFilterRT(struct reg_meas_filter *filter)
 
     // Convert filter output back to floating point
 
-    return(filter->integer_to_float * (float)filter->fir_accumulator[1]);
+    return(filter->integer_to_float * (REG_float)filter->fir_accumulator[1]);
 }
 
 
 
-void regMeasFilterRT(struct reg_meas_filter *filter)
+void regMeasFilterRT(struct REG_meas_filter *filter)
 {
-    float   old_filtered_value;
+    REG_float   old_filtered_value;
+    REG_float   extrapolated_signal;
 
     // If filter is stopped
 
@@ -286,29 +308,37 @@ void regMeasFilterRT(struct reg_meas_filter *filter)
             filter->signal[REG_MEAS_FILTERED] = filter->signal[REG_MEAS_UNFILTERED];
         }
 
-        // Prepare to extrapolate to estimate the measurement without a delay
+        // If required, then extrapolate from filtered measurement to compensate for measurement and filter delay
 
-        old_filtered_value = filter->extrapolation_buf[filter->extrapolation_index];
+        extrapolated_signal = filter->signal[REG_MEAS_FILTERED];
 
-        filter->extrapolation_buf[filter->extrapolation_index] = filter->signal[REG_MEAS_FILTERED];
-
-        // Do not use modulus (%) operator to wrap fir_index as it is very slow in TMS320C32 DSP
-
-        if(++filter->extrapolation_index >= filter->extrapolation_len_iters)
+        if(filter->extrapolation_len_iters > 0)
         {
-            filter->extrapolation_index = 0;
+            // Prepare to extrapolate to estimate the measurement without a delay
+
+            old_filtered_value = filter->extrapolation_buf[filter->extrapolation_index];
+
+            filter->extrapolation_buf[filter->extrapolation_index] = filter->signal[REG_MEAS_FILTERED];
+
+            // Do not use modulus (%) operator to wrap fir_index as it is very slow in TMS320C32 DSP
+
+            if(++filter->extrapolation_index >= filter->extrapolation_len_iters)
+            {
+                filter->extrapolation_index = 0;
+            }
+
+            // Extrapolate from filtered measurement
+
+            extrapolated_signal += filter->extrapolation_factor * (filter->signal[REG_MEAS_FILTERED] - old_filtered_value);
         }
 
-        // Extrapolate filtered measurement
-
-        filter->signal[REG_MEAS_EXTRAPOLATED] = filter->signal[REG_MEAS_FILTERED] + filter->extrapolation_factor *
-                                               (filter->signal[REG_MEAS_FILTERED] - old_filtered_value);
+        filter->signal[REG_MEAS_EXTRAPOLATED] = extrapolated_signal;
     }
 }
 
 
 
-float regMeasWhiteNoiseRT(float noise_pp)
+REG_float regMeasWhiteNoiseRT(REG_float noise_pp)
 {
     static uint32_t  noise_random_generator = 0x8E35B19C;   // Use fixed initial seed
 
@@ -323,7 +353,7 @@ float regMeasWhiteNoiseRT(float noise_pp)
 
         // Return noise in the range -noise_pp/2 to +noise_pp/2
 
-        return(noise_pp * (float)((int32_t)noise_random_generator) / 4294967296.0);
+        return(noise_pp * (REG_float)((int32_t)noise_random_generator) / 4294967296.0);
     }
 
     // Return zero if noise_pp is zero or negative
@@ -333,21 +363,20 @@ float regMeasWhiteNoiseRT(float noise_pp)
 
 
 
-float regMeasNoiseAndToneRT(struct reg_noise_and_tone *noise_and_tone)
+REG_float regMeasNoiseAndToneRT(struct REG_noise_and_tone *noise_and_tone)
 {
-    float   tone;           // Square wave tone
+    REG_float   tone;           // Square wave tone with zero average value
 
     // Use efficient square tone generator to create tone
 
-    if(noise_and_tone->tone_amp > 0.0)
+    if(noise_and_tone->iter_counter_start > 0)
     {
-        if(++noise_and_tone->iter_counter >= noise_and_tone->tone_half_period_iters)
-        {
-            noise_and_tone->tone_toggle  = !noise_and_tone->tone_toggle;
-            noise_and_tone->iter_counter = 0;
-        }
+        tone = noise_and_tone->iter_counter > 0 ? noise_and_tone->tone_positive : noise_and_tone->tone_negative;
 
-        tone = noise_and_tone->tone_toggle ? noise_and_tone->tone_amp : -noise_and_tone->tone_amp;
+        if(--noise_and_tone->iter_counter <= noise_and_tone->iter_counter_end)
+        {
+            noise_and_tone->iter_counter_start = 0;
+        }
     }
     else
     {
@@ -361,9 +390,9 @@ float regMeasNoiseAndToneRT(struct reg_noise_and_tone *noise_and_tone)
 
 
 
-void regMeasRateRT(struct reg_meas_rate *meas_rate, float filtered_meas, float inv_period, int32_t period_iters)
+void regMeasRateRT(struct REG_meas_rate *meas_rate, REG_float filtered_meas, REG_float inv_period, int32_t period_iters)
 {
-    float    *history_buf = meas_rate->history_buf;     // Local pointer to history buffer for efficiency
+    REG_float    *history_buf = meas_rate->history_buf;     // Local pointer to history buffer for efficiency
     uint32_t  idx;                                      // Local copy of index of most recent sample
 
     // Store measurement at the specified period

@@ -11,8 +11,8 @@ PLEP INITIAL_REF                0.2
 PLEP FINAL_REF                  2
 
 PC ACTUATION                    CURRENT
-PC BANDWIDTH                    10
-PC Z                            1.0
+PC SIM_BANDWIDTH                10
+PC SIM_Z                        1.0
 PC ACT_DELAY_ITERS              1.0
 
 IREG PERIOD_ITERS               1

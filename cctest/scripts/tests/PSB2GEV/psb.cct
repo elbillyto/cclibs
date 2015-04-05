@@ -12,9 +12,9 @@ GLOBAL PROJECT              PSB2GEV
 # Voltage source parameters
 
 PC ACT_DELAY_ITERS          5.0
-PC BANDWIDTH                200
-PC TAU_ZERO                 0.0
-PC Z                        0.9
+PC SIM_BANDWIDTH            200
+PC SIM_TAU_ZERO             0.0
+PC SIM_Z                    0.9
 
 # Measurement parameters
 
@@ -24,8 +24,8 @@ MEAS V_DELAY_ITERS          1.3
 MEAS I_FIR_LENGTHS          30,1
 MEAS I_SIM_NOISE_PP         0.03
 MEAS V_SIM_NOISE_PP         0.05
-MEAS TONE_HALF_PERIOD_ITERS 100
-MEAS I_SIM_TONE_AMP         0.0
+MEAS SIM_TONE_PERIOD_ITERS  200
+MEAS I_SIM_TONE_PP          0.0
 
 # Current regulation
 

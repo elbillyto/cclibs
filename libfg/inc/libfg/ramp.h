@@ -1,5 +1,5 @@
 /*!
- * @file  ramp.h
+ * @file  libfg/ramp.h
  * @brief Generate fast ramp based on Parabola-Parabola function.
  * 
  * RAMP is a special function within libfg in two way:
@@ -53,22 +53,21 @@
 /*!
  * RAMP function parameters
  */
-struct fg_ramp
+struct FG_ramp
 {
-    double      delay;                      //!< Time before start of function.
+    struct FG_meta meta;                    //!< Meta data for the armed function - this must be the first in the struct
     bool        is_ramp_positive;           //!< Positive ramp flag.
     bool        is_pre_ramp;                //!< Pre-ramp flag. True if before point of inflexion of 1st parabola.
-    float       initial_ref;                //!< Reference before the start of the function.
-    float       acceleration;               //!< Parabolic acceleration.
-    float       deceleration;               //!< Parabolic deceleration.
-    float       linear_rate;                //!< User linear rate.
-    float       linear_rate_limit;          //!< Actual linear rate limit.
-    float       ref [FG_RAMP_NUM_SEGS+1];   //!< End of segment references. See also #FG_RAMP_NUM_SEGS.
-    float       time[FG_RAMP_NUM_SEGS+1];   //!< End of segment times. See also #FG_RAMP_NUM_SEGS.
-    float       prev_ramp_ref;              //!< Function ref from previous iteration
-    float       prev_returned_ref;          //!< Returned ref from previous iteration
-    double      prev_time;                  //!< Time from previous iteration
-    double      time_shift;                 //!< Time shift
+    FG_float    acceleration;               //!< Parabolic acceleration.
+    FG_float    deceleration;               //!< Parabolic deceleration.
+    FG_float    linear_rate;                //!< User linear rate.
+    FG_float    linear_rate_limit;          //!< Actual linear rate limit.
+    FG_float    ref [FG_RAMP_NUM_SEGS+1];   //!< End of segment references. See also #FG_RAMP_NUM_SEGS.
+    FG_float    time[FG_RAMP_NUM_SEGS+1];   //!< End of segment times. See also #FG_RAMP_NUM_SEGS.
+    FG_float    prev_ramp_ref;              //!< Function ref from previous iteration
+    FG_float    prev_returned_ref;          //!< Returned ref from previous iteration
+    FG_float    prev_time;                  //!< Time from previous iteration
+    FG_float    time_shift;                 //!< Time shift
 };
 
 #ifdef __cplusplus
@@ -85,14 +84,14 @@ extern "C" {
  * @param[in]  limits             Pointer to fgc_limits structure (or NULL if no limits checking required).
  * @param[in]  pol_switch_auto    True if polarity switch can be changed automatically.
  * @param[in]  pol_switch_neg     True if polarity switch is currently in the negative position.
- * @param[in]  delay              Delay before the start of the function.
- * @param[in]  initial_ref        Initial reference value.
+ * @param[in]  start_time         Time of start of ramp.
+ * @param[in]  initial_ref        Initial reference value (at start_time).
  * @param[in]  final_ref          Final reference value.
  * @param[in]  acceleration       Acceleration of the 1st parabolic segment. Absolute value is used.
  * @param[in]  linear_rate        Maximum linear rate. Absolute value is used.
  * @param[in]  deceleration       Deceleration of the 2nd parabolic segment. Absolute value is used.
- * @param[out] pars               Pointer to Ramp function parameters.
- * @param[out] meta               Pointer to diagnostic information. Set to NULL if not required.
+ * @param[out] pars               Pointer to fg_pars union containing ramp parameter struct.
+ * @param[out] error              Pointer to error information. Set to NULL if not required.
  *
  * @retval FG_OK on success
  * @retval FG_BAD_PARAMETER if acceleration == 0 or deceleration == 0
@@ -100,17 +99,17 @@ extern "C" {
  * @retval FG_OUT_OF_RATE_LIMITS if rate of change of reference exceeds limits
  * @retval FG_OUT_OF_ACCELERATION_LIMITS if acceleration exceeds limits
  */
-enum fg_error fgRampInit(struct fg_limits *limits, 
-                         bool   pol_switch_auto,
-                         bool   pol_switch_neg,
-                         double delay, 
-                         float  initial_ref,
-                         float  final_ref,
-                         float  acceleration,
-                         float  linear_rate,
-                         float  deceleration,
-                         struct fg_ramp *pars, 
-                         struct fg_meta *meta);
+enum FG_errno fgRampInit(struct FG_limits *limits,
+                         bool              pol_switch_auto,
+                         bool              pol_switch_neg,
+                         FG_float          start_time,
+                         FG_float          initial_ref,
+                         FG_float          final_ref,
+                         FG_float          acceleration,
+                         FG_float          linear_rate,
+                         FG_float          deceleration,
+                         union  FG_pars   *pars,
+                         struct FG_error  *error);
 
 
 
@@ -123,8 +122,8 @@ enum fg_error fgRampInit(struct fg_limits *limits,
  *
  * @param[in]  pol_switch_auto    True if polarity switch can be changed automatically.
  * @param[in]  pol_switch_neg     True if polarity switch is currently in the negative position.
- * @param[in]  delay              Delay before the start of the function.
- * @param[in]  init_rate          Initial rate of change.
+ * @param[in]  start_time         Time of the start of the function.
+ * @param[in]  initial_rate       Initial rate of change.
  * @param[in]  initial_ref        Initial reference value.
  * @param[in]  final_ref          Final reference value.
  * @param[in]  acceleration       Acceleration of the 1st parabolic segment. Absolute value is used.
@@ -140,36 +139,37 @@ enum fg_error fgRampInit(struct fg_limits *limits,
  *                                </ul>
  * @param[out] meta               Pointer to diagnostic information structure. Set to NULL if not required.
  */
-void fgRampCalc(bool   pol_switch_auto,
-                bool   pol_switch_neg,
-                double delay, 
-                float  init_rate,
-                float  initial_ref,
-                float  final_ref,
-                float  acceleration,
-                float  linear_rate,
-                float  deceleration,
-                struct fg_ramp *pars, struct fg_meta *meta);
+void fgRampCalc(bool             pol_switch_auto,
+                bool             pol_switch_neg,
+                FG_float         start_time,
+                FG_float         initial_rate,
+                FG_float         initial_ref,
+                FG_float         final_ref,
+                FG_float         acceleration,
+                FG_float         linear_rate,
+                FG_float         deceleration,
+                struct FG_ramp  *pars);
 
 
 
 /*!
- * Generate the reference for the Ramp function.
+ * Real-time function to generate a RAMP reference.
  *
  * Derive the reference for the previously-initialised Ramp function at the given time.
  *
- * <strong>NOTE</strong>: Unlike the other libfg functions, TIME MUST NOT GO BACKWARDS.
+ * <strong>NOTE</strong>: Unlike the other libfg functions, TIME MUST NOT GO BACKWARDS
+ * because *ref is both an input and an output.
  *
- * @param[in]     pars             Pointer to ramp function parameters.
- * @param[in]     time             Pointer to time within the function. 
- * @param[in,out] ref              Pointer to the reference value. If the application needed to clip
- *                                 the reference, fgRampGen() will take this into account.
+ * @param[in]     pars           Pointer to fg_pars union containing ramp parameter struct.
+ * @param[in]     func_time      Time within the function.
+ * @param[in,out] ref            Pointer to the reference value. If the application needed to clip
+ *                               the reference, fgRampRT() will take this into account.
  *
  * @retval FG_GEN_PRE_FUNC      if time is before the start of the function.
  * @retval FG_GEN_DURING_FUNC   if time is during the function.
  * @retval FG_GEN_POST_FUNC     if time is after the end of the function.
  */
-enum fg_gen_status fgRampGen(struct fg_ramp *pars, const double *time, float *ref);
+enum FG_func_status fgRampRT(union FG_pars *pars, FG_float func_time, FG_float *ref);
 
 #ifdef __cplusplus
 }

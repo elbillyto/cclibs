@@ -43,27 +43,27 @@
 
 struct ccpars_faults
 {
-    enum reg_enabled_disabled   b_meas_invalid;                 // Field measurement invalid
-    enum reg_enabled_disabled   b_meas_limit;                   // Field measurement limit exceeded
-    enum reg_enabled_disabled   b_reg_err;                      // Field regulation error fault
+    enum REG_enabled_disabled   b_meas_invalid;                 // Field measurement invalid
+    enum REG_enabled_disabled   b_meas_limit;                   // Field measurement limit exceeded
+    enum REG_enabled_disabled   b_reg_err;                      // Field regulation error fault
 
-    enum reg_enabled_disabled   i_meas_invalid;                 // Current measurement invalid
-    enum reg_enabled_disabled   i_meas_limit;                   // Current measurement limit exceeded
-    enum reg_enabled_disabled   i_reg_err;                      // Current regulation error fault
+    enum REG_enabled_disabled   i_meas_invalid;                 // Current measurement invalid
+    enum REG_enabled_disabled   i_meas_limit;                   // Current measurement limit exceeded
+    enum REG_enabled_disabled   i_reg_err;                      // Current regulation error fault
 
-    enum reg_enabled_disabled   v_reg_err;                      // Voltage regulation error fault
+    enum REG_enabled_disabled   v_reg_err;                      // Voltage regulation error fault
 
-    enum reg_enabled_disabled   i_rms;                          // RMS Current exceeds converter fault limit
-    enum reg_enabled_disabled   i_rms_load;                     // RMS Current exceeds load fault limit
+    enum REG_enabled_disabled   i_rms;                          // RMS Current exceeds converter fault limit
+    enum REG_enabled_disabled   i_rms_load;                     // RMS Current exceeds load fault limit
 
-    enum reg_enabled_disabled   polswitch;                      // Polarity switch fault
+    enum REG_enabled_disabled   polswitch;                      // Polarity switch fault
 };
 
 CCPARS_FAULTS_EXT struct ccpars_faults ccpars_faults;
 
 // Faults parameters description structure
 
-CCPARS_FAULTS_EXT struct ccpars faults_pars[]
+CCPARS_FAULTS_EXT struct CCpars faults_pars[]
 #ifdef GLOBALS
 = {// "Signal name"     type,  max_n_els, *enum,                       *value,                  num_faults,cyc_sel_step,flags
     { "B_MEAS_INVALID", PAR_ENUM,  1,      enum_enabled_disabled, { .u = &ccpars_faults.b_meas_invalid }, 1,     0,     PARS_RO },

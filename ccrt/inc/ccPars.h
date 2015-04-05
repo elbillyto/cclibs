@@ -69,7 +69,7 @@
 
 // Enums
 
-enum ccpars_type
+enum CCpars_type
 {
     PAR_UNSIGNED,
     PAR_FLOAT,
@@ -96,13 +96,13 @@ CCPARS_EXT uint32_t ccpars_sizeof_type[]
 
 // Structures
 
-struct ccpars
+struct CCpars
 {
     char               *name;
-    enum ccpars_type    type;
+    enum CCpars_type    type;
     uint32_t            max_num_elements;
-    struct ccpars_enum *ccpars_enum;
-    union value_p
+    struct CCpars_enum *ccpars_enum;
+    union CCvalue_p
     {
         char           *c;
         uint32_t       *u;
@@ -118,7 +118,7 @@ struct ccpars
     uint32_t           *num_elements;           // Initialised by ccInitParNumElements()
 };
 
-struct ccpars_enum
+struct CCpars_enum
 {
     uint32_t            value;
     char *              string;
@@ -127,7 +127,7 @@ struct ccpars_enum
 
 // ENABLED/DISABLED enum
 
-CCPARS_EXT struct ccpars_enum enum_enabled_disabled[]
+CCPARS_EXT struct CCpars_enum enum_enabled_disabled[]
 #ifdef GLOBALS
 = {
     { REG_DISABLED,     "DISABLED"      },
@@ -139,11 +139,11 @@ CCPARS_EXT struct ccpars_enum enum_enabled_disabled[]
 
 // Function declarations
 
-uint32_t ccParsGet                  (char *cmd_name, struct ccpars *par, char *remaining_line);
-int32_t  ccParsEnumIndex            (struct ccpars_enum *par_enum, uint32_t value);
-char    *ccParsEnumString           (struct ccpars_enum *par_enum, uint32_t value);
-void     ccParsPrint                (FILE *f, char *cmd_name, struct ccpars *par, uint32_t cyc_sel, uint32_t array_idx);
-void     ccParsPrintAll             (FILE *f, char *cmd_name, struct ccpars *par, uint32_t cyc_sel, uint32_t array_idx, uint32_t flags);
+uint32_t ccParsGet                  (char *cmd_name, struct CCpars *par, char *remaining_line);
+int32_t  ccParsEnumIndex            (struct CCpars_enum *par_enum, uint32_t value);
+char    *ccParsEnumString           (struct CCpars_enum *par_enum, uint32_t value);
+void     ccParsPrint                (FILE *f, char *cmd_name, struct CCpars *par, uint32_t cyc_sel, uint32_t array_idx);
+void     ccParsPrintAll             (FILE *f, char *cmd_name, struct CCpars *par, uint32_t cyc_sel, uint32_t array_idx, uint32_t flags);
 void     ccParsPrintError           (const char * format, ...);
 
 #endif

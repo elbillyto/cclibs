@@ -11,9 +11,9 @@ GLOBAL PROJECT              HRS
 # Voltage source parameters
 
 PC ACT_DELAY_ITERS          0.1
-PC BANDWIDTH                1000
-PC TAU_ZERO                 0.0
-PC Z                        0.9
+PC SIM_BANDWIDTH            1000
+PC SIM_TAU_ZERO             0.0
+PC SIM_Z                    0.9
 
 # Measurement parameters
 
@@ -25,8 +25,8 @@ MEAS V_DELAY_ITERS          0.13
 MEAS I_FIR_LENGTHS          1,0
 MEAS I_SIM_NOISE_PP         0.0
 MEAS V_SIM_NOISE_PP         0.0
-MEAS TONE_HALF_PERIOD_ITERS 100
-MEAS I_SIM_TONE_AMP         0.0
+MEAS SIM_TONE_PERIOD_ITERS  200
+MEAS I_SIM_TONE_PP          0.0
 
 # Current regulation        ---- BRUKER ----        ---- COMMET ----            
 #                           HRS90       HRS60       HRS90       HRS60
@@ -75,7 +75,7 @@ LOAD SIM_TC_ERROR           0.05
 
 # Reference
 
-PULSE TIME()                0.0
+PULSE LINEAR_RATE()         0.0
 PULSE DURATION()            1.0
 PULSE REF(1)                200         30          480         220
 
@@ -91,7 +91,7 @@ GLOBAL CYCLE_SELECTOR       1 2 3 4
 
 # Simulations with Bruker
 
-PC SIM_RIPPLE               2.0E-3
+PC SIM_NOISE_PP             2.0E-3
 
 GLOBAL FILE                 hrs90-bruker
 LOAD SELECT                 0
@@ -104,7 +104,7 @@ RUN
 # Simulations with APOLLO
 
 PULSE REF(1)                200         -480          480         220
-PC SIM_RIPPLE               1.0E-2
+PC SIM_NOISE_PP             1.0E-2
 
 GLOBAL FILE                 hrs90-comet
 LOAD SELECT                 2
@@ -116,7 +116,7 @@ RUN
 
 # Simulations with Bruker and PT2026
 
-PC SIM_RIPPLE               2.0E-3
+PC SIM_NOISE_PP             2.0E-3
 PULSE REF(1)                10000   9900    10100   10000
 DEFAULT B_ACCELERATION      1.000000E+02
 DEFAULT B_DECELERATION      1.000000E+01

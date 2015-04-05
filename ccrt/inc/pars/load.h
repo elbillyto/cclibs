@@ -41,7 +41,7 @@
 
 // Load parameters structure
 
-struct ccpars_load
+struct CCpars_load
 {
     // Load file parameters
 
@@ -59,7 +59,7 @@ struct ccpars_load
     float       sim_tc_error;                       // Error factor for simulation
 };
 
-CCPARS_LOAD_EXT struct ccpars_load ccpars_load
+CCPARS_LOAD_EXT struct CCpars_load ccpars_load
 #ifdef GLOBALS
 = {//   Default values                        Parameter
     {   0.5,   0.5,   0.5,   0.5, },       // LOAD OHMS_SER
@@ -79,20 +79,20 @@ CCPARS_LOAD_EXT struct ccpars_load ccpars_load
 
 // Load parameters description structure
 
-CCPARS_LOAD_EXT struct ccpars load_pars[]
+CCPARS_LOAD_EXT struct CCpars load_pars[]
 #ifdef GLOBALS
 = {// "Signal name"    type,         max_n_els,  *enum,               *value,                      num_defaults,cyc_sel_step,flags
-    { "OHMS_SER",      PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  ccpars_load.ohms_ser      }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
-    { "OHMS_PAR",      PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  ccpars_load.ohms_par      }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
-    { "OHMS_MAG",      PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  ccpars_load.ohms_mag      }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
-    { "HENRYS",        PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  ccpars_load.henrys        }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
-    { "HENRYS_SAT",    PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  ccpars_load.henrys_sat    }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
-    { "I_SAT_START",   PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  ccpars_load.i_sat_start   }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
-    { "I_SAT_END",     PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  ccpars_load.i_sat_end     }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
-    { "GAUSS_PER_AMP", PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  ccpars_load.gauss_per_amp }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
-    { "SELECT",        PAR_UNSIGNED, 1,             NULL,        { .u = &ccpars_load.select        }, 1,             0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "TEST_SELECT",   PAR_UNSIGNED, 1,             NULL,        { .u = &ccpars_load.test_select   }, 1,             0, PARS_RW|PARS_CFG|PARS_REG             },
-    { "SIM_TC_ERROR",  PAR_FLOAT,    1,             NULL,        { .f = &ccpars_load.sim_tc_error  }, 1,             0, PARS_RW|PARS_CFG|PARS_REG             },
+    { "OHMS_SER",      PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  CCpars_load.ohms_ser      }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
+    { "OHMS_PAR",      PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  CCpars_load.ohms_par      }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
+    { "OHMS_MAG",      PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  CCpars_load.ohms_mag      }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
+    { "HENRYS",        PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  CCpars_load.henrys        }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
+    { "HENRYS_SAT",    PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  CCpars_load.henrys_sat    }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
+    { "I_SAT_START",   PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  CCpars_load.i_sat_start   }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
+    { "I_SAT_END",     PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  CCpars_load.i_sat_end     }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
+    { "GAUSS_PER_AMP", PAR_FLOAT,    REG_NUM_LOADS, NULL,        { .f =  CCpars_load.gauss_per_amp }, REG_NUM_LOADS, 0, PARS_RW|PARS_CFG|PARS_REG|PARS_FIXLEN },
+    { "SELECT",        PAR_UNSIGNED, 1,             NULL,        { .u = &CCpars_load.select        }, 1,             0, PARS_RW|PARS_CFG|PARS_REG             },
+    { "TEST_SELECT",   PAR_UNSIGNED, 1,             NULL,        { .u = &CCpars_load.test_select   }, 1,             0, PARS_RW|PARS_CFG|PARS_REG             },
+    { "SIM_TC_ERROR",  PAR_FLOAT,    1,             NULL,        { .f = &CCpars_load.sim_tc_error  }, 1,             0, PARS_RW|PARS_CFG|PARS_REG             },
     { NULL }
 }
 #endif
