@@ -14,7 +14,6 @@ The project contains six libraries and three test programs:
 * libref - reference manager, uses libfg and libreg - in development
 * libfg - function generation - finished
 * libreg - current or field regulation - finished for now
-* libvreg - voltage regulation - being planned for second half of 2015
 * libcal - DAC, ADC and DCCT calibration - finished
 * libtest - ANSI terminal suppoert - finished
 
@@ -22,6 +21,25 @@ The project contains six libraries and three test programs:
 * cctest - single-threaded test program for libfg and libreg - finished
 * termtest - simple test program for libterm - finished
 
+New in v8:
+
+* typdef REG_float introduced in libreg to allow float or double to be easily chosen
+* typdef FG_float introduced in libfg to allow float or double to be easily chosen
+* Power converter output tone simulation added to existing noise simulation:
+** PC SIM_RIPPLE -> PC SIM_NOISE_PP
+** PC SIM_TONE_PERIOD_ITERS added
+** PC SIM_TONE_PP added
+* Power converter simulation parameters renamed to have SIM_ prefix:
+** PC BANDWIDTH -> PC SIM_BANDWIDTH
+** PC Z -> PC SIM_Z
+** PC TAU_ZERO -> PC SIM_TAU_ZERO
+* Measurement simulated tone half period parameter replaced:
+** MEAS TONE_HALF_PERIOD_ITERS -> MEAS SIM_TONE_PERIOD_ITERS
+* Measurement simulation tone amplitude parameters replaced:
+** MEAS B_SIM_TONE_AMP -> MEAS B_SIM_TONE_PP
+** MEAS I_SIM_TONE_AMP -> MEAS I_SIM_TONE_PP
+* Libreg API for regInit() changed to add bool v_regulation in anticipation of voltage regulation support 
+
 Quentin
 
-March 2015
+April 2015
