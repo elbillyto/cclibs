@@ -37,6 +37,17 @@
 #define REF_PULSE_LEN       5
 #define MAX_MAX_CYC_SELS    32
 
+
+
+/*!
+ * Power converter state
+ */
+enum REF_pc_state
+{
+    REF_PC_OFF,
+    REF_PC_ON ,
+};
+
 /*!
  * Reference state
  */
@@ -77,10 +88,10 @@ enum REF_fg_types
 /*!
  * Include header files needed for struct REF_mgr
  */
-#include <libref_vars.h>
-#include <libref_pars.h>
 #include <libfg.h>
 #include <libreg.h>
+#include <libref_vars.h>
+#include <libref_pars.h>
 
 /*!
  * Declare libref structures
@@ -92,7 +103,7 @@ struct REF_fg_armed
     enum REG_mode               reg_mode;                                            //!< Regulation mode
     enum REF_fg_types           fg_type;                                             //!< Function type
     struct FG_meta              fg_meta;                                             //!< Fg meta data for all possible cyc_sels and ref_pulse indexes
-    union  REF_fg_union         fg_union;                                            //!< Union of fg structs with function parameters
+    union  FG_pars              fg_pars;                                             //!< Union of fg structs with function parameters
 };
 
 struct REF_mgr
@@ -114,7 +125,7 @@ struct REF_mgr
         struct REF_fg_armed    *active;                                          //!< Pointer to next ref_fg in ref_fg_next_and_active
     } ref_fg;
 
-    struct REF_pars             pars;                                    //!< Pointers to libref parameters at the application level
+    union REF_pars             u;                                                //!< libref parameters at the application level
 };
 
 /*!

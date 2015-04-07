@@ -39,7 +39,7 @@
  * @retval     true                 State changed on this iteration.
  * @retval     false                State remained unchanged on this iteration.
  */
-bool refState(struct ref_mgr *ref_mgr);
+bool refState(struct REF_mgr *ref_mgr);
 
 #endif
 

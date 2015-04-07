@@ -27,210 +27,210 @@
 
 #include "libref.h"
 
-bool refTransXXtoOF(struct ref_mgr *ref_mgr)
+bool refTransXXtoOF(struct REF_mgr *ref_mgr)
 {
-    return(ref_mgr->pars.pc_on.value == REG_DISABLED);
+    return(*ref_mgr->u.pars.pc_state.value == REF_PC_OFF);
 }
 
 
 
-bool refTransXXtoTO(struct ref_mgr *ref_mgr)
-{
-    return(ref_mgr->pars.);
-}
-
-
-
-bool refTransXXtoTS(struct ref_mgr *ref_mgr)
+bool refTransXXtoTO(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransXXtoTC(struct ref_mgr *ref_mgr)
+bool refTransXXtoTS(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransXXtoTI(struct ref_mgr *ref_mgr)
+bool refTransXXtoTC(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransXXtoDT(struct ref_mgr *ref_mgr)
+bool refTransXXtoTI(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransOFtoPS(struct ref_mgr *ref_mgr)
+bool refTransXXtoDT(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransOFtoDT(struct ref_mgr *ref_mgr)
+bool refTransOFtoPS(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransOFtoTS(struct ref_mgr *ref_mgr)
+bool refTransOFtoDT(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransOFtoTC(struct ref_mgr *ref_mgr)
+bool refTransOFtoTS(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransOFtoTI(struct ref_mgr *ref_mgr)
+bool refTransOFtoTC(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransPStoOF(struct ref_mgr *ref_mgr)
+bool refTransOFtoTI(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransPStoDT(struct ref_mgr *ref_mgr)
+bool refTransPStoOF(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransPStoCY(struct ref_mgr *ref_mgr)
+bool refTransPStoDT(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransTStoSB(struct ref_mgr *ref_mgr)
+bool refTransPStoCY(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransTCtoCY(struct ref_mgr *ref_mgr)
+bool refTransTStoSB(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransTItoIL(struct ref_mgr *ref_mgr)
+bool refTransTCtoCY(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransDTtoPS(struct ref_mgr *ref_mgr)
+bool refTransTItoIL(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransSBtoIL(struct ref_mgr *ref_mgr)
+bool refTransDTtoPS(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransCYtoPS(struct ref_mgr *ref_mgr)
+bool refTransSBtoIL(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransCYtoTC(struct ref_mgr *ref_mgr)
+bool refTransCYtoPS(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransCYtoEC(struct ref_mgr *ref_mgr)
+bool refTransCYtoTC(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransECtoCY(struct ref_mgr *ref_mgr)
+bool refTransCYtoEC(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransILtoAR(struct ref_mgr *ref_mgr)
+bool refTransECtoCY(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransARtoIL(struct ref_mgr *ref_mgr)
+bool refTransILtoAR(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransARtoRN(struct ref_mgr *ref_mgr)
+bool refTransARtoIL(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransRNtoTI(struct ref_mgr *ref_mgr)
+bool refTransARtoRN(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransRNtoIL(struct ref_mgr *ref_mgr)
+bool refTransRNtoTI(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransRNtoPD(struct ref_mgr *ref_mgr)
+bool refTransRNtoIL(struct REF_mgr *ref_mgr)
 {
     return(false);
 }
 
 
 
-bool refTransPDtoRN(struct ref_mgr *ref_mgr)
+bool refTransRNtoPD(struct REF_mgr *ref_mgr)
+{
+    return(false);
+}
+
+
+
+bool refTransPDtoRN(struct REF_mgr *ref_mgr)
 {
     return(false);
 }

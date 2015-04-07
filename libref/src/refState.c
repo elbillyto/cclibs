@@ -36,25 +36,25 @@
 /*!
  * Reference state function declarations
  */
-static void refStateOF  (struct ref_mgr *ref_mgr, bool first_call);     //  0  OFF
-static void refStatePS  (struct ref_mgr *ref_mgr, bool first_call);     //  1  POL_SWITCHING
-static void refStateTO  (struct ref_mgr *ref_mgr, bool first_call);     //  2  TO_OFF
-static void refStateTS  (struct ref_mgr *ref_mgr, bool first_call);     //  3  TO_STANDBY
-static void refStateTC  (struct ref_mgr *ref_mgr, bool first_call);     //  4  TO_CYCLING
-static void refStateTI  (struct ref_mgr *ref_mgr, bool first_call);     //  5  TO_IDLE
-static void refStateDT  (struct ref_mgr *ref_mgr, bool first_call);     //  6  DIRECT
-static void refStateSB  (struct ref_mgr *ref_mgr, bool first_call);     //  7  ON_STANDBY
-static void refStateCY  (struct ref_mgr *ref_mgr, bool first_call);     //  8  CYCLING
-static void refStateEC  (struct ref_mgr *ref_mgr, bool first_call);     //  9  ECONOMY
-static void refStateIL  (struct ref_mgr *ref_mgr, bool first_call);     // 10  IDLE
-static void refStateAR  (struct ref_mgr *ref_mgr, bool first_call);     // 11  ARMED
-static void refStateRN  (struct ref_mgr *ref_mgr, bool first_call);     // 12  RUNNING
-static void refStatePD  (struct ref_mgr *ref_mgr, bool first_call);     // 13  PAUSED
+static void refStateOF  (struct REF_mgr *ref_mgr, bool first_call);     //  0  OFF
+static void refStatePS  (struct REF_mgr *ref_mgr, bool first_call);     //  1  POL_SWITCHING
+static void refStateTO  (struct REF_mgr *ref_mgr, bool first_call);     //  2  TO_OFF
+static void refStateTS  (struct REF_mgr *ref_mgr, bool first_call);     //  3  TO_STANDBY
+static void refStateTC  (struct REF_mgr *ref_mgr, bool first_call);     //  4  TO_CYCLING
+static void refStateTI  (struct REF_mgr *ref_mgr, bool first_call);     //  5  TO_IDLE
+static void refStateDT  (struct REF_mgr *ref_mgr, bool first_call);     //  6  DIRECT
+static void refStateSB  (struct REF_mgr *ref_mgr, bool first_call);     //  7  ON_STANDBY
+static void refStateCY  (struct REF_mgr *ref_mgr, bool first_call);     //  8  CYCLING
+static void refStateEC  (struct REF_mgr *ref_mgr, bool first_call);     //  9  ECONOMY
+static void refStateIL  (struct REF_mgr *ref_mgr, bool first_call);     // 10  IDLE
+static void refStateAR  (struct REF_mgr *ref_mgr, bool first_call);     // 11  ARMED
+static void refStateRN  (struct REF_mgr *ref_mgr, bool first_call);     // 12  RUNNING
+static void refStatePD  (struct REF_mgr *ref_mgr, bool first_call);     // 13  PAUSED
 
 /*!
  * Transition function indexes
  */
-enum ref_trans_enum
+enum REF_trans_enum
 {
     REF_XXtoOF,                     //  0  ANY             to   OFF
     REF_XXtoTO,                     //  1  ANY             to   TO_OFF
@@ -93,15 +93,15 @@ enum ref_trans_enum
  */
 struct ref_fsm_state
 {
-    void                                (* const state_func)(struct ref_mgr *, bool);       //!< Pointer to ref state function
+    void                                (* const state_func)(struct REF_mgr *, bool);       //!< Pointer to ref state function
     uint32_t const                      n_trans;                                            //!< Number of possible transitions from this state
-    enum ref_trans_enum const * const   trans;                                              //!< List of possible transitions in priority order
+    enum REF_trans_enum const * const   trans;                                              //!< List of possible transitions in priority order
 };
 
 struct ref_fsm_trans
 {
-    bool                                (* const condition)(struct ref_mgr *ref_mgr);       //!< Pointer to transition condition function
-    enum ref_state const                next_state;                                         //!< Next state if condition is true
+    bool                                (* const condition)(struct REF_mgr *ref_mgr);       //!< Pointer to transition condition function
+    enum REF_state const                next_state;                                         //!< Next state if condition is true
 };
 
 /*!
@@ -144,20 +144,20 @@ static struct ref_fsm_trans ref_trans[] =
 /*!
  * Transition conditions are checked in order from left to right
  */
-static enum ref_trans_enum ref_trans_OF[] = {                                                                                     REF_OFtoPS, REF_OFtoDT, REF_OFtoTS, REF_OFtoTC, REF_OFtoTI };
-static enum ref_trans_enum ref_trans_PS[] = {                                                                                     REF_PStoOF, REF_PStoDT, REF_PStoCY                         };
-static enum ref_trans_enum ref_trans_TO[] = { REF_XXtoOF,             REF_XXtoTS, REF_XXtoTC, REF_XXtoTI, REF_XXtoDT                                                                         };
-static enum ref_trans_enum ref_trans_TS[] = { REF_XXtoOF, REF_XXtoTO,             REF_XXtoTC, REF_XXtoTI, REF_XXtoDT, REF_TStoSB                                                             };
-static enum ref_trans_enum ref_trans_TC[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS,             REF_XXtoTI, REF_XXtoDT, REF_TCtoCY                                                             };
-static enum ref_trans_enum ref_trans_TI[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC,             REF_XXtoDT, REF_TItoIL                                                             };
-static enum ref_trans_enum ref_trans_DT[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC, REF_XXtoTI,             REF_DTtoPS                                                             };
-static enum ref_trans_enum ref_trans_SB[] = { REF_XXtoOF, REF_XXtoTO,             REF_XXtoTC,             REF_XXtoDT, REF_SBtoIL                                                             };
-static enum ref_trans_enum ref_trans_CY[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS,             REF_XXtoTI, REF_XXtoDT, REF_CYtoPS, REF_CYtoTC, REF_CYtoEC                                     };
-static enum ref_trans_enum ref_trans_EC[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS,             REF_XXtoTI, REF_XXtoDT, REF_ECtoCY                                                             };
-static enum ref_trans_enum ref_trans_IL[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC,             REF_XXtoDT, REF_ILtoAR                                                             };
-static enum ref_trans_enum ref_trans_AR[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC,             REF_XXtoDT, REF_ARtoIL, REF_ARtoRN                                                 };
-static enum ref_trans_enum ref_trans_RN[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC,             REF_XXtoDT, REF_RNtoTI, REF_RNtoIL, REF_RNtoPD                                     };
-static enum ref_trans_enum ref_trans_PD[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC, REF_XXtoTI, REF_XXtoDT, REF_PDtoRN                                                             };
+static enum REF_trans_enum ref_trans_OF[] = {                                                                                     REF_OFtoPS, REF_OFtoDT, REF_OFtoTS, REF_OFtoTC, REF_OFtoTI };
+static enum REF_trans_enum ref_trans_PS[] = {                                                                                     REF_PStoOF, REF_PStoDT, REF_PStoCY                         };
+static enum REF_trans_enum ref_trans_TO[] = { REF_XXtoOF,             REF_XXtoTS, REF_XXtoTC, REF_XXtoTI, REF_XXtoDT                                                                         };
+static enum REF_trans_enum ref_trans_TS[] = { REF_XXtoOF, REF_XXtoTO,             REF_XXtoTC, REF_XXtoTI, REF_XXtoDT, REF_TStoSB                                                             };
+static enum REF_trans_enum ref_trans_TC[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS,             REF_XXtoTI, REF_XXtoDT, REF_TCtoCY                                                             };
+static enum REF_trans_enum ref_trans_TI[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC,             REF_XXtoDT, REF_TItoIL                                                             };
+static enum REF_trans_enum ref_trans_DT[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC, REF_XXtoTI,             REF_DTtoPS                                                             };
+static enum REF_trans_enum ref_trans_SB[] = { REF_XXtoOF, REF_XXtoTO,             REF_XXtoTC,             REF_XXtoDT, REF_SBtoIL                                                             };
+static enum REF_trans_enum ref_trans_CY[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS,             REF_XXtoTI, REF_XXtoDT, REF_CYtoPS, REF_CYtoTC, REF_CYtoEC                                     };
+static enum REF_trans_enum ref_trans_EC[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS,             REF_XXtoTI, REF_XXtoDT, REF_ECtoCY                                                             };
+static enum REF_trans_enum ref_trans_IL[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC,             REF_XXtoDT, REF_ILtoAR                                                             };
+static enum REF_trans_enum ref_trans_AR[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC,             REF_XXtoDT, REF_ARtoIL, REF_ARtoRN                                                 };
+static enum REF_trans_enum ref_trans_RN[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC,             REF_XXtoDT, REF_RNtoTI, REF_RNtoIL, REF_RNtoPD                                     };
+static enum REF_trans_enum ref_trans_PD[] = { REF_XXtoOF, REF_XXtoTO, REF_XXtoTS, REF_XXtoTC, REF_XXtoTI, REF_XXtoDT, REF_PDtoRN                                                             };
 
 /*!
  * Reference state structures - this must match the order of enum ref_state_enum
@@ -182,12 +182,12 @@ static struct ref_fsm_state ref_states[] =
 
 
 
-bool refState(struct ref_mgr *ref_mgr)
+bool refState(struct REF_mgr *ref_mgr)
 {
-    enum ref_trans_enum const  *trans_idx;
+    enum REF_trans_enum const  *trans_idx;
     uint32_t                    num_trans;
-    enum ref_state              current_state   = ref_mgr->ref_state;
-    enum ref_state              next_state;
+    enum REF_state              current_state   = ref_mgr->ref_state;
+    enum REF_state              next_state;
 
     // Scan transitions for the current state, testing each condition in priority order
 
@@ -227,98 +227,98 @@ bool refState(struct ref_mgr *ref_mgr)
 
 // State functions
 
-static void refStateOF(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateOF(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStatePS(struct ref_mgr *ref_mgr, bool first_call)
+static void refStatePS(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateTO(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateTO(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateTS(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateTS(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateTC(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateTC(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateTI(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateTI(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateDT(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateDT(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateSB(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateSB(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateCY(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateCY(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateEC(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateEC(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateIL(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateIL(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateAR(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateAR(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStateRN(struct ref_mgr *ref_mgr, bool first_call)
+static void refStateRN(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }
 
 
 
-static void refStatePD(struct ref_mgr *ref_mgr, bool first_call)
+static void refStatePD(struct REF_mgr *ref_mgr, bool first_call)
 {
 
 }

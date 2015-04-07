@@ -42,11 +42,11 @@ BEGIN {
 
 # Identify the columns in the csv file
 
-    var_group_column     = 1
-    var_id_column        = 2
-    var_type_column      = 3
-    var_name_column      = 4
-    var_comment_column   = 5
+    pars_column        = 1
+    name_column        = 2
+    type_column        = 3
+    reg_mgr_var_column = 4
+    comment_column     = 5
 
 # Read heading line from stdin
 
@@ -60,11 +60,11 @@ BEGIN {
     {
         # Skip blank lines
 
-        if($var_group_column == "") continue
+        if($pars_column == "") continue
 
         # Stop if non-blank lines do not have the correct number of colums
 
-        if($var_comment_column == "")
+        if($comment_column == "")
         {
             printf "Error in line %d : missing data\n", NR >> "/dev/stderr"
             exit -1
@@ -72,10 +72,10 @@ BEGIN {
 
         # Save contents
 
-        var_id      [n_vars] = $var_group_column "_" $var_id_column
-        var_type    [n_vars] = $var_type_column
-        var_name    [n_vars] = $var_name_column
-        var_comment [n_vars] = $var_comment_column
+        var_id     [n_vars] = $pars_column "_" $name_column
+        var_type   [n_vars] = $type_column
+        var_reg_mgr[n_vars] = $reg_mgr_var_column
+        var_comment[n_vars] = $comment_column
 
         n_vars++
     }
@@ -137,7 +137,7 @@ BEGIN {
 
     for(i=0 ; i < n_vars ; i++)
     {
-        printf "#define REG_VAR_%-30s %-40s // %-15s %s\n",var_id[i], var_name[i], var_type[i], var_comment[i]               > of
+        printf "#define REG_VAR_%-30s %-40s // %-15s %s\n",var_id[i], var_reg_mgr[i], var_type[i], var_comment[i]    > of
     }
 
     print "\n#endif // LIBREG_VARS_H\n"                                                                              > of

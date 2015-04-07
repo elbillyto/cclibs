@@ -41,12 +41,12 @@ BEGIN {
 
 # Identify the leading columns in the csv file
 
-    par_group_column     = 1
-    par_name_column      = 2
-    par_type_column      = 3
-    par_length_column    = 4
-    par_cyc_sel_column   = 5
-    par_flags_column     = 6
+    pars_column    = 1
+    name_column    = 2
+    type_column    = 3
+    length_column  = 4
+    cyc_sel_column = 5
+    groups_column  = 6
 
 # Read heading line from stdin
 
@@ -54,18 +54,18 @@ BEGIN {
 
     n_columns = NF
     n_pars    = 0
-    n_flags   = 0
+    n_groups  = 0
 
-# Create the flags from the column headings
+# Create the group masks from the column headings
 
-    for(i=par_flags_column ; i <= n_columns ; i++)
+    for(i=groups_column ; i <= n_columns && index($i,"GROUP_") == 1; i++)
     {
-        flag[n_flags++] = $i
+        group[n_groups++] = $i
     }
 
-    if(n_flags > 32)
+    if(n_groups > 32)
     {
-        printf "ERROR: Number of flags (%d) exceeds limit (32)\n", n_flags
+        printf "ERROR: Number of groups (%d) exceeds limit (32)\n", n_groups
         exit -1
     }
 
@@ -75,60 +75,39 @@ BEGIN {
     {
         # Skip blank lines
 
-        if($par_group_column == "") continue
+        if($pars_column == "") continue
 
         # Stop if non-blank lines do not have the correct number of colums
 
-        if($par_flags_column == "")
+        if($groups_column == "")
         {
             printf "Error in line %d : missing data\n", NR >> "/dev/stderr"
             exit -1
         }
 
-        # Detect if parameter is an array based on LOAD SELECT
-
-        if($par_length_column == "REF_NUM_LOADS")
-        {
-            # Set REF_LOAD_SELECT flag to inform refConvParsCheck() that this parameter is based on LOAD SELECT
-
-            par_flags[n_pars] = flag[0]
-
-            # For test load select parameters, libref will keep two values, one for LOAD SELECT and one for LOAD TEST_SELECT
-
-            if($par_test_column == "YES" && $par_mode_none_column == "NO")
-            {
-                $par_length_column = "2"
-            }
-            else
-            {
-                $par_length_column = "1"
-            }
-        }
-        else
-        {
-            par_flags[n_pars] = "0"
-        }
-
         # Save contents
 
-        par_variable[n_pars] = tolower($par_group_column) "_" tolower($par_name_column)
-        par_type    [n_pars] = $par_type_column
-        par_length  [n_pars] = $par_length_column
-        par_cyc_sel [n_pars] = $par_cyc_sel_column
+        par_label   [n_pars] = $pars_column " " $name_column
+        par_variable[n_pars] = tolower($pars_column) "_" tolower($name_column)
+        par_type    [n_pars] = $type_column
+        par_length  [n_pars] = $length_column
+        par_cyc_sel [n_pars] = $cyc_sel_column
 
-        # Interpret flag specifiers (YES or NO)
+        # Interpret group specifiers (YES or NO)
 
-        for(i=0; i < n_flags ; i++)
+        par_groups[n_pars] = "0"
+
+        for(i=0; i < n_groups ; i++)
         {
-            f = $(par_flags_column+i)
+            f = $(groups_column+i)
 
             if(f == "YES")
             {
-                par_flags[n_pars] = par_flags[n_pars] "|" flag[i]
+                par_groups[n_pars] = par_groups[n_pars] "|REF_PAR_" group[i]
             }
             else if(f != "NO")
             {
-                printf "Error in line %d : column %d (%s) must be YES or NO\n", NR, par_flags_column+i, f >> "/dev/stderr"
+                printf "Error in line %d : column %d (%s) must be YES or NO\n", NR, groups_column+i, f >> "/dev/stderr"
                 exit -1
             }
         }
@@ -186,7 +165,8 @@ BEGIN {
 
     for(i=0 ; i < n_pars ; i++)
     {
-        printf "    refParInitPointers(&ref_mgr,%-30s,REF_PAR_NOT_USED,REF_PAR_NOT_USED);\n", par_variable[i] > of
+        printf "    refParInitPointers(&ref_mgr,%-30s,REF_PAR_NOT_USED);\n", par_variable[i] > of
+        printf "    refParInitPointers(&ref_mgr,%-30s,REF_PAR_NOT_USED);\n", par_variable[i] > of
     }
 
     print "\n */\n"                                                                                         > of
@@ -195,29 +175,54 @@ BEGIN {
     print "#define REF_NUM_PARS                  ", n_pars                                                  > of
     print "#define REF_PAR_NOT_USED              (void*)0\n"                                                > of
 
-    print "#define refParInitPointers(ref_mgr,par_name,value_p,num_els_p,cyc_sel_step) (ref_mgr)->pars.par_name.value=value_p,(ref_mgr)->pars.par_name.num_els=num_els_p\n" > of
+    print "#define refMgrParInitPointer(REF_MGR,PAR_NAME,VALUE_P)         (REF_MGR)->u.pars.PAR_NAME.value=VALUE_P"                  > of
+    print "#define refMgrParInitUserData(REF_MGR,PAR_NAME,USER_DATA_P)    (REF_MGR)->u.pars.PAR_NAME.meta.user_data=USER_DATA_P"     > of
+    print "#define refMgrParInitCycSelStep(REF_MGR,PAR_NAME,CYC_SEL_STEP) (REF_MGR)->u.pars.PAR_NAME.meta.cyc_sel_step=CYC_SEL_STEP" > of
+    print "#define refMgrParInitDevSelStep(REF_MGR,PAR_NAME,DEV_SEL_STEP) (REF_MGR)->u.pars.PAR_NAME.meta.dev_sel_step=DEV_SEL_STEP" > of
 
-    for(i=0 ; i < n_flags ; i++)
+    print "\n// Parameter groups\n"                                                                         > of
+
+    for(i=0 ; i < n_groups ; i++)
     {
-        printf "#define %-40s(1u<<%d)\n", flag[i], i                                                        > of
+        printf "#define REF_PAR_%-35s(1u<<%d)\n", group[i], i                                               > of
     }
 
-    print "\nstruct REF_par_meta"                                                                           > of
+    print "\n// Parameter structures and union\n"                                                           > of
+
+    print "struct REF_par_meta"                                                                             > of
     print "{"                                                                                               > of
-    print "    uint32_t                 *num_els;"                                                          > of
+    print "    void                     *user_data;"                                                        > of
     print "    uint32_t                  cyc_sel_step;"                                                     > of
-    print "    uint32_t                  flags;"                                                            > of
+    print "    uint32_t                  dev_sel_step;"                                                     > of
+    print "    uint32_t                  max_elements;"                                                     > of
+    print "    uint32_t                  size_of_element;"                                                  > of
+    print "    uint32_t                  groups;"                                                           > of
     print "};\n"                                                                                            > of
-    print "struct REF_pars"                                                                                 > of
+                                                                                                              
+    print "struct REF_par"                                                                                  > of
     print "{"                                                                                               > of
-
-    for(i=0 ; i < n_pars ; i++)
-    {
-        printf "    %30s%s;\n", par_type[i], par_variable[i]                                                > of
-        printf "    struct REF_par            %s_meta;\n", par_variable[i]                                  > of
-    }
-
+    print "    void                       *value;"                                                          > of
+    print "    struct REF_par_meta         meta;"                                                           > of
     print "};\n"                                                                                            > of
+                                                                                                              
+    print "union REF_pars"                                                                                  > of
+    print "{"                                                                                               > of
+    print "    struct REF_par              par[REF_NUM_PARS];"                                              > of
+    print "    struct"                                                                                      > of
+    print "    {"                                                                                           > of
+                                                                                                              
+    for(i=0 ; i < n_pars ; i++)                                                                               
+    {                                                                                                         
+        printf "        struct  // %3u. %s\n", i, par_label[i]                                              > of
+        print  "        {"                                                                                  > of
+        printf "            %-25s *value;\n", par_type[i]                                                   > of
+        print  "            struct REF_par_meta        meta;"                                               > of
+        printf "        } %s;\n\n", par_variable[i]                                                         > of
+    }                                                                                                         
+                                                                                                              
+    print "    } pars;"                                                                                     > of
+    print "};\n"                                                                                            > of
+
     print "#endif // LIBREF_PARS_H\n"                                                                       > of
     print "// EOF"                                                                                          > of
 
@@ -270,7 +275,9 @@ BEGIN {
 
     for(i=0 ; i < n_pars ; i++)
     {
-        printf   "    ref_mgr->pars.%s.flags = %s;\n", par_variable[i], par_flags[i]                        > of
+        printf   "    ref_mgr->u.pars.%s.meta.max_elements = %s;\n", par_variable[i], par_length[i]          > of
+        printf   "    ref_mgr->u.pars.%s.meta.size_of_element = sizeof(%s);\n", par_variable[i], par_type[i] > of
+        printf   "    ref_mgr->u.pars.%s.meta.groups = %s;\n\n", par_variable[i], par_groups[i]               > of
     }
 
     print "}\n"                                                                                             > of

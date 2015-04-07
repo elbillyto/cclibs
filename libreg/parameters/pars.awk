@@ -59,7 +59,7 @@ BEGIN {
     initial_value_column  = 5
     flags_column          = 6
     flag_test_column      = 6
-    flag_mode_name_column = 7
+    flag_mode_none_column = 7
 
 # Read heading line from stdin
 
@@ -86,7 +86,7 @@ BEGIN {
         printf "ERROR: Number of flags (%d) exceeds limit (32)\n", n_flags
         exit -1
     }
-    
+
 # Create all the groups from the column headings
 
     groups_column = i
@@ -101,7 +101,7 @@ BEGIN {
         printf "ERROR: Number of groups (%d) exceeds limit (32)\n", n_groups
         exit -1
     }
-    
+
 # Read parameter definitions from stdin
 
     while(getline > 0)
@@ -129,8 +129,9 @@ BEGIN {
             par_flags[n_pars] = "REG_PAR_" flag[0]
 
             # For test load select parameters, libreg will keep two values, one for LOAD SELECT and one for LOAD TEST_SELECT
+            # if the parameter is not restricted to changes when REG_MODE is NONE.
 
-            if($flag_test_column == "YES" && $flag_mode_name_column == "NO")
+            if($flag_test_column == "YES" && $flag_mode_none_column == "NO")
             {
                 $length_column = "2"
             }
@@ -142,7 +143,7 @@ BEGIN {
         else
         {
             par_flags[n_pars] = "0"
-            
+
             if($length_column != 1)
             {
                 par_length_multiplier[n_pars] = "*" $length_column ","
@@ -150,7 +151,7 @@ BEGIN {
         }
 
         # Accumulate non-scalar lengths in a hash
-        
+
         if($length_column != 1)
         {
             par_lengths[$length_column]++
@@ -272,11 +273,11 @@ BEGIN {
     print "#define REG_NUM_PARS                 ", n_pars                                                   > of
     print "#define REG_PAR_NOT_USED              (void*)0\n"                                                > of
 
-    print "#define regMgrParInitPointer(reg_mgr,par_name,value_p)        (reg_mgr)->pars.u.values.par_name=value_p"        > of
-    print "#define regMgrParInitValue(reg_mgr,par_name,index,init_value) (reg_mgr)->par_values.par_name[index]=init_value" > of
+    print "#define regMgrParInitPointer(REG_MGR,PAR_NAME,VALUE_P)        (REG_MGR)->pars.u.values.PAR_NAME=VALUE_P"        > of
+    print "#define regMgrParInitValue(rEG_MGR,PAR_NAME,INDEX,INIT_VALUE) (REG_MGR)->par_values.PAR_NAME[INDEX]=INIT_VALUE" > of
 
     print "\n// Parameter flags\n"                                                                          > of
-    
+
     for(i=0 ; i < n_flags ; i++)
     {
         printf "#define REG_PAR_%-35s(1u<<%d)\n", flag[i], i                                                > of
@@ -295,23 +296,23 @@ BEGIN {
     print "    {"                                                                                           > of
     print "        struct"                                                                                  > of
     print "        {"                                                                                       > of
-    
+
     for(i=0 ; i < n_pars ; i++)
     {
-        printf "           void              *%s;\n", par_variable[i]                                       > of
+        printf "           %-25s *%s;\n", par_type[i], par_variable[i]                                      > of
     }
 
     print "        } values;"                                                                               > of
     print "        void                 *value[REG_NUM_PARS];"                                              > of
     print "    } u;\n"                                                                                      > of
-    
+
     print "    void                     *copy_of_value[REG_NUM_PARS];\n"                                    > of
     print "    struct REG_pars_meta"                                                                        > of
     print "    {"                                                                                           > of
     print "        uint32_t              size_in_bytes;"                                                    > of
     print "        uint32_t              flags;"                                                            > of
     print "        uint32_t              groups;"                                                           > of
-    print "    } meta[REG_NUM_PARS];\n"                                                                     > of
+    print "    } meta[REG_NUM_PARS];"                                                                       > of
     print "};\n"                                                                                            > of
 
     print "struct REG_par_values"                                                                           > of
@@ -323,7 +324,7 @@ BEGIN {
     }
 
     print "};\n"                                                                                            > of
-                                                                                                            
+
     print "#endif // LIBREG_PARS_H\n"                                                                       > of
     print "// EOF"                                                                                          > of
 
@@ -385,18 +386,18 @@ BEGIN {
     print "{"                                                                                               > of
     print "    uint32_t i;\n"                                                                               > of
     print "    memcpy(reg_mgr->pars.meta,reg_pars_init_meta,sizeof(reg_pars_init_meta));\n"                 > of
-    
+
     // Initialise pointers to copy of values
-    
+
     for(i=0 ; i < n_pars ; i++)
     {
         printf "    reg_mgr->pars.copy_of_value[%3u] = &reg_mgr->par_values.%s;\n", i, par_variable[i]      > of
     }
 
     printf "\n"                                                                                             > of
-    
+
     // Initialise scalar values
-    
+
     for(i=0 ; i < n_pars ; i++)
     {
         if(par_length[i] == 1)
@@ -404,13 +405,13 @@ BEGIN {
             printf "    reg_mgr->par_values.%-30s[0]=%s;\n",par_variable[i], par_init[i]                    > of
         }
     }
-        
+
     // Initialise vector values
-    
+
     for(par_len in par_lengths)
     {
         printf "\n    for(i=0;i<%s;i++)\n    {\n", par_len                                                  > of
-    
+
         for(i=0 ; i < n_pars ; i++)
         {
             if(par_length[i] == par_len)
@@ -420,7 +421,7 @@ BEGIN {
 
         }
         print "    }"                                                                                       > of
-    }                                                                                             
+    }
 
     print "}\n\n#endif // LIBREG_PARS_INIT_H\n"                                                               > of
     print "// EOF"                                                                                          > of
